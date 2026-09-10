@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "clients": {
+    "ios": {
+      "version": "0.4.13",
+      "build": 17,
+      "source": "ios/FelicityDashboard.xcodeproj/project.pbxproj",
+      "snapshot_tag": "snapshots/ios/0.4.13-build17"
+    },
+    "android": {
+      "version": "0.7.23",
+      "build": 30,
+      "source": "android/app/build.gradle",
+      "snapshot_tag": "snapshots/android/0.7.23-build30"
+    },
+    "esp32-nextion": {
+      "version": "0.14.1",
+      "source": "esp32/CMakeLists.txt",
+      "snapshot_tag": "snapshots/esp32-nextion/0.14.1",
+      "artifacts": {
+        "firmware/felicity-esp32.bin": "45b561af06b32170fddd3136d79dc5b4f22289e24ec703721ead9f2f9be7c4ad",
+        "firmware/felicity-nextion.tft": "527b521a8deb2b8ef24b6e26e85e10f63d62abcefa7ea8a8eafd74b1bb065b25",
+        "nextion/felicity-dashboard.HMI": "bfd2cd908d21d6a4d84b35ea4e31299e4848c84d0dad2985a8b40fb0f50b6255"
+      }
+    }
+  }
+}
