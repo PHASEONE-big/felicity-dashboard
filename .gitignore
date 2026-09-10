@@ -15,3 +15,5 @@ esp32/sdkconfig.hardware
 esp32/sdkconfig.qemu.generated
 esp32/sdkconfig.onboarding
 esp32/managed_components/
+**/xcuserdata/
+*.xcuserstate

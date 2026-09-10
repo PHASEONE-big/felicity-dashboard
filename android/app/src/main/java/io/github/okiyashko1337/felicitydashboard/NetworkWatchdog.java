@@ -37,13 +37,13 @@ final class NetworkWatchdog {
     void check() {
         long now = System.currentTimeMillis();
         String backend = uriHost(state.serverUrl);
-        String ajax = ajaxHost(preferences.getString("ajax_host", ""));
+        String recorder = recorderHost(preferences.getString("profile_g_host", ""));
         String gateway = gatewayAddress();
         boolean backendUp = ping(backend);
-        boolean ajaxUp = ping(ajax);
+        boolean recorderUp = ping(recorder);
         boolean gatewayUp = ping(gateway);
 
-        if (backendUp || ajaxUp || gatewayUp) {
+        if (backendUp || recorderUp || gatewayUp) {
             if (outageStartedMs > 0 && now - outageStartedMs >= 60_000L) {
                 record("Network recovered after " + duration(now - outageStartedMs), now);
             }
@@ -132,7 +132,7 @@ final class NetworkWatchdog {
         catch (RuntimeException ignored) { return null; }
     }
 
-    private static String ajaxHost(String value) {
+    private static String recorderHost(String value) {
         if (value == null || value.trim().isEmpty()) return null;
         try { return URI.create("http://" + value.trim()).getHost(); }
         catch (RuntimeException ignored) { return null; }

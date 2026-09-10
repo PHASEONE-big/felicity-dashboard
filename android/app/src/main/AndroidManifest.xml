@@ -6,8 +6,11 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
+        android:name=".DashboardApplication"
         android:allowBackup="false"
         android:label="Felicity Dashboard"
         android:theme="@style/AppTheme"
@@ -31,6 +34,11 @@
             </intent-filter>
         </activity>
         <activity android:name=".CameraActivity" android:exported="false" android:screenOrientation="landscape" />
+        <activity android:name=".EventsActivity" android:exported="false" android:screenOrientation="landscape" />
+        <activity android:name=".ArchiveActivity" android:exported="false" android:screenOrientation="landscape" />
+        <activity android:name=".CameraPickerActivity" android:exported="false" android:screenOrientation="landscape" />
+        <activity android:name=".UxPrototypeActivity" android:exported="false" android:screenOrientation="landscape" />
+        <service android:name=".NavigationService" android:exported="false" />
         <receiver android:name=".BootReceiver" android:enabled="true" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />

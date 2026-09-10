@@ -1,4 +1,4 @@
-# Ajax audio: full-stack implementation plan
+# ONVIF audio: full-stack implementation plan
 
 ## Goal
 
@@ -6,11 +6,11 @@ Play the doorbell's original G.722 wideband audio together with the live H.264 v
 
 ## Known source characteristics
 
-- RTSP server: Ajax doorbell, TCP port 8554.
+- RTSP server: ONVIF doorbell, TCP port 8554.
 - Video: H.264, `trackID=1`, currently decoded by LibVLC.
 - Incoming audio: G.722 wideband, `trackID=2`, receive-only.
 - Backchannel audio: G.722, `trackID=3`, send-only.
-- Ajax advertises incoming audio as `G722/16000`. G.722 audio is sampled at 16 kHz, but RTP payload type 9 uses an 8 kHz RTP timestamp clock. The audio payload itself must remain unchanged.
+- The recorder advertises incoming audio as `G722/16000`. G.722 audio is sampled at 16 kHz, but RTP payload type 9 uses an 8 kHz RTP timestamp clock. The audio payload itself must remain unchanged.
 - Android LibVLC 3.5.1 receives the track but exposes it as `undf`: both its
   live555 and WAV codec-tag mappings omit G.722, although the bundled decoder
   itself exists.
@@ -31,7 +31,7 @@ doorbell sound is audible with normal playback.
 ## Talk-back path
 
 Status: the control, microphone capture and experimental G.722 send path are
-present, but outgoing sound has **not** been heard at the Ajax doorbell and is
+present, but outgoing sound has **not** been heard at the ONVIF doorbell and is
 therefore not considered working. Do not describe two-way audio as complete.
 
 1. Keep the separate ONVIF backchannel negotiation for `trackID=3` because this is a send-only media direction.

@@ -1,0 +1,521 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		110000000000000000000001 /* FelicityDashboardApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000001 /* FelicityDashboardApp.swift */; };
+		110000000000000000000002 /* AppRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000002 /* AppRootView.swift */; };
+		110000000000000000000003 /* CoreContracts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000003 /* CoreContracts.swift */; };
+		110000000000000000000004 /* DashboardModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000004 /* DashboardModels.swift */; };
+		110000000000000000000005 /* DashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000005 /* DashboardViewModel.swift */; };
+		110000000000000000000006 /* FelicityAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000006 /* FelicityAPI.swift */; };
+		110000000000000000000007 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000007 /* Assets.xcassets */; };
+		110000000000000000000008 /* DashboardModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000009 /* DashboardModelsTests.swift */; };
+		110000000000000000000009 /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12000000000000000000000C /* KeychainStore.swift */; };
+		11000000000000000000000A /* CameraModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12000000000000000000000D /* CameraModels.swift */; };
+		11000000000000000000000B /* OnvifCameraDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12000000000000000000000E /* OnvifCameraDiscovery.swift */; };
+		11000000000000000000000C /* RTPDepacketizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12000000000000000000000F /* RTPDepacketizer.swift */; };
+		11000000000000000000000D /* LiveRTSPSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000010 /* LiveRTSPSession.swift */; };
+		11000000000000000000000E /* SampleBufferRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000011 /* SampleBufferRenderer.swift */; };
+		11000000000000000000000F /* CameraViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000012 /* CameraViews.swift */; };
+		110000000000000000000010 /* ThreeEyeModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000013 /* ThreeEyeModels.swift */; };
+		110000000000000000000011 /* EventsViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000014 /* EventsViews.swift */; };
+		110000000000000000000012 /* ArchiveModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000015 /* ArchiveModels.swift */; };
+		110000000000000000000013 /* ArchiveRTSPTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000016 /* ArchiveRTSPTransport.swift */; };
+		110000000000000000000014 /* ProfileGArchiveService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000017 /* ProfileGArchiveService.swift */; };
+		110000000000000000000015 /* OnvifActivityClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000018 /* OnvifActivityClient.swift */; };
+		110000000000000000000016 /* ArchiveRTSPSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000019 /* ArchiveRTSPSession.swift */; };
+		110000000000000000000017 /* ArchiveViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12000000000000000000001A /* ArchiveViews.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		130000000000000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 100000000000000000000003 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 100000000000000000000001;
+			remoteInfo = FelicityDashboard;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		120000000000000000000001 /* FelicityDashboardApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FelicityDashboardApp.swift; sourceTree = "<group>"; };
+		120000000000000000000002 /* AppRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRootView.swift; sourceTree = "<group>"; };
+		120000000000000000000003 /* CoreContracts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreContracts.swift; sourceTree = "<group>"; };
+		120000000000000000000004 /* DashboardModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardModels.swift; sourceTree = "<group>"; };
+		120000000000000000000005 /* DashboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardViewModel.swift; sourceTree = "<group>"; };
+		120000000000000000000006 /* FelicityAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FelicityAPI.swift; sourceTree = "<group>"; };
+		120000000000000000000007 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		120000000000000000000008 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		120000000000000000000009 /* DashboardModelsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardModelsTests.swift; sourceTree = "<group>"; };
+		12000000000000000000000A /* Felicity Dashboard.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Felicity Dashboard.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		12000000000000000000000B /* FelicityDashboardTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FelicityDashboardTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		12000000000000000000000C /* KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainStore.swift; sourceTree = "<group>"; };
+		12000000000000000000000D /* CameraModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraModels.swift; sourceTree = "<group>"; };
+		12000000000000000000000E /* OnvifCameraDiscovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnvifCameraDiscovery.swift; sourceTree = "<group>"; };
+		12000000000000000000000F /* RTPDepacketizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RTPDepacketizer.swift; sourceTree = "<group>"; };
+		120000000000000000000010 /* LiveRTSPSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveRTSPSession.swift; sourceTree = "<group>"; };
+		120000000000000000000011 /* SampleBufferRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleBufferRenderer.swift; sourceTree = "<group>"; };
+		120000000000000000000012 /* CameraViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraViews.swift; sourceTree = "<group>"; };
+		120000000000000000000013 /* ThreeEyeModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreeEyeModels.swift; sourceTree = "<group>"; };
+		120000000000000000000014 /* EventsViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventsViews.swift; sourceTree = "<group>"; };
+		120000000000000000000015 /* ArchiveModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveModels.swift; sourceTree = "<group>"; };
+		120000000000000000000016 /* ArchiveRTSPTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveRTSPTransport.swift; sourceTree = "<group>"; };
+		120000000000000000000017 /* ProfileGArchiveService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileGArchiveService.swift; sourceTree = "<group>"; };
+		120000000000000000000018 /* OnvifActivityClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnvifActivityClient.swift; sourceTree = "<group>"; };
+		120000000000000000000019 /* ArchiveRTSPSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveRTSPSession.swift; sourceTree = "<group>"; };
+		12000000000000000000001A /* ArchiveViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveViews.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		100000000000000000000009 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		10000000000000000000000C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		100000000000000000000004 = {
+			isa = PBXGroup;
+			children = (
+				100000000000000000000006 /* FelicityDashboard */,
+				100000000000000000000007 /* FelicityDashboardTests */,
+				100000000000000000000005 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		100000000000000000000005 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				12000000000000000000000A /* Felicity Dashboard.app */,
+				12000000000000000000000B /* FelicityDashboardTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		100000000000000000000006 /* FelicityDashboard */ = {
+			isa = PBXGroup;
+			children = (
+				120000000000000000000001 /* FelicityDashboardApp.swift */,
+				120000000000000000000002 /* AppRootView.swift */,
+				120000000000000000000003 /* CoreContracts.swift */,
+				120000000000000000000004 /* DashboardModels.swift */,
+				120000000000000000000005 /* DashboardViewModel.swift */,
+				120000000000000000000006 /* FelicityAPI.swift */,
+				12000000000000000000000C /* KeychainStore.swift */,
+				12000000000000000000000D /* CameraModels.swift */,
+				12000000000000000000000E /* OnvifCameraDiscovery.swift */,
+				12000000000000000000000F /* RTPDepacketizer.swift */,
+				120000000000000000000010 /* LiveRTSPSession.swift */,
+				120000000000000000000011 /* SampleBufferRenderer.swift */,
+				120000000000000000000012 /* CameraViews.swift */,
+				120000000000000000000013 /* ThreeEyeModels.swift */,
+				120000000000000000000014 /* EventsViews.swift */,
+				120000000000000000000015 /* ArchiveModels.swift */,
+				120000000000000000000016 /* ArchiveRTSPTransport.swift */,
+				120000000000000000000017 /* ProfileGArchiveService.swift */,
+				120000000000000000000018 /* OnvifActivityClient.swift */,
+				120000000000000000000019 /* ArchiveRTSPSession.swift */,
+				12000000000000000000001A /* ArchiveViews.swift */,
+				120000000000000000000007 /* Assets.xcassets */,
+				120000000000000000000008 /* Info.plist */,
+			);
+			path = FelicityDashboard;
+			sourceTree = "<group>";
+		};
+		100000000000000000000007 /* FelicityDashboardTests */ = {
+			isa = PBXGroup;
+			children = (
+				120000000000000000000009 /* DashboardModelsTests.swift */,
+			);
+			path = FelicityDashboardTests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		100000000000000000000001 /* FelicityDashboard */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 140000000000000000000001 /* Build configuration list for PBXNativeTarget "FelicityDashboard" */;
+			buildPhases = (
+				100000000000000000000008 /* Sources */,
+				100000000000000000000009 /* Frameworks */,
+				10000000000000000000000A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = FelicityDashboard;
+			productName = "Felicity Dashboard";
+			productReference = 12000000000000000000000A /* Felicity Dashboard.app */;
+			productType = "com.apple.product-type.application";
+		};
+		100000000000000000000002 /* FelicityDashboardTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 140000000000000000000002 /* Build configuration list for PBXNativeTarget "FelicityDashboardTests" */;
+			buildPhases = (
+				10000000000000000000000B /* Sources */,
+				10000000000000000000000C /* Frameworks */,
+				10000000000000000000000D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				130000000000000000000002 /* PBXTargetDependency */,
+			);
+			name = FelicityDashboardTests;
+			productName = FelicityDashboardTests;
+			productReference = 12000000000000000000000B /* FelicityDashboardTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		100000000000000000000003 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2660;
+				LastUpgradeCheck = 2660;
+				TargetAttributes = {
+					100000000000000000000001 = {
+						CreatedOnToolsVersion = 26.6;
+					};
+					100000000000000000000002 = {
+						CreatedOnToolsVersion = 26.6;
+						TestTargetID = 100000000000000000000001;
+					};
+				};
+			};
+			buildConfigurationList = 140000000000000000000003 /* Build configuration list for PBXProject "FelicityDashboard" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 100000000000000000000004;
+			productRefGroup = 100000000000000000000005 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				100000000000000000000001 /* FelicityDashboard */,
+				100000000000000000000002 /* FelicityDashboardTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		10000000000000000000000A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				110000000000000000000007 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		10000000000000000000000D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		100000000000000000000008 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				110000000000000000000001 /* FelicityDashboardApp.swift in Sources */,
+				110000000000000000000002 /* AppRootView.swift in Sources */,
+				110000000000000000000003 /* CoreContracts.swift in Sources */,
+				110000000000000000000004 /* DashboardModels.swift in Sources */,
+				110000000000000000000005 /* DashboardViewModel.swift in Sources */,
+				110000000000000000000006 /* FelicityAPI.swift in Sources */,
+				110000000000000000000009 /* KeychainStore.swift in Sources */,
+				11000000000000000000000A /* CameraModels.swift in Sources */,
+				11000000000000000000000B /* OnvifCameraDiscovery.swift in Sources */,
+				11000000000000000000000C /* RTPDepacketizer.swift in Sources */,
+				11000000000000000000000D /* LiveRTSPSession.swift in Sources */,
+				11000000000000000000000E /* SampleBufferRenderer.swift in Sources */,
+				11000000000000000000000F /* CameraViews.swift in Sources */,
+				110000000000000000000010 /* ThreeEyeModels.swift in Sources */,
+				110000000000000000000011 /* EventsViews.swift in Sources */,
+				110000000000000000000012 /* ArchiveModels.swift in Sources */,
+				110000000000000000000013 /* ArchiveRTSPTransport.swift in Sources */,
+				110000000000000000000014 /* ProfileGArchiveService.swift in Sources */,
+				110000000000000000000015 /* OnvifActivityClient.swift in Sources */,
+				110000000000000000000016 /* ArchiveRTSPSession.swift in Sources */,
+				110000000000000000000017 /* ArchiveViews.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		10000000000000000000000B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				110000000000000000000008 /* DashboardModelsTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		130000000000000000000002 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 100000000000000000000001 /* FelicityDashboard */;
+			targetProxy = 130000000000000000000001 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		150000000000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 11;
+				DEVELOPMENT_TEAM = NH364DL3M9;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = FelicityDashboard/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.4.7;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.homedashboard.ios;
+				PRODUCT_MODULE_NAME = FelicityDashboard;
+				PRODUCT_NAME = "Felicity Dashboard";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		150000000000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 11;
+				DEVELOPMENT_TEAM = NH364DL3M9;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = FelicityDashboard/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.4.7;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.homedashboard.ios;
+				PRODUCT_MODULE_NAME = FelicityDashboard;
+				PRODUCT_NAME = "Felicity Dashboard";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		150000000000000000000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.okiyashko1337.felicitydashboard.ios.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Felicity Dashboard.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Felicity Dashboard";
+			};
+			name = Debug;
+		};
+		150000000000000000000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.okiyashko1337.felicitydashboard.ios.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Felicity Dashboard.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Felicity Dashboard";
+			};
+			name = Release;
+		};
+		150000000000000000000005 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		150000000000000000000006 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		140000000000000000000001 /* Build configuration list for PBXNativeTarget "FelicityDashboard" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				150000000000000000000001 /* Debug */,
+				150000000000000000000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		140000000000000000000002 /* Build configuration list for PBXNativeTarget "FelicityDashboardTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				150000000000000000000003 /* Debug */,
+				150000000000000000000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		140000000000000000000003 /* Build configuration list for PBXProject "FelicityDashboard" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				150000000000000000000005 /* Debug */,
+				150000000000000000000006 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 100000000000000000000003 /* Project object */;
+}

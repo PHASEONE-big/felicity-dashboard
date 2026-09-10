@@ -3,6 +3,7 @@
 [![License: Non-commercial](https://img.shields.io/badge/license-non--commercial-50c8b4)](LICENSE)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-app-41bdf5)](felicity_dashboard_addon/DOCS.md)
 [![Android](https://img.shields.io/badge/Android-kiosk-7ee787)](android/README.md)
+[![iOS](https://img.shields.io/badge/iOS-native-5bded1)](ios/README.md)
 
 **A private, local-first energy dashboard for Felicity IVGM hybrid inverters.**
 
@@ -12,12 +13,13 @@ native Android kiosk. No cloud account is required.
 
 ![Felicity Dashboard web interface](docs/images/home-assistant-dashboard.jpg)
 
-## One backend, three displays
+## One backend, four displays
 
 | Display | Best for | Highlights |
 |---|---|---|
 | **Home Assistant app** | Browser and HA sidebar | Live overview, analytics, history, diagnostics |
-| **Android kiosk** | Echo Show 5 and landscape tablets | Weather, charts, Ajax doorbell video/audio, red night mode |
+| **Android kiosk** | Echo Show 5 and landscape tablets | Weather, charts, ONVIF doorbell video/audio, red night mode |
+| **iOS (preview)** | iPad and iPhone | Native adaptive energy screen; camera and archive parity in progress |
 | **ESP32 + Nextion** | Small dedicated panel | Fast local UI, Wi-Fi onboarding, dual OTA updates |
 
 <p align="center">
@@ -26,7 +28,7 @@ native Android kiosk. No cloud account is required.
 </p>
 
 The Android client is a full alternative to the original Nextion display—not
-a web page in a wrapper. Ajax incoming G.722 audio is supported; outgoing
+a web page in a wrapper. ONVIF incoming G.722 audio is supported; outgoing
 talk-back remains experimental.
 
 ## How it fits together
@@ -37,6 +39,7 @@ Felicity Wi-Fi module ──TCP/53970──▶ collector ──▶ SQLite
                          FastAPI ◀──────────────────┘
                            ├── Home Assistant / Web
                            ├── Android kiosk
+                           ├── native iOS client
                            └── ESP32 + Nextion
 ```
 
@@ -78,6 +81,7 @@ Home Assistant backups.
 
 - [Home Assistant app guide](felicity_dashboard_addon/DOCS.md)
 - [Android kiosk guide](android/README.md)
+- [iOS client guide](ios/README.md)
 - [ESP32 + Nextion guide](nextion/README.md)
 - [API and backend notes](felicity_dashboard_addon/README.md)
 
@@ -85,7 +89,7 @@ Home Assistant backups.
 
 The inverter protocol and compact display API have no application-level
 authentication. Keep them on a trusted LAN; use a VPN or authenticated HTTPS
-gateway for remote access. Ajax credentials remain in Android private storage.
+gateway for remote access. ONVIF credentials remain in Android private storage.
 
 Copyright 2026 okiyashko1337. Distributed under the
 [non-commercial license](LICENSE); commercial use requires separate written

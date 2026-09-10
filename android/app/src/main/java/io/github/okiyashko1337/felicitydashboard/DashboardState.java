@@ -12,7 +12,7 @@ final class DashboardState {
     double todayPv, todayLoad, coverage, gridImport, gridExport;
     String version = "—";
     String serverUrl = "—";
-    String ajaxStatus = "Not configured";
+    String onvifStatus = "Not configured";
     String networkRecoveryStatus = "OBSERVING";
     String networkRecoveryDetail = "No network events";
     final String[] networkDiagnostics = new String[8];
@@ -31,6 +31,7 @@ final class DashboardState {
     final double[] forecastMax = new double[7];
     final List<float[]> chart = new ArrayList<>();
     int chartChannels;
+    final ThreeEyeState threeEye = new ThreeEyeState();
 
     boolean live(long now) { return serverOnline && now - lastCurrentMs < 12_000; }
     boolean hasData() { return lastCurrentMs > 0; }

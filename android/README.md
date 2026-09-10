@@ -24,9 +24,9 @@ token, or third-party Android library dependency.
   kiosk state, device uptime, and client/server versions;
 - automatic red-only night rendering at 1 lux or below, with 18% display
   brightness and a 4-lux return threshold to prevent flicker;
-- Ajax ONVIF ring detection, live H.264 video, caller snapshot, 60-second
+- ONVIF ring detection, live H.264 video, caller snapshot, 60-second
   automatic return, pinch/pan/double-tap zoom, and stream statistics;
-- verified incoming Ajax G.722 audio with privacy-safe speaker control.
+- verified incoming ONVIF G.722 audio with privacy-safe speaker control.
 
 Tap the yin-yang mark on the home page to open Settings. It is deliberately
 inactive on detail pages. Tap the weather item in the header for the forecast.
@@ -90,7 +90,7 @@ Nextion displays to refresh together without repeating the daily aggregation.
 ## Network diagnostics
 
 The kiosk passively checks the local gateway, Felicity backend, and configured
-Ajax host every 30 seconds. It records only state transitions: the start of a
+ONVIF recorder every 30 seconds. It records only state transitions: the start of a
 full LAN outage, confirmation after ten minutes, and recovery. It never toggles
 Wi-Fi or reboots the device. The latest event is visible in Settings. Tap the
 **Network** card to read the last eight events directly on the display. The
@@ -101,15 +101,15 @@ adb -s DISPLAY_IP:5555 shell run-as io.github.okiyashko1337.felicitydashboard \
   cat files/network-diagnostics.log
 ```
 
-## Ajax doorbell integration
+## ONVIF doorbell integration
 
-Open Settings and configure the Ajax ONVIF host and credentials. Credentials
+Open Settings and configure the ONVIF Profile G recorder and credentials. Credentials
 remain in Android private preferences. The home activity listens for
 `RingDetector` events; a ring opens the camera, captures one caller snapshot,
 and returns to the energy dashboard after 60 seconds. The camera tile also
 opens the same view manually.
 
-Video uses direct RTSP/TCP through LibVLC. The Ajax receive-only audio track is
+Video uses direct RTSP/TCP through LibVLC. The ONVIF receive-only audio track is
 G.722 on `trackID=2`. Android LibVLC 3.5.1 exposes that track as an unidentified
 codec, so the app receives the ordered RTP stream separately, decodes the
 original G.722 payload locally, and writes 16 kHz mono PCM to Android
@@ -118,8 +118,8 @@ original G.722 payload locally, and writes 16 kHz mono PCM to Android
 The speaker and microphone controls remain visible in the camera header.
 Speaker mute also disables the microphone; enabling the microphone enables
 listening. Outgoing ONVIF backchannel code is experimental: no sound has yet
-been heard at the Ajax doorbell, so two-way audio must not be considered
-complete. See [AJAX_AUDIO_PLAN.md](AJAX_AUDIO_PLAN.md) for protocol details and
+been heard at the ONVIF doorbell, so two-way audio must not be considered
+complete. See [ONVIF_AUDIO_PLAN.md](ONVIF_AUDIO_PLAN.md) for protocol details and
 remaining acceptance work.
 
 Avoid verbose RTSP logs in production because authenticated media URLs can
