@@ -45,7 +45,23 @@ final class OnvifActivityClient {
         Collections.sort(found,(left,right)->Long.compare(left.timeMs,right.timeMs));return deduplicate(found);
     }
 
-    private static List<OnvifMetadataDecoder.Activity> deduplicate(List<OnvifMetadataDecoder.Activity> source){ArrayList<OnvifMetadataDecoder.Activity> result=new ArrayList<>();for(OnvifMetadataDecoder.Activity candidate:source){OnvifMetadataDecoder.Activity previous=result.isEmpty()?null:result.get(result.size()-1);if(previous!=null&&previous.typeMask==candidate.typeMask&&Math.abs(candidate.timeMs-previous.timeMs)<=250)continue;result.add(candidate);}return result;}
+    static List<OnvifMetadataDecoder.Activity> deduplicate(List<OnvifMetadataDecoder.Activity> source) {
+        ArrayList<OnvifMetadataDecoder.Activity> result = new ArrayList<>();
+        for (OnvifMetadataDecoder.Activity candidate : source) {
+            OnvifMetadataDecoder.Activity previous = result.isEmpty() ? null : result.get(result.size() - 1);
+            // The recorder can close an AI activity only 100 ms after opening it.
+            // A nearby timestamp/type is not a duplicate: dropping that boundary
+            // removes the recording from the timeline and playback coverage.
+            if (previous != null && previous.timeMs == candidate.timeMs
+                    && previous.utcOffsetUs == candidate.utcOffsetUs
+                    && previous.typeMask == candidate.typeMask
+                    && previous.sourceCode == candidate.sourceCode
+                    && previous.asserted == candidate.asserted
+                    && previous.motion == candidate.motion && previous.ring == candidate.ring) continue;
+            result.add(candidate);
+        }
+        return result;
+    }
     private Response request(String method,String uri,int cseq,String extra,String auth)throws Exception{StringBuilder value=new StringBuilder(method+" "+uri+" RTSP/1.0\r\nCSeq: "+cseq+"\r\nUser-Agent: Felicity-Activity/1\r\n");if(auth!=null)value.append("Authorization: ").append(auth).append("\r\n");value.append(extra).append("\r\n");output.write(value.toString().getBytes("ISO-8859-1"));output.flush();ByteArrayOutputStream head=new ByteArrayOutputStream();int state=0,next;while((next=input.read())>=0){head.write(next);state=(state==0&&next=='\r')?1:(state==1&&next=='\n')?2:(state==2&&next=='\r')?3:(state==3&&next=='\n')?4:0;if(state==4)break;}String header=head.toString("ISO-8859-1"),length=match(header,"Content-Length:\\s*(\\d+)");byte[] body=length==null?new byte[0]:readFully(Integer.parseInt(length));String status=match(header,"RTSP/1.0\\s+(\\d+)");return new Response(status==null?0:Integer.parseInt(status),header,new String(body,"ISO-8859-1"),match(header,"WWW-Authenticate:\\s*Digest\\s+([^\\r\\n]+)"));}
     private String metadataTrack(String s)throws Exception{boolean metadata=false;for(String raw:s.replace("\r","").split("\n")){String line=raw.trim();if(line.startsWith("m="))metadata=line.startsWith("m=application");else if(metadata&&line.startsWith("a=control:")){String control=line.substring(10).trim();if(control.startsWith("rtsp://"))return control;if(control.startsWith("/"))return "rtsp://"+host+(port==554?"":":"+port)+control;return base+(base.endsWith("/")?"":"/")+control;}}throw new Exception("Metadata control missing from SDP");}
     private static int payloadOffset(byte[] packet){if(packet.length<12||(packet[0]&0xc0)!=0x80)return -1;int offset=12+4*(packet[0]&15);if((packet[0]&0x10)!=0){if(offset+4>packet.length)return -1;offset+=4+((((packet[offset+2]&255)<<8)|(packet[offset+3]&255))*4);}return offset;}

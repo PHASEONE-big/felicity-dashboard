@@ -84,6 +84,24 @@ chosen recording until its complete AI interval ends. A replay error must show
 an unavailable message without opening another event. iOS/ESP32/Nextion source
 versions and their original snapshot tags are unchanged.
 
+## Android 0.7.25 (build 32) — physical follow-up
+
+Both 0.7.24 and then 0.7.25 were installed on dragon over the existing app.
+Physical testing exposed an additional root cause: `OnvifActivityClient`
+discarded same-type boundaries within 250 ms, including each boar activity's
+closing boundary only 100 ms after its opening. Thus both events disappeared
+from the timeline and playback coverage. A read-only recorder query confirmed
+the missing closing records were present in the original metadata.
+
+The new version removes only identical boundary records. Three regressions
+failed with the previous deduplication rule and pass with the fix; all 65 tests
+and the debug APK build pass. The two intervals reappear on the device, NEXT
+and PREV select them, rapid changes settle on the latest requested recording,
+and pause/resume and the first-to-second AI transition were physically checked.
+See `ANDROID_0.7.25.md` for precise bounds, installation evidence and the APK
+hash. iOS and the ESP32/Nextion bundle are unchanged. Earlier pending-device
+notes above describe the state before this physical follow-up.
+
 ## Repository reconciliation
 
 PR #48 was merged on 2026-09-10 as
