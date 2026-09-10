@@ -59,6 +59,9 @@ The APK is written to `app/build/outputs/apk/debug/app-debug.apk`.
 
 ## Install and kiosk mode
 
+For the existing dragon development tablet, first follow
+[ADB connection recovery](DEVICE_ACCESS.md). Connection parameters stay local.
+
 With network ADB enabled on the Android display:
 
 ```sh

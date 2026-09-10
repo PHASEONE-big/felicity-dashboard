@@ -70,6 +70,13 @@ callbacks arriving after seeking back to the same timestamp. All 62 Android
 unit tests pass and the debug APK builds. No ADB device was connected, so
 physical dragon verification of the two boar events is still pending.
 
+Connection follow-up: dragon was subsequently found through ADB mDNS and
+connected successfully with the existing Mac key. The earlier empty transport
+list was insufficient to conclude that the tablet was unreachable. Use
+`android/DEVICE_ACCESS.md` and the reconnect helper; local serial/address data
+is excluded from Git. The tablet reported TM15 / Android 10 and installed
+Felicity 0.7.23 (30). Connection recovery did not install the 0.7.24 APK.
+
 For device verification: open each original pet card on db4, wait for metadata,
 play through the full interval, pause/resume, then switch quickly between nearby
 timeline positions. Confirm the playhead and camera timestamp remain on the
