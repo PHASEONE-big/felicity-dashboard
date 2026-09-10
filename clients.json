@@ -8,10 +8,10 @@
       "snapshot_tag": "snapshots/ios/0.4.13-build17"
     },
     "android": {
-      "version": "0.7.24",
-      "build": 31,
+      "version": "0.7.25",
+      "build": 32,
       "source": "android/app/build.gradle",
-      "snapshot_tag": "snapshots/android/0.7.24-build31"
+      "snapshot_tag": "snapshots/android/0.7.25-build32"
     },
     "esp32-nextion": {
       "version": "0.14.1",

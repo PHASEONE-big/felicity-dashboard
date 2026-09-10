@@ -19,8 +19,9 @@ and automatic advancement after a complete AI interval remain supported.
 Validation: all 62 Android unit tests passed (11 new regressions), debug APK
 built, manifest reports 0.7.24/31, and its signing certificate matches the
 original 0.7.23 APK. Client-version and hardware artifact checks passed.
-No ADB device was connected; the user's original boar recordings must still be
-verified on dragon. iOS and ESP32/Nextion source versions were not changed.
+At build time no ADB device was connected. Subsequent physical testing found a
+remaining metadata deduplication bug; see [Android 0.7.25](ANDROID_0.7.25.md).
+iOS and ESP32/Nextion source versions were not changed.
 
 Local APK: `android/app/build/outputs/apk/debug/felicity-android-0.7.24.apk`
 

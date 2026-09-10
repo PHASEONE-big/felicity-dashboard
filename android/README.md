@@ -1,8 +1,8 @@
 # Felicity Android kiosk
 
-Current version: **0.7.24 (build 31)**. This update keeps playback within the
-continuous AI interval, ignores delayed responses/frames from previous seeks,
-and preserves the selected event when playback fails. See
+Current version: **0.7.25 (build 32)**. This update preserves short ONVIF activity
+boundaries so both boar recordings remain indexed and selectable. It includes
+0.7.24's playback coverage and stale seek fixes. See
 [client versions](../docs/CLIENT_VERSIONS.md) for the independent client baselines.
 
 Native Android client for the Felicity Dashboard LAN API. It is an alternative
