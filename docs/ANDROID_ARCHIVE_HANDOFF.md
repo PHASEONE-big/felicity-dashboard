@@ -3,7 +3,7 @@
 ## Canonical workspace for this task
 
 - Working directory: `/Users/ok/felicity-dashboard`
-- Git remote: `https://github.com/okiyashko1337/felicity-dashboard.git`
+- Git remote: `https://github.com/PHASEONE-big/felicity-dashboard.git`
 - Recovery branch: `codex/client-baselines`; integration branch: `main`
 - Baseline commit: `b378c92c30109b04b4f039016db0c2ab951cc29c`
 - Baseline Android version: `0.7.23`, versionCode `30`
@@ -35,7 +35,7 @@ the user cannot watch the intended recordings reliably. iOS works correctly.
 The reference screenshot shows camera `db4 (hw2)`, 2026-09-10 around 02:19:19.
 The user requested an Android fix and a version increase for device testing.
 
-## Investigation so far — not yet a verified diagnosis
+## Diagnosis in Android 0.7.23
 
 - `ArchiveActivity` has a direct `OnvifArchiveSession` / `ArchiveMediaDecoder`
   playback path, automatic advancement through AI intervals, and a fallback
@@ -49,11 +49,33 @@ The user requested an Android fix and a version increase for device testing.
   it; asynchronous callbacks and reused sessions need careful investigation.
 - iOS `ArchiveModels.swift` computes playback ends using merged coverage.
 
-No Android archive fix has been applied and no version has been increased.
-A verification APK was built in a temporary PR-merge workspace; it is still
-0.7.23, not an archive fix, and was not installed. Continue diagnosis, add meaningful
-regression coverage, fix the confirmed issue, then build a version newer
-than 0.7.23 with a versionCode greater than 30. Preserve the imported iOS work.
+## Android 0.7.24 (build 31)
+
+The fix merges overlapping/touching AI coverage before choosing the playback
+end and following recording. It resolves delayed metadata against the selected
+playback target, never against a later decoded frame, and does not invent a
+15-second clip while metadata is unavailable. Opening an event stays strict
+through Play/pause, so a failed replay cannot fall back to a neighboring card.
+
+Delayed event-list/image loads no longer restart or cover a direct RTSP
+session. Every seek has a generation propagated from RTSP to the decoder and
+UI; late PLAY responses and old access units/render callbacks are rejected.
+Decoder presentation IDs remain unique when seeking repeatedly to the same
+archive time. Session reuse remains enabled. At the final AI interval the
+transport is actually paused.
+
+Eleven new regression tests cover overlapping pet/person detections, chains
+of overlap, separate recordings, missing metadata, stale PLAY replies, and
+callbacks arriving after seeking back to the same timestamp. All 62 Android
+unit tests pass and the debug APK builds. No ADB device was connected, so
+physical dragon verification of the two boar events is still pending.
+
+For device verification: open each original pet card on db4, wait for metadata,
+play through the full interval, pause/resume, then switch quickly between nearby
+timeline positions. Confirm the playhead and camera timestamp remain on the
+chosen recording until its complete AI interval ends. A replay error must show
+an unavailable message without opening another event. iOS/ESP32/Nextion source
+versions and their original snapshot tags are unchanged.
 
 ## Repository reconciliation
 

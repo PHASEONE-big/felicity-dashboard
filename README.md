@@ -70,7 +70,7 @@ Open `http://127.0.0.1:8000`. To explore safely without hardware, run
 Add this repository in **Settings → Apps → App store → ⋮ → Repositories**:
 
 ```text
-https://github.com/okiyashko1337/felicity-dashboard
+https://github.com/PHASEONE-big/felicity-dashboard
 ```
 
 Install **Felicity Energy Dashboard**, set `inverter_host`, and start it. The
@@ -79,7 +79,7 @@ Home Assistant backups.
 
 ## Choose your client
 
-Current recovered baselines: **iOS 0.4.13 (17)**, **Android 0.7.23 (30)**,
+Current recovered baselines: **iOS 0.4.13 (17)**, **Android 0.7.24 (31)**,
 **ESP32 + Nextion 0.14.1**. These clients have independent version histories.
 See [client versions and repository layout](docs/CLIENT_VERSIONS.md) for exact
 version sources, baseline tags, artifact checks, and the active workspace.

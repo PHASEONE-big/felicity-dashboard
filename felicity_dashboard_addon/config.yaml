@@ -2,7 +2,7 @@ name: Felicity Energy Dashboard
 version: "0.14.1"
 slug: felicity_energy_dashboard
 description: Local Felicity IVGM monitoring with history and Raspberry Pi metrics
-url: https://github.com/okiyashko1337/felicity-dashboard
+url: https://github.com/PHASEONE-big/felicity-dashboard
 arch:
   - aarch64
   - amd64

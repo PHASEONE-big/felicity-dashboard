@@ -7,15 +7,17 @@ APK, iOS app, or display firmware.
 | Client | Current source version | Build | Source | Git snapshot |
 |---|---|---|---|---|
 | iOS / iPadOS | 0.4.13 | 17 | `ios/` | `snapshots/ios/0.4.13-build17` |
-| Android / dragon | 0.7.23 | 30 | `android/app/` | `snapshots/android/0.7.23-build30` |
+| Android / dragon | 0.7.24 | 31 | `android/app/` | `snapshots/android/0.7.24-build31` |
 | ESP32 + Nextion | 0.14.1 | — | `esp32/`, `nextion/`, `firmware/` | `snapshots/esp32-nextion/0.14.1` |
 
-These tags preserve recovered development baselines, not newly tested releases.
-iOS includes the previously uncommitted 0.4.13 changes. Android's event/archive
-jump remains open. The ESP32 binary reports 0.14.1; Nextion has no independently
+These tags preserve development baselines. iOS includes the recovered 0.4.13
+changes. Android 0.7.24 fixes premature event/archive advancement and stale seek
+callbacks; physical dragon verification is pending. The original Android
+baseline remains at `snapshots/android/0.7.23-build30`.
+The ESP32 binary reports 0.14.1; Nextion has no independently
 verified semantic version, so its exact HMI/TFT files are identified by hashes
-in the 0.14.1 hardware bundle. No new device release was issued during recovery.
-Verification passed: 51 Android unit tests and a debug APK build; 25 iOS tests
+in the 0.14.1 hardware bundle. No new iOS or hardware release was issued.
+Verification passed: 62 Android unit tests and a debug APK build; 25 iOS tests
 on an iPad simulator; source-version and firmware-hash checks. These checks do
 not replace physical device testing of archive playback.
 
@@ -45,7 +47,7 @@ the larger version string represents newer source code.
 
 ## Repository and workspace
 
-- GitHub: `https://github.com/okiyashko1337/felicity-dashboard`
+- GitHub: `https://github.com/PHASEONE-big/felicity-dashboard`
 - Active workspace for the recovered task: `/Users/ok/felicity-dashboard`
 - Recovery branch: `codex/client-baselines`
 - PR #48 merge: `bf10aa36fca366bc158645aae28eb32dab18f181`, now in `main`
