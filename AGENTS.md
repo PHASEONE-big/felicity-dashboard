@@ -18,6 +18,10 @@ Do not treat a local build output or a larger version number on another branch
 as proof that its source is newer. Run `python3 tools/check_client_versions.py`
 when changing client versions or firmware artifacts.
 
+For dragon device access, read `android/DEVICE_ACCESS.md` and run
+`python3 android/tools/connect_dragon.py`. An empty `adb devices` list alone
+does not prove network unavailability; check mDNS and reconnect first.
+
 The previous ChatGPT project copy was imported on 2026-09-10, including its
 uncommitted iOS changes and untracked Android files. Preserve those changes.
 Use this workspace for subsequent edits and builds for this task. The old
