@@ -47,7 +47,7 @@ the larger version string represents newer source code.
 
 ## Repository and workspace
 
-- GitHub: `https://github.com/okiyashko1337/felicity-dashboard`
+- GitHub: `https://github.com/PHASEONE-big/felicity-dashboard`
 - Active workspace for the recovered task: `/Users/ok/felicity-dashboard`
 - Recovery branch: `codex/client-baselines`
 - PR #48 merge: `bf10aa36fca366bc158645aae28eb32dab18f181`, now in `main`

@@ -70,7 +70,7 @@ Open `http://127.0.0.1:8000`. To explore safely without hardware, run
 Add this repository in **Settings → Apps → App store → ⋮ → Repositories**:
 
 ```text
-https://github.com/okiyashko1337/felicity-dashboard
+https://github.com/PHASEONE-big/felicity-dashboard
 ```
 
 Install **Felicity Energy Dashboard**, set `inverter_host`, and start it. The

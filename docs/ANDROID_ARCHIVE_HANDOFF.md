@@ -3,7 +3,7 @@
 ## Canonical workspace for this task
 
 - Working directory: `/Users/ok/felicity-dashboard`
-- Git remote: `https://github.com/okiyashko1337/felicity-dashboard.git`
+- Git remote: `https://github.com/PHASEONE-big/felicity-dashboard.git`
 - Recovery branch: `codex/client-baselines`; integration branch: `main`
 - Baseline commit: `b378c92c30109b04b4f039016db0c2ab951cc29c`
 - Baseline Android version: `0.7.23`, versionCode `30`

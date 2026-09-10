@@ -26,4 +26,4 @@ LABEL \
     io.hass.type="app" \
     io.hass.arch="${BUILD_ARCH}" \
     org.opencontainers.image.title="Home Assistant App: Felicity Energy Dashboard" \
-    org.opencontainers.image.source="https://github.com/okiyashko1337/felicity-dashboard"
+    org.opencontainers.image.source="https://github.com/PHASEONE-big/felicity-dashboard"
