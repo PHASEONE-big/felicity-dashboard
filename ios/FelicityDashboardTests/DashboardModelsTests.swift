@@ -2,6 +2,143 @@ import XCTest
 @testable import FelicityDashboard
 
 final class DashboardModelsTests: XCTestCase {
+    @MainActor
+    func testCameraPreviewPersistsAcrossStoreRecreation() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: "CameraPreviewStoreTests-\(UUID().uuidString)", directoryHint: .isDirectory)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let camera = CameraDescriptor(
+            id: "stable-source-token",
+            name: "Porch",
+            host: "recorder",
+            sourceToken: "stable-source-token",
+            mainProfile: "main",
+            subProfile: "sub",
+            mainURI: "rtsp://recorder/main",
+            subURI: "rtsp://recorder/sub",
+            mainRecording: "main-r",
+            subRecording: "sub-r",
+            mainWidth: 1_920,
+            mainHeight: 1_080,
+            subWidth: 640,
+            subHeight: 360,
+            rotationDegrees: 0,
+            isDoorbell: false,
+            isCorridor: false
+        )
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1
+        format.opaque = true
+        let image = UIGraphicsImageRenderer(size: CGSize(width: 1_400, height: 900), format: format).image { context in
+            UIColor.systemTeal.setFill()
+            context.fill(CGRect(x: 0, y: 0, width: 1_400, height: 900))
+        }
+        let jpeg = try XCTUnwrap(image.jpegData(compressionQuality: 0.8))
+        await CameraPreviewStore(root: root).save(jpeg, for: camera)
+
+        let restored = await CameraPreviewStore(root: root).data(for: camera)
+        let restoredImage = restored.flatMap(UIImage.init(data:))
+        XCTAssertNotNil(restoredImage)
+        XCTAssertLessThanOrEqual(max(restoredImage?.size.width ?? .infinity, restoredImage?.size.height ?? .infinity), 720)
+    }
+
+    @MainActor
+    func testTimelinePlaybackCursorDoesNotRebuildEventStrip() {
+        let view = ArchiveTimelineSurface(frame: CGRect(x: 0, y: 0, width: 1_024, height: 112))
+        let start = Date(timeIntervalSince1970: 1_788_220_800)
+        let intervals = (0..<500).map { index in
+            let eventStart = start.addingTimeInterval(Double(index) * 120)
+            return ArchiveInterval(kind: .person, start: eventStart, end: eventStart.addingTimeInterval(18))
+        }
+        view.update(
+            visibleStart: start,
+            visibleSpan: 24 * 3_600,
+            intervals: intervals,
+            revision: 1,
+            currentTime: start,
+            isLoading: false
+        )
+        let initialRenderPasses = view.renderPassCount
+
+        for frame in 1...600 {
+            view.update(
+                visibleStart: start,
+                visibleSpan: 24 * 3_600,
+                intervals: intervals,
+                revision: 1,
+                currentTime: start.addingTimeInterval(Double(frame) / 10),
+                isLoading: false
+            )
+        }
+
+        XCTAssertEqual(view.renderPassCount, initialRenderPasses)
+    }
+
+    @MainActor
+    func testTimelineStripRendersWithoutOversizedRasterCache() {
+        let size = CGSize(width: 1_024, height: 112)
+        let view = ArchiveTimelineSurface(frame: CGRect(origin: .zero, size: size))
+        let start = Date(timeIntervalSince1970: 1_788_220_800)
+        // Match the real archive lifecycle: the surface is laid out before
+        // ONVIF metadata arrives, then receives the event intervals later.
+        view.update(
+            visibleStart: start,
+            visibleSpan: 24 * 3_600,
+            intervals: [],
+            revision: 0,
+            currentTime: start,
+            isLoading: true
+        )
+        view.layoutIfNeeded()
+        view.update(
+            visibleStart: start,
+            visibleSpan: 24 * 3_600,
+            intervals: [ArchiveInterval(kind: .person, start: start.addingTimeInterval(2 * 3_600), end: start.addingTimeInterval(2 * 3_600 + 300))],
+            revision: 1,
+            currentTime: start.addingTimeInterval(2 * 3_600),
+            isLoading: false
+        )
+        view.layoutIfNeeded()
+
+        XCTAssertFalse(view.isUsingRasterCache)
+        XCTAssertEqual(view.stripWidth, size.width * 3, accuracy: 0.5)
+
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1
+        format.opaque = true
+        let image = UIGraphicsImageRenderer(size: size, format: format).image { context in
+            view.layer.render(in: context.cgContext)
+        }
+        guard let cgImage = image.cgImage,
+              let providerData = cgImage.dataProvider?.data,
+              let bytes = CFDataGetBytePtr(providerData) else { return XCTFail("Timeline render has no pixels") }
+        var coloredPixels = 0
+        for y in 8..<42 {
+            for x in 0..<cgImage.width {
+                let offset = y * cgImage.bytesPerRow + x * max(1, cgImage.bitsPerPixel / 8)
+                if max(bytes[offset], bytes[offset + 1], bytes[offset + 2]) > 120 { coloredPixels += 1 }
+            }
+        }
+        XCTAssertGreaterThan(coloredPixels, 40)
+    }
+
+    @MainActor
+    func testArchiveMarkerKeepsNewestFrameWhileDiskWritesAreThrottled() throws {
+        let suite = "ArchiveMarkerStoreTests.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let store = ArchiveMarkerStore(defaults: defaults)
+        let first = Date(timeIntervalSince1970: 1_788_244_800)
+        let second = first.addingTimeInterval(0.2)
+        store.set(first, now: first)
+        store.set(second, now: second)
+        let inMemory = try XCTUnwrap(store.value(now: second))
+        XCTAssertEqual(inMemory.timeIntervalSince1970, second.timeIntervalSince1970, accuracy: 0.001)
+        store.flush()
+        XCTAssertEqual(defaults.double(forKey: "archive.marker.time"), second.timeIntervalSince1970, accuracy: 0.001)
+    }
+
     func testCurrentPayloadMatchesAndroidSemantics() throws {
         let data = Data(#"{"parsed":{"pv_power_w":{"total":2730,"pv1":530,"pv2":2200},"load_power_w":{"total":4230,"l1":1110,"l2":880,"l3":2240},"soc_percent":78,"battery_voltage_v":52.6,"battery_power_w":-1680,"grid_voltage_v":{"l1":230.7,"l2":230.8,"l3":230.9},"grid_power_w":{"total":0},"grid_frequency_hz":50}}"#.utf8)
         let value = try DashboardSnapshot.applyingCurrent(data)

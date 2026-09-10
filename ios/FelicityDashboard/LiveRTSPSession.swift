@@ -17,10 +17,10 @@ struct LiveStreamStatistics: Sendable {
 }
 
 actor LiveRTSPSession {
-    typealias FormatHandler = @Sendable (VideoStreamFormat) -> Void
-    typealias FrameHandler = @Sendable (VideoAccessUnit) -> Void
-    typealias StatisticsHandler = @Sendable (LiveStreamStatistics) -> Void
-    typealias StateHandler = @Sendable (MediaSessionState) -> Void
+    typealias FormatHandler = @MainActor @Sendable (VideoStreamFormat) -> Void
+    typealias FrameHandler = @MainActor @Sendable (VideoAccessUnit) -> Void
+    typealias StatisticsHandler = @MainActor @Sendable (LiveStreamStatistics) -> Void
+    typealias StateHandler = @MainActor @Sendable (MediaSessionState) -> Void
 
     private var task: Task<Void, Never>?
     private var transport: RTSPTCPTransport?
@@ -38,7 +38,7 @@ actor LiveRTSPSession {
         stop()
         task = Task {
             do {
-                onState(.connecting)
+                await onState(.connecting)
                 try await run(
                     uri: uri,
                     username: username,
@@ -50,9 +50,9 @@ actor LiveRTSPSession {
                     onState: onState
                 )
             } catch is CancellationError {
-                onState(.idle)
+                await onState(.idle)
             } catch {
-                onState(.failed(message: error.localizedDescription))
+                await onState(.failed(message: error.localizedDescription))
             }
         }
     }
@@ -121,8 +121,20 @@ actor LiveRTSPSession {
             contentBase: described.headers["content-base"] ?? uri,
             fallbackSize: fallbackSize
         )
-        onFormat(description.format)
-        let depacketizer = RTPDepacketizer(isHEVC: description.format.isHEVC, output: onFrame)
+        await onFormat(description.format)
+        var frameContinuation: AsyncStream<VideoAccessUnit>.Continuation?
+        let frameStream = AsyncStream<VideoAccessUnit> { frameContinuation = $0 }
+        let depacketizer = RTPDepacketizer(isHEVC: description.format.isHEVC) { frameContinuation?.yield($0) }
+        let frameDelivery = Task {
+            for await unit in frameStream {
+                guard !Task.isCancelled else { return }
+                await onFrame(unit)
+            }
+        }
+        defer {
+            frameContinuation?.finish()
+            frameDelivery.cancel()
+        }
 
         let setup = try await request(
             "SETUP",
@@ -135,7 +147,7 @@ actor LiveRTSPSession {
         guard !session.isEmpty else { throw RTSPError.response("Missing RTSP session") }
         let played = try await request("PLAY", uri, headers: ["Session: \(session)"], authenticated: true)
         guard played.code == 200 else { throw RTSPError.response("PLAY \(played.code)") }
-        onState(.playing(frameTime: .now))
+        await onState(.playing(frameTime: .now))
 
         var bytes = 0
         var frames = 0
@@ -159,7 +171,7 @@ actor LiveRTSPSession {
                 let newKbps = Double(bytes - lastBytes) * 8 / seconds / 1000
                 smoothedFPS = smoothedFPS.map { $0 * 0.9 + newFPS * 0.1 } ?? newFPS
                 smoothedKbps = smoothedKbps.map { $0 * 0.8 + newKbps * 0.2 } ?? newKbps
-                onStatistics(.init(kbps: smoothedKbps ?? 0, fps: smoothedFPS ?? 0))
+                await onStatistics(.init(kbps: smoothedKbps ?? 0, fps: smoothedFPS ?? 0))
                 lastBytes = bytes
                 lastFrames = frames
                 measuredAt = .now

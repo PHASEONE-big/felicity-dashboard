@@ -1,0 +1,14 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'io.github.okiyashko1337.dragonrescue'
+    compileSdk 32
+
+    defaultConfig {
+        applicationId 'io.github.okiyashko1337.dragonrescue'
+        minSdk 23
+        targetSdk 28
+        versionCode 1
+        versionName '1.0.0'
+    }
+}

@@ -123,8 +123,15 @@ final class ArchiveRTSPWire: @unchecked Sendable {
 actor ArchiveRTSPClient {
     typealias InterleavedHandler = @Sendable (Int, Data) async -> Void
 
+    private struct InterleavedPacket: Sendable {
+        let channel: Int
+        let data: Data
+    }
+
     private var wire: ArchiveRTSPWire?
     private var reader: Task<Void, Never>?
+    private var packetReader: Task<Void, Never>?
+    private var packetContinuation: AsyncStream<InterleavedPacket>.Continuation?
     private var sequence = 0
     private var pending: [Int: CheckedContinuation<ArchiveRTSPResponse, Error>] = [:]
     private var timeouts: [Int: Task<Void, Never>] = [:]
@@ -136,6 +143,15 @@ actor ArchiveRTSPClient {
         let stream = try await nextWire.start()
         wire = nextWire
         self.interleaved = interleaved
+        let packets = AsyncStream<InterleavedPacket> { continuation in
+            packetContinuation = continuation
+        }
+        packetReader = Task {
+            for await packet in packets {
+                guard !Task.isCancelled else { return }
+                await interleaved(packet.channel, packet.data)
+            }
+        }
         reader = Task { [weak self] in
             do {
                 for try await message in stream { await self?.accept(message) }
@@ -184,6 +200,10 @@ actor ArchiveRTSPClient {
     func close() {
         reader?.cancel()
         reader = nil
+        packetContinuation?.finish()
+        packetContinuation = nil
+        packetReader?.cancel()
+        packetReader = nil
         wire?.cancel()
         wire = nil
         interleaved = nil
@@ -196,7 +216,12 @@ actor ArchiveRTSPClient {
             timeouts.removeValue(forKey: response.cseq)?.cancel()
             pending.removeValue(forKey: response.cseq)?.resume(returning: response)
         case let .interleaved(channel, data):
-            await interleaved?(channel, data)
+            // Never wait for the video decoder on the RTSP control reader. In
+            // particular, the first decoded frame may issue PAUSE and wait for
+            // its response. Keeping packet delivery on a separate ordered
+            // stream lets that response be consumed immediately instead of
+            // deadlocking until the request timeout.
+            packetContinuation?.yield(.init(channel: channel, data: data))
         }
     }
 

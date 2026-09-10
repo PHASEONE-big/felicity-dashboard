@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Dragon Rescue</string>
+    <string name="accessibility_description">Adds persistent Back, Home, and Recent apps buttons to Dragon Touch devices whose vendor shell hides Android navigation.</string>
+</resources>

@@ -162,12 +162,40 @@ actor ThreeEyeImageStore {
     static let shared = ThreeEyeImageStore()
     private let api = ThreeEyeAPI()
     private var cache: [URL: Data] = [:]
+    private var order: [URL] = []
+    private var cachedBytes = 0
+    private var inFlight: [URL: Task<Data, Error>] = [:]
+    private let maximumEntries = 72
+    private let maximumBytes = 24 * 1_024 * 1_024
 
     func data(for url: URL, configuration: ThreeEyeConfiguration) async throws -> Data {
-        if let cached = cache[url] { return cached }
-        let data = try await api.imageData(url: url, configuration: configuration)
-        cache[url] = data
+        if let cached = cache[url] {
+            touch(url)
+            return cached
+        }
+        if let task = inFlight[url] { return try await task.value }
+        let task = Task { try await api.imageData(url: url, configuration: configuration) }
+        inFlight[url] = task
+        defer { inFlight[url] = nil }
+        let data = try await task.value
+        insert(data, for: url)
         return data
+    }
+
+    private func insert(_ data: Data, for url: URL) {
+        if let previous = cache.updateValue(data, forKey: url) { cachedBytes -= previous.count }
+        cachedBytes += data.count
+        touch(url)
+        while order.count > maximumEntries || cachedBytes > maximumBytes {
+            guard let oldest = order.first else { break }
+            order.removeFirst()
+            if let removed = cache.removeValue(forKey: oldest) { cachedBytes -= removed.count }
+        }
+    }
+
+    private func touch(_ url: URL) {
+        if let index = order.firstIndex(of: url) { order.remove(at: index) }
+        order.append(url)
     }
 }
 

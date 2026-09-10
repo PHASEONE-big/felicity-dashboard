@@ -255,10 +255,17 @@ final class ArchiveMarkerStore {
     private let defaults: UserDefaults
     private let timeKey = "archive.marker.time"
     private let touchedKey = "archive.marker.touched"
+    private var lastWrite = Date.distantPast
+    private var latestValue: Date?
+    private var latestTouched: Date?
 
     init(defaults: UserDefaults = .standard) { self.defaults = defaults }
 
     func value(now: Date = .now) -> Date? {
+        if let latestValue, let latestTouched,
+           now.timeIntervalSince(latestTouched) <= ArchiveTimelineRules.markerTTL {
+            return latestValue
+        }
         let touched = defaults.double(forKey: touchedKey)
         guard touched > 0, now.timeIntervalSince1970 - touched <= ArchiveTimelineRules.markerTTL else {
             clear()
@@ -269,11 +276,26 @@ final class ArchiveMarkerStore {
     }
 
     func set(_ value: Date, now: Date = .now) {
+        latestValue = value
+        latestTouched = now
+        guard now.timeIntervalSince(lastWrite) >= 1 else { return }
+        persist(value, touched: now)
+    }
+
+    func flush() {
+        guard let latestValue, let latestTouched else { return }
+        persist(latestValue, touched: latestTouched)
+    }
+
+    private func persist(_ value: Date, touched: Date) {
+        lastWrite = touched
         defaults.set(value.timeIntervalSince1970, forKey: timeKey)
-        defaults.set(now.timeIntervalSince1970, forKey: touchedKey)
+        defaults.set(touched.timeIntervalSince1970, forKey: touchedKey)
     }
 
     func clear() {
+        latestValue = nil
+        latestTouched = nil
         defaults.removeObject(forKey: timeKey)
         defaults.removeObject(forKey: touchedKey)
     }

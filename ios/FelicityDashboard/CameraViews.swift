@@ -1,4 +1,5 @@
 import CryptoKit
+import ImageIO
 import SwiftUI
 import UIKit
 
@@ -6,16 +7,42 @@ actor CameraPreviewStore {
     static let shared = CameraPreviewStore()
     private let directory: URL
 
-    init(fileManager: FileManager = .default) {
-        let root = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first ?? fileManager.temporaryDirectory
+    init(fileManager: FileManager = .default, root: URL? = nil) {
+        let root = root ?? fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first ?? fileManager.temporaryDirectory
         directory = root.appending(path: "FelicityCameraPreviews", directoryHint: .isDirectory)
-        try? fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
+        try? fileManager.createDirectory(
+            at: directory,
+            withIntermediateDirectories: true,
+            attributes: [.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication]
+        )
     }
 
     func data(for camera: CameraDescriptor) -> Data? { try? Data(contentsOf: url(for: camera.id)) }
 
+    func image(for camera: CameraDescriptor) -> UIImage? {
+        guard let data = data(for: camera), let image = Self.thumbnail(from: data) else { return nil }
+        // Migrate previews written by older builds so the next wall open does
+        // not decode the original 4K frame again.
+        if data.count > 420_000, let compact = image.jpegData(compressionQuality: 0.82) {
+            try? compact.write(to: url(for: camera.id), options: .atomic)
+        }
+        return image
+    }
+
+    func images(for cameras: [CameraDescriptor]) -> [String: UIImage] {
+        var result: [String: UIImage] = [:]
+        result.reserveCapacity(cameras.count)
+        for camera in cameras {
+            guard let image = image(for: camera) else { continue }
+            result[camera.id] = image
+        }
+        return result
+    }
+
     func save(_ jpeg: Data, for camera: CameraDescriptor) {
-        guard let source = UIImage(data: jpeg), let oriented = Self.rotated(source, degrees: camera.rotationDegrees), let output = oriented.jpegData(compressionQuality: 0.84) else { return }
+        guard let source = Self.thumbnail(from: jpeg),
+              let oriented = Self.rotated(source, degrees: camera.rotationDegrees),
+              let output = oriented.jpegData(compressionQuality: 0.82) else { return }
         try? output.write(to: url(for: camera.id), options: .atomic)
     }
 
@@ -28,7 +55,10 @@ actor CameraPreviewStore {
         guard degrees != 0, let cgImage = image.cgImage else { return image }
         let swap = degrees == 90 || degrees == 270
         let size = swap ? CGSize(width: cgImage.height, height: cgImage.width) : CGSize(width: cgImage.width, height: cgImage.height)
-        let renderer = UIGraphicsImageRenderer(size: size)
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1
+        format.opaque = true
+        let renderer = UIGraphicsImageRenderer(size: size, format: format)
         return renderer.image { context in
             let cg = context.cgContext
             cg.translateBy(x: size.width / 2, y: size.height / 2)
@@ -37,6 +67,18 @@ actor CameraPreviewStore {
             cg.draw(cgImage, in: CGRect(x: -CGFloat(cgImage.width) / 2, y: -CGFloat(cgImage.height) / 2, width: CGFloat(cgImage.width), height: CGFloat(cgImage.height)))
         }
     }
+
+    nonisolated static func thumbnail(from data: Data, maxPixelSize: Int = 720) -> UIImage? {
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
+        let options: [CFString: Any] = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceThumbnailMaxPixelSize: maxPixelSize,
+            kCGImageSourceShouldCacheImmediately: true,
+        ]
+        guard let image = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else { return nil }
+        return UIImage(cgImage: image)
+    }
 }
 
 struct CameraWallView: View {
@@ -44,6 +86,7 @@ struct CameraWallView: View {
     let backLabel: String
     let onSelect: (CameraDescriptor) -> Void
     @Environment(\.dismiss) private var dismiss
+    @State private var previews: [String: UIImage] = [:]
 
     var body: some View {
         GeometryReader { proxy in
@@ -66,7 +109,11 @@ struct CameraWallView: View {
                                 onSelect(camera)
                                 dismiss()
                             } label: {
-                                CameraCard(camera: camera, selected: repository.selectedID == camera.id)
+                                CameraCard(
+                                    camera: camera,
+                                    selected: repository.selectedID == camera.id,
+                                    preview: previews[camera.id]
+                                )
                             }
                             .buttonStyle(PressScaleButtonStyle())
                         }
@@ -77,16 +124,20 @@ struct CameraWallView: View {
             .background(Color(red: 7 / 255, green: 17 / 255, blue: 15 / 255).ignoresSafeArea())
         }
         .preferredColorScheme(.dark)
+        .task(id: repository.cameras.map(\.id)) {
+            previews = await CameraPreviewStore.shared.images(for: repository.cameras)
+        }
     }
 }
 
 private struct CameraCard: View {
     let camera: CameraDescriptor
     let selected: Bool
+    let preview: UIImage?
 
     var body: some View {
         VStack(spacing: 0) {
-            CameraThumbnail(camera: camera)
+            CameraThumbnail(image: preview)
                 .aspectRatio(16 / 9, contentMode: .fit)
                 .frame(maxWidth: .infinity)
                 .background(.black)
@@ -110,8 +161,7 @@ private struct CameraCard: View {
 }
 
 private struct CameraThumbnail: View {
-    let camera: CameraDescriptor
-    @State private var image: UIImage?
+    let image: UIImage?
 
     var body: some View {
         ZStack {
@@ -130,10 +180,6 @@ private struct CameraThumbnail: View {
                 .foregroundStyle(.secondary)
             }
         }
-        .task(id: camera.id) {
-            guard let data = await CameraPreviewStore.shared.data(for: camera) else { return }
-            image = UIImage(data: data)
-        }
     }
 }
 
@@ -149,6 +195,7 @@ final class LiveCameraViewModel: ObservableObject {
     private let repository: CameraRepository
     private let preferences: CameraPreferences
     private let session = LiveRTSPSession()
+    private var running = false
 
     init(camera: CameraDescriptor, repository: CameraRepository, preferences: CameraPreferences) {
         self.camera = camera
@@ -173,11 +220,13 @@ final class LiveCameraViewModel: ObservableObject {
     }
 
     func start() async {
+        guard !running else { return }
         let uri = camera.streamURI(for: quality)
         guard !uri.isEmpty else {
             state = .failed(message: "Refresh the recorder camera catalogue")
             return
         }
+        running = true
         let size = camera.encodedSize(for: quality)
         await session.start(
             uri: uri,
@@ -185,42 +234,44 @@ final class LiveCameraViewModel: ObservableObject {
             password: preferences.recorderPassword,
             fallbackSize: size,
             onFormat: { [weak self] value in
-                Task { @MainActor in
-                    self?.format = value
-                    self?.renderer.configure(value)
-                }
+                self?.format = value
+                self?.renderer.configure(value)
             },
             onFrame: { [weak self] unit in
-                Task { @MainActor in self?.renderer.enqueue(unit) }
+                self?.renderer.enqueue(unit)
             },
             onStatistics: { [weak self] value in
-                Task { @MainActor in self?.statistics = value }
+                self?.statistics = value
             },
             onState: { [weak self] value in
-                Task { @MainActor in self?.state = value }
+                self?.state = value
             }
         )
     }
 
     func stop(savePreview: Bool = true) async {
-        if savePreview, let jpeg = renderer.snapshotJPEG() { await CameraPreviewStore.shared.save(jpeg, for: camera) }
+        guard running else { return }
+        running = false
         await session.stop()
         state = .idle
+        if savePreview { savePreviewInBackground(for: camera) }
     }
 
     func toggleQuality() async {
-        if let jpeg = renderer.snapshotJPEG() { await CameraPreviewStore.shared.save(jpeg, for: camera) }
+        if let jpeg = await renderer.snapshotJPEG() { await CameraPreviewStore.shared.save(jpeg, for: camera) }
         await session.stop()
+        running = false
         quality = quality == .lq ? .hq : .lq
         repository.setPreferredQuality(quality, for: camera)
         statistics = .init(kbps: 0, fps: 0)
         await start()
     }
 
-    func switchCamera(to camera: CameraDescriptor) async {
+    func switchCamera(to camera: CameraDescriptor, saveCurrentPreview: Bool = true) async {
         guard camera.id != self.camera.id else { return }
-        if let jpeg = renderer.snapshotJPEG() { await CameraPreviewStore.shared.save(jpeg, for: self.camera) }
+        if saveCurrentPreview, let jpeg = await renderer.snapshotJPEG() { await CameraPreviewStore.shared.save(jpeg, for: self.camera) }
         await session.stop()
+        running = false
         renderer.flush()
         self.camera = camera
         repository.select(camera)
@@ -228,6 +279,13 @@ final class LiveCameraViewModel: ObservableObject {
         statistics = .init(kbps: 0, fps: 0)
         format = nil
         await start()
+    }
+
+    private func savePreviewInBackground(for camera: CameraDescriptor) {
+        Task { [renderer] in
+            guard let jpeg = await renderer.snapshotJPEG() else { return }
+            await CameraPreviewStore.shared.save(jpeg, for: camera)
+        }
     }
 }
 
@@ -238,6 +296,7 @@ struct LiveCameraView: View {
     @State private var pickerPresented = false
     @State private var eventsPresented = false
     @State private var archivePresented = false
+    @State private var pendingCamera: CameraDescriptor?
     @Environment(\.dismiss) private var dismiss
 
     init(camera: CameraDescriptor, repository: CameraRepository, preferences: CameraPreferences) {
@@ -267,18 +326,32 @@ struct LiveCameraView: View {
         }
         .preferredColorScheme(.dark)
         .task { await model.start() }
-        .onDisappear { Task { await model.stop() } }
-        .fullScreenCover(isPresented: $pickerPresented) {
+        .onDisappear {
+            guard !pickerPresented, !eventsPresented, !archivePresented else { return }
+            Task { await model.stop() }
+        }
+        .fullScreenCover(isPresented: $pickerPresented, onDismiss: {
+            let selected = pendingCamera
+            pendingCamera = nil
+            Task {
+                if let selected, selected.id != model.camera.id { await model.switchCamera(to: selected, saveCurrentPreview: false) }
+                else { await model.start() }
+            }
+        }) {
             CameraWallView(repository: repository, backLabel: "LIVE") { camera in
-                Task { await model.switchCamera(to: camera) }
+                pendingCamera = camera
             }
         }
-        .fullScreenCover(isPresented: $eventsPresented) {
+        .fullScreenCover(isPresented: $eventsPresented, onDismiss: {
+            Task { await model.start() }
+        }) {
             if let configuration = preferences.threeEyeConfiguration {
                 EventsView(configuration: configuration, cameraName: model.camera.name, backLabel: "LIVE", repository: repository, preferences: preferences)
             }
         }
-        .fullScreenCover(isPresented: $archivePresented) {
+        .fullScreenCover(isPresented: $archivePresented, onDismiss: {
+            Task { await model.start() }
+        }) {
             ArchiveView(camera: model.camera, event: nil, backLabel: "LIVE", repository: repository, preferences: preferences)
         }
     }
@@ -291,7 +364,7 @@ struct LiveCameraView: View {
                 streamStatistics
                     .frame(maxWidth: .infinity)
                 qualityAndPrivacy
-                CameraBarButton(title: "ARCHIVE", systemImage: "clock.arrow.circlepath") { archivePresented = true }
+                CameraBarButton(title: "ARCHIVE", systemImage: "clock.arrow.circlepath") { presentArchive() }
                 Text(model.stateLabel)
                     .font(.caption.bold())
                     .foregroundStyle(model.errorMessage == nil ? .green : .orange)
@@ -303,12 +376,12 @@ struct LiveCameraView: View {
             } else {
             HStack(spacing: 8) {
                 CameraBarButton(title: "ENERGY", systemImage: "chevron.left") { dismiss() }
-                CameraBarButton(title: model.camera.name, systemImage: "video.fill") { pickerPresented = true }
-                CameraBarButton(title: "EVENTS", systemImage: "rectangle.stack.badge.person.crop") { eventsPresented = true }
+                CameraBarButton(title: model.camera.name, systemImage: "video.fill") { presentCameraPicker() }
+                CameraBarButton(title: "EVENTS", systemImage: "rectangle.stack.badge.person.crop") { presentEvents() }
                 Spacer(minLength: 0)
                 streamStatistics
                 qualityAndPrivacy
-                CameraBarButton(title: "ARCHIVE", systemImage: "clock.arrow.circlepath") { archivePresented = true }
+                CameraBarButton(title: "ARCHIVE", systemImage: "clock.arrow.circlepath") { presentArchive() }
             }
             }
         }
@@ -320,8 +393,8 @@ struct LiveCameraView: View {
 
     @ViewBuilder private var navigationButtons: some View {
         CameraBarButton(title: "ENERGY", systemImage: "chevron.left") { dismiss() }
-        CameraBarButton(title: model.camera.name, systemImage: "video.fill") { pickerPresented = true }
-        CameraBarButton(title: "EVENTS", systemImage: "rectangle.stack.badge.person.crop") { eventsPresented = true }
+        CameraBarButton(title: model.camera.name, systemImage: "video.fill") { presentCameraPicker() }
+        CameraBarButton(title: "EVENTS", systemImage: "rectangle.stack.badge.person.crop") { presentEvents() }
     }
 
     private var streamStatistics: some View {
@@ -341,6 +414,27 @@ struct LiveCameraView: View {
                 .foregroundStyle(.secondary)
                 .frame(width: 42, height: 42)
                 .background(.black.opacity(0.28), in: RoundedRectangle(cornerRadius: 10))
+        }
+    }
+
+    private func presentCameraPicker() {
+        Task { @MainActor in
+            await model.stop()
+            pickerPresented = true
+        }
+    }
+
+    private func presentEvents() {
+        Task { @MainActor in
+            await model.stop()
+            eventsPresented = true
+        }
+    }
+
+    private func presentArchive() {
+        Task { @MainActor in
+            await model.stop()
+            archivePresented = true
         }
     }
 }
@@ -366,7 +460,7 @@ private struct LiveVideoCanvas: View {
         .animation(.easeOut(duration: 0.14), value: renderer.isReady)
         .task(id: camera.id) {
             poster = nil
-            if let data = await CameraPreviewStore.shared.data(for: camera) { poster = UIImage(data: data) }
+            poster = await CameraPreviewStore.shared.image(for: camera)
         }
     }
 }
