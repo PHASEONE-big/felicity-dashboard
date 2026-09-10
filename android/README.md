@@ -1,5 +1,10 @@
 # Felicity Android kiosk
 
+Current version: **0.7.24 (build 31)**. This update keeps playback within the
+continuous AI interval, ignores delayed responses/frames from previous seeks,
+and preserves the selected event when playback fails. See
+[client versions](../docs/CLIENT_VERSIONS.md) for the independent client baselines.
+
 Native Android client for the Felicity Dashboard LAN API. It is an alternative
 to the ESP32 + Nextion monitor: both clients use the same `/api/device/*`
 endpoints, but the Android version runs directly on an Echo Show 5 or another

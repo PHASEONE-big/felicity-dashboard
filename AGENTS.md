@@ -1,6 +1,6 @@
 # Active workspace
 
-This task continues the Android 0.7.23 project in this directory:
+This task continues the recovered Felicity project in this directory:
 `/Users/ok/felicity-dashboard`.
 
 Read `docs/CLIENT_VERSIONS.md` for the three independent client versions and
