@@ -17,3 +17,6 @@ esp32/sdkconfig.onboarding
 esp32/managed_components/
 **/xcuserdata/
 *.xcuserstate
+
+# Third-party Dragon bootstrap installers; keep local, not project releases.
+android/setup-dragon/*.apk

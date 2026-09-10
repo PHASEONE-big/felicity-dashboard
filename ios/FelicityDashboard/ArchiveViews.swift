@@ -20,6 +20,8 @@ final class ArchiveViewModel: ObservableObject {
     @Published private(set) var recordingDays: [Date] = []
     @Published private(set) var isLoadingCalendar = false
 
+    private(set) var timelineRevision = 0
+
     let renderer = SampleBufferRenderer()
 
     private let repository: CameraRepository
@@ -31,6 +33,10 @@ final class ArchiveViewModel: ObservableObject {
     private var seekTask: Task<Void, Never>?
     private var timelineTask: Task<Void, Never>?
     private var calendarTask: Task<Void, Never>?
+    private var timelineWarmupTask: Task<Void, Never>?
+    private var rendererReadinessTask: Task<Void, Never>?
+    private var pendingReadyTime: Date?
+    private var pendingReadyGeneration: UInt64?
     private var started = false
     private var seekRequestedAt: Date?
     private var playbackRequestedTime: Date?
@@ -42,6 +48,10 @@ final class ArchiveViewModel: ObservableObject {
     private var requestedTimelineEnd: Date?
     private var loadedCalendarMonths = Set<Date>()
     private var requestedCalendarMonth: Date?
+    private var deferredTimelineTarget: Date?
+    private var exactCurrentTime: Date?
+    private var lastCurrentTimePublish = Date.distantPast
+    private var entryStartedAt: Date?
     private let logger = Logger(subsystem: "io.github.homedashboard.ios", category: "Archive")
 
     init(
@@ -73,26 +83,44 @@ final class ArchiveViewModel: ObservableObject {
     func start() async {
         guard !started else { return }
         started = true
+        entryStartedAt = .now
         let target = await initialTarget()
         currentTime = target
+        exactCurrentTime = target
         ArchiveMarkerStore.shared.set(target)
+        prepareViewport(for: target)
         await loadPoster()
-        Task { await loadRecordingDays() }
         await openSession(at: target)
     }
 
     func stop() async {
         started = false
+        deferredTimelineTarget = nil
         seekTask?.cancel()
         timelineTask?.cancel()
         calendarTask?.cancel()
-        if let jpeg = renderer.snapshotJPEG() { await CameraPreviewStore.shared.save(jpeg, for: camera) }
+        timelineWarmupTask?.cancel()
+        rendererReadinessTask?.cancel()
+        ArchiveMarkerStore.shared.flush()
         await session.close()
+        savePreviewInBackground(for: camera)
+    }
+
+    func suspendForOverlay(savePreview: Bool) async {
+        publishExactCurrentTime()
+        playbackRequestedTime = nil
+        playbackKeyframeLead = 0
+        activePlaybackEnd = nil
+        state = .paused
+        statistics = .init(kbps: 0, fps: 0)
+        await session.pause()
+        if savePreview { savePreviewInBackground(for: camera) }
     }
 
     func togglePlayback() {
         playClick()
         if isPlaying {
+            publishExactCurrentTime()
             playbackRequestedTime = nil
             playbackKeyframeLead = 0
             activePlaybackEnd = nil
@@ -122,6 +150,10 @@ final class ArchiveViewModel: ObservableObject {
         playbackKeyframeLead = autoplay ? keyframeLead : 0
         activePlaybackEnd = autoplay ? ArchiveTimelineRules.playbackEnd(for: target, in: intervals, keyframeLead: keyframeLead) : nil
         seekTask?.cancel()
+        rendererReadinessTask?.cancel()
+        rendererReadinessTask = nil
+        pendingReadyTime = nil
+        pendingReadyGeneration = nil
         let frameGeneration = renderer.beginSeek()
         state = .seeking
         seekRequestedAt = .now
@@ -148,7 +180,7 @@ final class ArchiveViewModel: ObservableObject {
 
     func toggleQuality() async {
         let target = currentTime ?? .now
-        if let jpeg = renderer.snapshotJPEG() {
+        if let jpeg = await renderer.snapshotJPEG() {
             poster = UIImage(data: jpeg)
             await CameraPreviewStore.shared.save(jpeg, for: camera)
         }
@@ -159,14 +191,13 @@ final class ArchiveViewModel: ObservableObject {
         format = nil
         statistics = .init(kbps: 0, fps: 0)
         renderer.flush()
-        Task { await loadRecordingDays() }
         await openSession(at: target)
     }
 
     func switchCamera(to camera: CameraDescriptor) async {
         guard camera.id != self.camera.id else { return }
         let target = currentTime ?? ArchiveMarkerStore.shared.value() ?? .now
-        if let jpeg = renderer.snapshotJPEG() { await CameraPreviewStore.shared.save(jpeg, for: self.camera) }
+        if let jpeg = await renderer.snapshotJPEG() { await CameraPreviewStore.shared.save(jpeg, for: self.camera) }
         await session.close()
         self.camera = camera
         repository.select(camera)
@@ -176,8 +207,7 @@ final class ArchiveViewModel: ObservableObject {
         resetTimelineCache(clearCalendar: true)
         poster = nil
         renderer.flush()
-        if let cached = await CameraPreviewStore.shared.data(for: camera) { poster = UIImage(data: cached) }
-        Task { await loadRecordingDays() }
+        poster = await CameraPreviewStore.shared.image(for: camera)
         await openSession(at: target)
     }
 
@@ -187,6 +217,9 @@ final class ArchiveViewModel: ObservableObject {
         let components = calendar.dateComponents([.hour, .minute, .second], from: existing)
         var target = calendar.startOfDay(for: date)
         target = calendar.date(byAdding: components, to: target) ?? target
+        deferredTimelineTarget = nil
+        timelineWarmupTask?.cancel()
+        timelineWarmupTask = nil
         loadTimeline(around: target)
     }
 
@@ -230,10 +263,6 @@ final class ArchiveViewModel: ObservableObject {
         }
     }
 
-    func panTimeline(seconds: TimeInterval) {
-        panTimeline(from: visibleStart, seconds: seconds)
-    }
-
     func panTimeline(from baseStart: Date, seconds: TimeInterval) {
         visibleStart = clampedToPresent(baseStart.addingTimeInterval(seconds), span: visibleSpan)
         ensureTimelineCoverage()
@@ -259,25 +288,25 @@ final class ArchiveViewModel: ObservableObject {
     private func initialTarget() async -> Date {
         if let captured = entryEvent?.capturedAt { return captured }
         if let marker = ArchiveMarkerStore.shared.value() { return marker }
-        if let threeEye {
-            let events = try? await ThreeEyeAPI().events(configuration: threeEye, camera: camera.name, classes: Set(ThreeEyeEventClass.allCases), limit: 8)
-            if let captured = events?.first?.capturedAt { return captured }
-        }
         return Date().addingTimeInterval(-5)
     }
 
     private func loadPoster() async {
         if let event = entryEvent, let url = event.imageURL ?? event.thumbnailURL, let threeEye,
-           let data = try? await ThreeEyeImageStore.shared.data(for: url, configuration: threeEye), let image = UIImage(data: data) {
+           let data = try? await ThreeEyeImageStore.shared.data(for: url, configuration: threeEye),
+           let image = await Task.detached(priority: .utility, operation: {
+               CameraPreviewStore.thumbnail(from: data, maxPixelSize: 1_440)
+           }).value {
             poster = image
             return
         }
-        if let data = await CameraPreviewStore.shared.data(for: camera) { poster = UIImage(data: data) }
+        poster = await CameraPreviewStore.shared.image(for: camera)
     }
 
     private func openSession(at target: Date) async {
         error = ""
-        loadTimeline(around: target)
+        deferredTimelineTarget = target
+        timelineWarmupTask?.cancel()
         do {
             let descriptor = try await ProfileGArchiveService.shared.replay(camera: camera, quality: quality, configuration: preferences.recorderConfiguration)
             let openedFormat = try await session.open(
@@ -285,18 +314,7 @@ final class ArchiveViewModel: ObservableObject {
                 configuration: preferences.recorderConfiguration,
                 fallbackSize: camera.encodedSize(for: quality),
                 onFrame: { [weak self] unit, frameGeneration in
-                    Task { @MainActor in
-                        guard let self else { return }
-                        guard self.renderer.enqueue(unit, generation: frameGeneration) else { return }
-                        guard let time = unit.archiveTime else { return }
-                        for _ in 0..<75 where !self.renderer.isReady(for: frameGeneration) { try? await Task.sleep(for: .milliseconds(16)) }
-                        guard self.renderer.isReady(for: frameGeneration) else { return }
-                        self.acceptDecodedTime(time)
-                        if let began = self.seekRequestedAt {
-                            self.logger.info("First decoded archive frame camera=\(self.camera.name, privacy: .public) actual=\(time.timeIntervalSince1970, privacy: .public) latency_ms=\(Int(Date().timeIntervalSince(began) * 1000), privacy: .public)")
-                            self.seekRequestedAt = nil
-                        }
-                    }
+                    self?.acceptFrame(unit, generation: frameGeneration)
                 },
                 onStatistics: { [weak self] value in Task { @MainActor in self?.statistics = value } },
                 onState: { [weak self] value in Task { @MainActor in self?.state = value } }
@@ -304,14 +322,68 @@ final class ArchiveViewModel: ObservableObject {
             format = openedFormat
             renderer.configure(openedFormat)
             seek(to: target, autoplay: false, snapToRecording: false)
+            timelineWarmupTask = Task { [weak self] in
+                try? await Task.sleep(for: .seconds(2))
+                guard !Task.isCancelled else { return }
+                self?.startDeferredTimelineLoad()
+            }
         } catch {
             self.error = error.localizedDescription
             state = .failed(error.localizedDescription)
         }
     }
 
+    private func acceptFrame(_ unit: VideoAccessUnit, generation: UInt64) {
+        guard renderer.enqueue(unit, generation: generation), let time = unit.archiveTime else { return }
+        if renderer.isReady(for: generation) {
+            commitDisplayedTime(time)
+            return
+        }
+
+        pendingReadyTime = time
+        guard pendingReadyGeneration != generation else { return }
+        pendingReadyGeneration = generation
+        rendererReadinessTask?.cancel()
+        rendererReadinessTask = Task { [weak self] in
+            guard let self else { return }
+            for _ in 0..<75 {
+                try? await Task.sleep(for: .milliseconds(16))
+                guard !Task.isCancelled, self.pendingReadyGeneration == generation else { return }
+                if self.renderer.isReady(for: generation) {
+                    if let time = self.pendingReadyTime { self.commitDisplayedTime(time) }
+                    self.pendingReadyGeneration = nil
+                    self.pendingReadyTime = nil
+                    self.rendererReadinessTask = nil
+                    return
+                }
+            }
+        }
+    }
+
+    private func commitDisplayedTime(_ time: Date) {
+        acceptDecodedTime(time)
+        if let began = seekRequestedAt {
+            logger.info("First decoded archive frame camera=\(self.camera.name, privacy: .public) actual=\(time.timeIntervalSince1970, privacy: .public) latency_ms=\(Int(Date().timeIntervalSince(began) * 1000), privacy: .public)")
+            seekRequestedAt = nil
+        }
+    }
+
     private func loadTimeline(around target: Date) {
         requestTimelineWindow(centeredOn: target, recenterOn: target)
+    }
+
+    private func startDeferredTimelineLoad() {
+        guard let target = deferredTimelineTarget else { return }
+        deferredTimelineTarget = nil
+        timelineWarmupTask?.cancel()
+        timelineWarmupTask = nil
+        loadTimeline(around: target)
+        Task { await loadRecordingDays() }
+    }
+
+    private func prepareViewport(for target: Date) {
+        visibleSpan = ArchiveTimelineRules.maximumVisibleSpan
+        visibleStart = Calendar.current.startOfDay(for: target)
     }
 
     private func ensureTimelineCoverage() {
@@ -359,6 +431,8 @@ final class ArchiveViewModel: ObservableObject {
         requestedTimelineStart = start
         requestedTimelineEnd = end
         isLoadingTimeline = true
+        let requestedAt = Date()
+        logger.info("Timeline metadata requested camera=\(self.camera.name, privacy: .public) start=\(start.timeIntervalSince1970, privacy: .public) end=\(end.timeIntervalSince1970, privacy: .public)")
         timelineTask = Task { [weak self] in
             guard let self else { return }
             do {
@@ -379,12 +453,14 @@ final class ArchiveViewModel: ObservableObject {
                     })
                     combined.sort { $0.start < $1.start }
                 }
+                self.timelineRevision &+= 1
                 self.intervals = combined
                 self.loadedTimelineStart = start
                 self.loadedTimelineEnd = end
                 self.requestedTimelineStart = nil
                 self.requestedTimelineEnd = nil
                 self.addRecordingDays(from: combined)
+                self.logger.info("Timeline metadata loaded camera=\(self.camera.name, privacy: .public) intervals=\(combined.count, privacy: .public) latency_ms=\(Int(Date().timeIntervalSince(requestedAt) * 1000), privacy: .public)")
                 if let target {
                     let targetDay = calendar.startOfDay(for: target)
                     let targetEnd = calendar.date(byAdding: .day, value: 1, to: targetDay) ?? targetDay.addingTimeInterval(24 * 60 * 60)
@@ -449,6 +525,7 @@ final class ArchiveViewModel: ObservableObject {
         requestedTimelineEnd = nil
         loadedTimelineStart = nil
         loadedTimelineEnd = nil
+        timelineRevision &+= 1
         intervals = []
         if clearCalendar {
             calendarTask?.cancel()
@@ -467,10 +544,19 @@ final class ArchiveViewModel: ObservableObject {
 
     private func acceptDecodedTime(_ time: Date) {
         let calendar = Calendar.current
-        if state == .playing, let currentTime, time < currentTime { return }
-        let previousDay = currentTime.map(calendar.startOfDay(for:))
-        currentTime = time
-        ArchiveMarkerStore.shared.set(time)
+        if state == .playing, let exactCurrentTime, time < exactCurrentTime { return }
+        let previousDay = exactCurrentTime.map(calendar.startOfDay(for:))
+        exactCurrentTime = time
+        let now = Date()
+        if state != .playing || currentTime == nil || now.timeIntervalSince(lastCurrentTimePublish) >= 0.25 {
+            currentTime = time
+            lastCurrentTimePublish = now
+            ArchiveMarkerStore.shared.set(time, now: now)
+        }
+        if let began = entryStartedAt {
+            logger.info("Archive first frame camera=\(self.camera.name, privacy: .public) entry_latency_ms=\(Int(now.timeIntervalSince(began) * 1000), privacy: .public)")
+            entryStartedAt = nil
+        }
         let dayStart = calendar.startOfDay(for: time)
         if time < visibleStart || time > visibleStart.addingTimeInterval(visibleSpan) {
             visibleStart = clampedToPresent(time.addingTimeInterval(-visibleSpan / 2), span: visibleSpan)
@@ -479,6 +565,15 @@ final class ArchiveViewModel: ObservableObject {
             ensureTimelineCoverage()
         }
         advancePlaybackIfNeeded(at: time)
+        startDeferredTimelineLoad()
+    }
+
+    private func publishExactCurrentTime() {
+        guard let exactCurrentTime else { return }
+        currentTime = exactCurrentTime
+        let now = Date()
+        lastCurrentTimePublish = now
+        ArchiveMarkerStore.shared.set(exactCurrentTime, now: now)
     }
 
     private func refreshPlaybackBoundary() {
@@ -508,12 +603,20 @@ final class ArchiveViewModel: ObservableObject {
     }
 
     private func pauseAtCurrentFrame() {
+        publishExactCurrentTime()
         playbackRequestedTime = nil
         playbackKeyframeLead = 0
         activePlaybackEnd = nil
         state = .paused
         statistics = .init(kbps: 0, fps: 0)
         Task { await session.pause() }
+    }
+
+    private func savePreviewInBackground(for camera: CameraDescriptor) {
+        Task { [renderer] in
+            guard let jpeg = await renderer.snapshotJPEG() else { return }
+            await CameraPreviewStore.shared.save(jpeg, for: camera)
+        }
     }
 
     private func playClick() {
@@ -530,6 +633,7 @@ struct ArchiveView: View {
     @State private var cameraPicker = false
     @State private var livePresented = false
     @State private var calendarPresented = false
+    @State private var pendingCamera: CameraDescriptor?
     @Environment(\.dismiss) private var dismiss
 
     init(camera: CameraDescriptor, event: ThreeEyeEvent?, backLabel: String, repository: CameraRepository, preferences: CameraPreferences) {
@@ -569,9 +673,16 @@ struct ArchiveView: View {
         }
         .preferredColorScheme(.dark)
         .task { await model.start() }
-        .onDisappear { Task { await model.stop() } }
-        .fullScreenCover(isPresented: $cameraPicker) {
-            CameraWallView(repository: repository, backLabel: "ARCHIVE") { camera in Task { await model.switchCamera(to: camera) } }
+        .onDisappear {
+            guard !cameraPicker, !livePresented, !calendarPresented else { return }
+            Task { await model.stop() }
+        }
+        .fullScreenCover(isPresented: $cameraPicker, onDismiss: {
+            let selected = pendingCamera
+            pendingCamera = nil
+            if let selected { Task { await model.switchCamera(to: selected) } }
+        }) {
+            CameraWallView(repository: repository, backLabel: "ARCHIVE") { camera in pendingCamera = camera }
         }
         .fullScreenCover(isPresented: $livePresented) {
             LiveCameraView(camera: model.camera, repository: repository, preferences: preferences)
@@ -598,21 +709,21 @@ struct ArchiveView: View {
 
     @ViewBuilder private var headerContents: some View {
         CameraBarButton(title: backLabel, systemImage: "chevron.left") { dismiss() }
-        CameraBarButton(title: model.camera.name, systemImage: "video.fill") { cameraPicker = true }
+        CameraBarButton(title: model.camera.name, systemImage: "video.fill") { presentCameraPicker() }
         streamStatistics
         Spacer(minLength: 4)
         playbackClock
         Button(model.quality.rawValue) { Task { await model.toggleQuality() } }.buttonStyle(HeaderButtonStyle())
-        CameraBarButton(title: "LIVE", systemImage: "dot.radiowaves.left.and.right") { livePresented = true }
+        CameraBarButton(title: "LIVE", systemImage: "dot.radiowaves.left.and.right") { presentLive() }
     }
 
     @ViewBuilder private var headerContentsCompact: some View {
         CameraBarButton(title: backLabel, systemImage: "chevron.left") { dismiss() }
-        CameraBarButton(title: model.camera.name, systemImage: "video.fill") { cameraPicker = true }
+        CameraBarButton(title: model.camera.name, systemImage: "video.fill") { presentCameraPicker() }
         Spacer(minLength: 0)
         playbackClock
         Button(model.quality.rawValue) { Task { await model.toggleQuality() } }.buttonStyle(HeaderButtonStyle())
-        Button { livePresented = true } label: { Image(systemName: "dot.radiowaves.left.and.right").frame(width: 42, height: 42) }
+        Button { presentLive() } label: { Image(systemName: "dot.radiowaves.left.and.right").frame(width: 42, height: 42) }
             .buttonStyle(HeaderButtonStyle())
     }
 
@@ -652,6 +763,20 @@ struct ArchiveView: View {
         .font(.headline.bold())
         .buttonStyle(ArchiveControlButtonStyle())
         .padding(14)
+    }
+
+    private func presentCameraPicker() {
+        Task { @MainActor in
+            await model.suspendForOverlay(savePreview: true)
+            cameraPicker = true
+        }
+    }
+
+    private func presentLive() {
+        Task { @MainActor in
+            await model.suspendForOverlay(savePreview: true)
+            livePresented = true
+        }
     }
 }
 
@@ -775,127 +900,417 @@ private struct ArchiveVideoCanvas: View {
     }
 }
 
-private struct ArchiveTimelineView: View {
+private struct ArchiveTimelineView: UIViewRepresentable {
+    // The timeline is backed by UIKit, so it must subscribe explicitly. A
+    // plain reference here left the surface at its initial empty render when
+    // Profile G metadata arrived after the archive screen was presented.
     @ObservedObject var model: ArchiveViewModel
-    @State private var pinchBaseStart: Date?
-    @State private var pinchBaseSpan: TimeInterval?
-    @State private var suppressDrag = false
-    @State private var dragBaseStart: Date?
 
-    var body: some View {
-        GeometryReader { proxy in
-            let width = max(1, proxy.size.width)
-            interactiveTimeline(width: width)
+    func makeUIView(context: Context) -> ArchiveTimelineSurface {
+        let view = ArchiveTimelineSurface()
+        view.onPan = { [weak model] baseStart, seconds in
+            model?.panTimeline(from: baseStart, seconds: seconds)
+        }
+        view.onZoom = { [weak model] baseStart, baseSpan, magnification, anchorRatio in
+            model?.zoomTimeline(
+                from: baseStart,
+                span: baseSpan,
+                magnification: magnification,
+                anchorRatio: anchorRatio
+            )
+        }
+        view.onSeek = { [weak model] time in model?.seek(to: time) }
+        return view
+    }
+
+    func updateUIView(_ view: ArchiveTimelineSurface, context: Context) {
+        view.update(
+            visibleStart: model.visibleStart,
+            visibleSpan: model.visibleSpan,
+            intervals: model.intervals,
+            revision: model.timelineRevision,
+            currentTime: model.currentTime,
+            isLoading: model.isLoadingTimeline
+        )
+    }
+}
+
+/// A timeline whose hot interaction path never publishes SwiftUI state.
+/// Bars and labels are drawn once into a three-viewport backing store; a
+/// drag only transforms that strip. The archive model is updated once, after
+/// the gesture (and its short inertial continuation) finishes.
+final class ArchiveTimelineSurface: UIView, UIGestureRecognizerDelegate {
+    var onPan: ((Date, TimeInterval) -> Void)?
+    var onZoom: ((Date, TimeInterval, Double, Double) -> Void)?
+    var onSeek: ((Date) -> Void)?
+
+    private(set) var renderPassCount = 0
+    var isUsingRasterCache: Bool { contentView.layer.shouldRasterize }
+    var stripWidth: CGFloat { contentView.bounds.width }
+
+    private let contentView = ArchiveTimelineStripView()
+    private let cursorLayer = CALayer()
+    private let loadingIndicator = UIActivityIndicatorView(style: .medium)
+    private var visibleStart = Date.distantPast
+    private var visibleSpan = ArchiveTimelineRules.maximumVisibleSpan
+    private var intervals: [ArchiveInterval] = []
+    private var revision = -1
+    private var currentTime: Date?
+    private var renderedSize = CGSize.zero
+    private var renderedStart = Date.distantPast
+    private var renderedSpan: TimeInterval = 0
+    private var renderedRevision = -1
+    private var animator: UIViewPropertyAnimator?
+    private var panning = false
+    private var pinching = false
+    private var pinchAnchorRatio = 0.5
+    private var pinchCursorX: CGFloat?
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        backgroundColor = UIColor(red: 0.07, green: 0.09, blue: 0.09, alpha: 1)
+        clipsToBounds = true
+        contentView.isUserInteractionEnabled = false
+        contentView.layer.anchorPoint = .zero
+        contentView.layer.position = .zero
+        addSubview(contentView)
+
+        cursorLayer.backgroundColor = UIColor.white.cgColor
+        layer.addSublayer(cursorLayer)
+
+        loadingIndicator.color = .cyan
+        loadingIndicator.hidesWhenStopped = true
+        addSubview(loadingIndicator)
+
+        let pan = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
+        pan.maximumNumberOfTouches = 1
+        pan.delegate = self
+        addGestureRecognizer(pan)
+
+        let pinch = UIPinchGestureRecognizer(target: self, action: #selector(handlePinch(_:)))
+        pinch.delegate = self
+        addGestureRecognizer(pinch)
+
+        let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
+        tap.require(toFail: pan)
+        addGestureRecognizer(tap)
+
+        isAccessibilityElement = true
+        accessibilityLabel = "Archive timeline"
+        accessibilityHint = "Swipe to browse, pinch to change scale, or tap to seek"
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        loadingIndicator.center = CGPoint(x: bounds.midX, y: bounds.midY)
+        guard bounds.size != renderedSize else { return }
+        rebuildLayers()
+    }
+
+    func update(
+        visibleStart: Date,
+        visibleSpan: TimeInterval,
+        intervals: [ArchiveInterval],
+        revision: Int,
+        currentTime: Date?,
+        isLoading: Bool
+    ) {
+        self.visibleStart = visibleStart
+        self.visibleSpan = visibleSpan
+        self.intervals = intervals
+        self.revision = revision
+        self.currentTime = currentTime
+
+        if isLoading { loadingIndicator.startAnimating() }
+        else { loadingIndicator.stopAnimating() }
+
+        if visibleStart != renderedStart || visibleSpan != renderedSpan || revision != renderedRevision {
+            rebuildLayers()
+        } else if !panning, !pinching, animator == nil {
+            updateCursor()
         }
     }
 
-    @ViewBuilder private func interactiveTimeline(width: CGFloat) -> some View {
-        if #available(iOS 17.0, *) {
-            timeline(width: width)
-                .contentShape(Rectangle())
-                .gesture(dragGesture(width: width))
-                .simultaneousGesture(
-                    MagnifyGesture()
-                        .onChanged { value in
-                            updateZoom(magnification: Double(value.magnification), anchorRatio: Double(value.startAnchor.x))
-                        }
-                        .onEnded { _ in finishZoom() }
-                )
-        } else {
-            timeline(width: width)
-                .contentShape(Rectangle())
-                .gesture(dragGesture(width: width))
-                .simultaneousGesture(
-                    MagnificationGesture()
-                        .onChanged { value in updateZoom(magnification: Double(value), anchorRatio: 0.5) }
-                        .onEnded { _ in finishZoom() }
-                )
+    func gestureRecognizer(
+        _ gestureRecognizer: UIGestureRecognizer,
+        shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer
+    ) -> Bool {
+        gestureRecognizer is UIPinchGestureRecognizer || otherGestureRecognizer is UIPinchGestureRecognizer
+    }
+
+    @objc private func handleTap(_ gesture: UITapGestureRecognizer) {
+        guard bounds.width > 0 else { return }
+        let ratio = min(1, max(0, gesture.location(in: self).x / bounds.width))
+        onSeek?(visibleStart.addingTimeInterval(visibleSpan * Double(ratio)))
+    }
+
+    @objc private func handlePan(_ gesture: UIPanGestureRecognizer) {
+        guard !pinching, bounds.width > 0 else { return }
+        switch gesture.state {
+        case .began:
+            cancelAnimation()
+            panning = true
+        case .changed:
+            let translation = gesture.translation(in: self).x
+            contentView.transform = neutralTransform.translatedBy(x: translation, y: 0)
+            cursorLayer.setAffineTransform(CGAffineTransform(translationX: translation, y: 0))
+        case .ended:
+            let translation = gesture.translation(in: self).x
+            let velocity = gesture.velocity(in: self).x
+            finishPan(translation: translation, velocity: velocity)
+        case .cancelled, .failed:
+            panning = false
+            restoreNeutralTransform(animated: true)
+        default:
+            break
         }
     }
 
-    private func timeline(width: CGFloat) -> some View {
-        ZStack(alignment: .leading) {
-            Color(red: 0.07, green: 0.09, blue: 0.09)
-            tickMarks(width: width)
-            ForEach(model.intervals) { interval in
-                let x1 = x(interval.start, width: width)
-                let x2 = x(interval.end, width: width)
-                if x2 >= 0, x1 <= width {
-                    RoundedRectangle(cornerRadius: 1.5)
-                        .fill(interval.kind.color)
-                        .frame(width: max(3, x2 - x1), height: 34)
-                        .offset(x: x1, y: -18)
-                }
+    @objc private func handlePinch(_ gesture: UIPinchGestureRecognizer) {
+        guard bounds.width > 0 else { return }
+        switch gesture.state {
+        case .began:
+            cancelAnimation()
+            pinching = true
+            pinchAnchorRatio = min(1, max(0, gesture.location(in: self).x / bounds.width))
+            pinchCursorX = cursorLayer.frame.midX
+        case .changed:
+            let scale = effectiveScale(for: Double(gesture.scale))
+            let anchor = bounds.width * pinchAnchorRatio
+            contentView.transform = CGAffineTransform(
+                a: scale,
+                b: 0,
+                c: 0,
+                d: 1,
+                tx: -scale * bounds.width + anchor * (1 - scale),
+                ty: 0
+            )
+            if let pinchCursorX {
+                setCursorCenterX(anchor + (pinchCursorX - anchor) * scale)
             }
-            if let current = model.currentTime {
-                Rectangle().fill(.white).frame(width: 2, height: 92).offset(x: x(current, width: width))
-            }
-            if model.isLoadingTimeline { ProgressView().tint(.cyan).frame(maxWidth: .infinity) }
+        case .ended:
+            let scale = effectiveScale(for: Double(gesture.scale))
+            let baseStart = visibleStart
+            let baseSpan = visibleSpan
+            let anchor = Double(pinchAnchorRatio)
+            pinching = false
+            pinchCursorX = nil
+            onZoom?(baseStart, baseSpan, scale, anchor)
+        case .cancelled, .failed:
+            pinching = false
+            pinchCursorX = nil
+            restoreNeutralTransform(animated: true)
+        default:
+            break
         }
     }
 
-    private func dragGesture(width: CGFloat) -> some Gesture {
-        DragGesture(minimumDistance: 0)
-            .onChanged { value in
-                guard !suppressDrag else { return }
-                if dragBaseStart == nil { dragBaseStart = model.visibleStart }
-                guard abs(value.translation.width) > 4, let base = dragBaseStart else { return }
-                model.panTimeline(from: base, seconds: -Double(value.translation.width / width) * model.visibleSpan)
-            }
-            .onEnded { value in
-                let base = dragBaseStart ?? model.visibleStart
-                dragBaseStart = nil
-                guard !suppressDrag else { return }
-                if abs(value.translation.width) > 10 {
-                    model.panTimeline(from: base, seconds: -Double(value.translation.width / width) * model.visibleSpan)
-                } else {
-                    let ratio = min(1, max(0, value.location.x / width))
-                    model.seek(to: model.visibleStart.addingTimeInterval(Double(ratio) * model.visibleSpan))
-                }
-            }
-    }
-
-    private func updateZoom(magnification: Double, anchorRatio: Double) {
-        if pinchBaseStart == nil {
-            pinchBaseStart = model.visibleStart
-            pinchBaseSpan = model.visibleSpan
+    private func finishPan(translation: CGFloat, velocity: CGFloat) {
+        let projected = min(bounds.width * 1.5, max(-bounds.width * 1.5, translation + velocity * 0.16))
+        guard abs(projected) > 4 else {
+            panning = false
+            restoreNeutralTransform(animated: true)
+            return
         }
-        suppressDrag = true
-        guard let baseStart = pinchBaseStart, let baseSpan = pinchBaseSpan else { return }
-        model.zoomTimeline(from: baseStart, span: baseSpan, magnification: magnification, anchorRatio: anchorRatio)
+        let baseStart = visibleStart
+        let seconds = -Double(projected / bounds.width) * visibleSpan
+        let remaining = abs(projected - translation)
+        let duration = min(0.28, max(0.08, TimeInterval(remaining / max(abs(velocity), 600))))
+        let animator = UIViewPropertyAnimator(duration: duration, curve: .easeOut) {
+            self.contentView.transform = self.neutralTransform.translatedBy(x: projected, y: 0)
+            self.cursorLayer.setAffineTransform(CGAffineTransform(translationX: projected, y: 0))
+        }
+        self.animator = animator
+        animator.addCompletion { [weak self] position in
+            guard let self else { return }
+            self.animator = nil
+            self.panning = false
+            if position == .end { self.onPan?(baseStart, seconds) }
+            else { self.restoreNeutralTransform(animated: false) }
+        }
+        animator.startAnimation()
     }
 
-    private func finishZoom() {
-        pinchBaseStart = nil
-        pinchBaseSpan = nil
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { suppressDrag = false }
+    private func effectiveScale(for rawScale: Double) -> CGFloat {
+        let requestedSpan = visibleSpan / max(0.01, rawScale)
+        let span = min(
+            ArchiveTimelineRules.maximumVisibleSpan,
+            max(ArchiveTimelineRules.minimumVisibleSpan, requestedSpan)
+        )
+        return CGFloat(visibleSpan / span)
     }
 
-    @ViewBuilder private func tickMarks(width: CGFloat) -> some View {
-        let count = model.visibleSpan <= 3 * 3600 ? 7 : model.visibleSpan <= 6 * 3600 ? 7 : 9
-        let visibleEnd = model.visibleStart.addingTimeInterval(model.visibleSpan)
-        let crossesMidnight = !Calendar.current.isDate(model.visibleStart, inSameDayAs: visibleEnd)
-        ForEach(0..<count, id: \.self) { index in
-            let ratio = CGFloat(index) / CGFloat(max(1, count - 1))
-            let date = model.visibleStart.addingTimeInterval(Double(ratio) * model.visibleSpan)
-            VStack(spacing: 4) {
-                Rectangle().fill(Color.white.opacity(0.55)).frame(width: 1, height: index % 2 == 0 ? 18 : 10)
-                if crossesMidnight {
-                    Text(date, format: .dateTime.day().month(.abbreviated).hour().minute())
-                        .font(.caption2.bold().monospacedDigit())
-                        .foregroundStyle(.white.opacity(0.75))
-                } else {
-                    Text(date, format: .dateTime.hour().minute())
-                        .font(.caption2.bold().monospacedDigit())
-                        .foregroundStyle(.white.opacity(0.75))
-                }
-            }
-            .position(x: width * ratio, y: 86)
+    private var neutralTransform: CGAffineTransform {
+        CGAffineTransform(translationX: -bounds.width, y: 0)
+    }
+
+    private func cancelAnimation() {
+        animator?.stopAnimation(true)
+        animator = nil
+        contentView.transform = neutralTransform
+        cursorLayer.setAffineTransform(.identity)
+    }
+
+    private func restoreNeutralTransform(animated: Bool) {
+        animator?.stopAnimation(true)
+        animator = nil
+        guard animated else {
+            contentView.transform = neutralTransform
+            cursorLayer.setAffineTransform(.identity)
+            updateCursor()
+            return
+        }
+        UIView.animate(withDuration: 0.12) {
+            self.contentView.transform = self.neutralTransform
+            self.cursorLayer.setAffineTransform(.identity)
         }
     }
 
-    private func x(_ date: Date, width: CGFloat) -> CGFloat {
-        CGFloat(date.timeIntervalSince(model.visibleStart) / model.visibleSpan) * width
+    private func rebuildLayers() {
+        guard bounds.width > 0, bounds.height > 0 else { return }
+        renderPassCount += 1
+        cancelAnimation()
+        renderedSize = bounds.size
+        renderedStart = visibleStart
+        renderedSpan = visibleSpan
+        renderedRevision = revision
+
+        contentView.bounds = CGRect(origin: .zero, size: CGSize(width: bounds.width * 3, height: bounds.height))
+        contentView.layer.position = .zero
+        contentView.transform = neutralTransform
+        contentView.configure(visibleStart: visibleStart, visibleSpan: visibleSpan, intervals: intervals)
+        // iOS 16 can defer a redraw of a transformed, partially off-screen
+        // UIView indefinitely. Draw the newly arrived metadata now; this is a
+        // single cheap Core Graphics pass and only runs when the viewport or
+        // timeline revision changes, never for cursor movement.
+        contentView.layer.displayIfNeeded()
+        updateCursor()
+    }
+
+    private func updateCursor() {
+        guard let currentTime else {
+            cursorLayer.isHidden = true
+            return
+        }
+        let x = CGFloat(currentTime.timeIntervalSince(visibleStart) / visibleSpan) * bounds.width
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        cursorLayer.isHidden = x < 0 || x > bounds.width
+        cursorLayer.setAffineTransform(.identity)
+        cursorLayer.frame = CGRect(x: x, y: 0, width: 2, height: min(92, bounds.height))
+        CATransaction.commit()
+    }
+
+    private func setCursorCenterX(_ x: CGFloat) {
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        cursorLayer.position.x = x
+        CATransaction.commit()
+    }
+
+}
+
+/// Draws the complete strip in one pass. This replaces hundreds of CALayers
+/// without using `shouldRasterize`: a three-screen raster cache can exceed the
+/// maximum texture size on older iPads and disappear entirely.
+final class ArchiveTimelineStripView: UIView {
+    private var visibleStart = Date.distantPast
+    private var visibleSpan = ArchiveTimelineRules.maximumVisibleSpan
+    private var intervals: [ArchiveInterval] = []
+
+    private lazy var timeFormatter: DateFormatter = Self.formatter(template: "HHmm")
+    private lazy var dateTimeFormatter: DateFormatter = Self.formatter(template: "ddMMMHHmm")
+    private lazy var labelStyle: [NSAttributedString.Key: Any] = {
+        let paragraph = NSMutableParagraphStyle()
+        paragraph.alignment = .center
+        return [
+            .font: UIFont.monospacedDigitSystemFont(ofSize: 10, weight: .bold),
+            .foregroundColor: UIColor.white.withAlphaComponent(0.75),
+            .paragraphStyle: paragraph,
+        ]
+    }()
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        isOpaque = true
+        backgroundColor = UIColor(red: 0.07, green: 0.09, blue: 0.09, alpha: 1)
+        contentMode = .redraw
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
+    func configure(visibleStart: Date, visibleSpan: TimeInterval, intervals: [ArchiveInterval]) {
+        self.visibleStart = visibleStart
+        self.visibleSpan = visibleSpan
+        self.intervals = intervals
+        setNeedsDisplay()
+    }
+
+    override func draw(_ rect: CGRect) {
+        guard visibleSpan > 0, bounds.width > 0, bounds.height > 0, let context = UIGraphicsGetCurrentContext() else { return }
+        let pageWidth = bounds.width / 3
+        let stripStart = visibleStart.addingTimeInterval(-visibleSpan)
+        let stripEnd = visibleStart.addingTimeInterval(visibleSpan * 2)
+
+        context.setFillColor(backgroundColor?.cgColor ?? UIColor.black.cgColor)
+        context.fill(rect)
+
+        for interval in intervals where interval.end >= stripStart && interval.start <= stripEnd {
+            let x1 = xPosition(of: interval.start, stripStart: stripStart, pageWidth: pageWidth)
+            let x2 = xPosition(of: interval.end, stripStart: stripStart, pageWidth: pageWidth)
+            context.setFillColor(interval.kind.uiColor.cgColor)
+            let bar = CGRect(x: x1, y: 8, width: max(3, x2 - x1), height: 34)
+            context.addPath(UIBezierPath(roundedRect: bar, cornerRadius: 1.5).cgPath)
+            context.fillPath()
+        }
+
+        drawTicks(context: context, stripStart: stripStart, pageWidth: pageWidth)
+    }
+
+    private func drawTicks(context: CGContext, stripStart: Date, pageWidth: CGFloat) {
+        let count = visibleSpan <= 6 * 3_600 ? 7 : 9
+        context.setFillColor(UIColor.white.withAlphaComponent(0.55).cgColor)
+        for page in -1...1 {
+            let pageStart = visibleStart.addingTimeInterval(Double(page) * visibleSpan)
+            let pageEnd = pageStart.addingTimeInterval(visibleSpan)
+            let crossesMidnight = !Calendar.current.isDate(pageStart, inSameDayAs: pageEnd)
+            for index in 0..<count {
+                if page > -1, index == 0 { continue }
+                let ratio = CGFloat(index) / CGFloat(max(1, count - 1))
+                let date = pageStart.addingTimeInterval(Double(ratio) * visibleSpan)
+                let x = xPosition(of: date, stripStart: stripStart, pageWidth: pageWidth)
+                context.fill(CGRect(x: x, y: 60, width: 1, height: index.isMultiple(of: 2) ? 18 : 10))
+                let text = (crossesMidnight ? dateTimeFormatter : timeFormatter).string(from: date) as NSString
+                text.draw(in: CGRect(x: x - 48, y: 82, width: 96, height: 18), withAttributes: labelStyle)
+            }
+        }
+    }
+
+    private func xPosition(of date: Date, stripStart: Date, pageWidth: CGFloat) -> CGFloat {
+        CGFloat(date.timeIntervalSince(stripStart) / visibleSpan) * pageWidth
+    }
+
+    private static func formatter(template: String) -> DateFormatter {
+        let formatter = DateFormatter()
+        formatter.locale = .autoupdatingCurrent
+        formatter.timeZone = .autoupdatingCurrent
+        formatter.setLocalizedDateFormatFromTemplate(template)
+        return formatter
+    }
+}
+
+private extension ArchiveActivityKind {
+    var uiColor: UIColor {
+        switch self {
+        case .person, .face: return UIColor(red: 0.07, green: 0.68, blue: 0.94, alpha: 1)
+        case .animal: return UIColor(red: 0.50, green: 0.25, blue: 0.94, alpha: 1)
+        case .vehicle: return UIColor(red: 0.48, green: 0.78, blue: 0.18, alpha: 1)
+        case .ring: return UIColor(red: 0.15, green: 0.73, blue: 0.61, alpha: 1)
+        }
     }
 }
 

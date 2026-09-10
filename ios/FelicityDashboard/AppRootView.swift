@@ -59,8 +59,9 @@ struct AppRootView: View {
             }
         }
         .tint(FelicityPalette.accent)
-        .task {
-            await runArchiveSelfTestIfRequested()
+        .task { await runArchiveSelfTestIfRequested() }
+        .task(id: isDashboardVisible) {
+            guard isDashboardVisible else { return }
             await model.run()
         }
         .sheet(isPresented: $settingsPresented) {
@@ -78,6 +79,10 @@ struct AppRootView: View {
         .fullScreenCover(item: $selectedMetric) { metric in
             EnergyDetailView(metric: metric, model: model)
         }
+    }
+
+    private var isDashboardVisible: Bool {
+        !settingsPresented && activeCamera == nil && !eventsPresented && selectedMetric == nil
     }
 
     @MainActor
@@ -218,7 +223,7 @@ private struct HeaderView: View {
                     .accessibilityLabel("Settings")
             }
             .buttonStyle(.plain)
-            Text("v0.4.7 · iOS")
+            Text("v0.4.13 · iOS")
                 .font(.headline.monospaced())
                 .foregroundStyle(FelicityPalette.accent)
             Spacer()
@@ -560,7 +565,7 @@ private struct NoDataView: View {
 
     var body: some View {
         VStack(spacing: 10) {
-            Image(systemName: "network.slash")
+            Image(systemName: "wifi.slash")
                 .font(.system(size: 38, weight: .medium))
             Text("NO DATA")
                 .font(.title.bold())
@@ -634,7 +639,7 @@ private struct SettingsView: View {
                         .foregroundStyle(.secondary)
                 }
                 Section {
-                    LabeledContent("Client", value: "iOS 0.4.7")
+                    LabeledContent("Client", value: "iOS 0.4.13")
                     LabeledContent("Server", value: model.status.version)
                     LabeledContent("Connection", value: model.isLive ? "Live" : "Offline")
                     if !cameraPreferences.saveError.isEmpty {

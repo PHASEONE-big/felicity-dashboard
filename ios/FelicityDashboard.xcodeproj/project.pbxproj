@@ -293,7 +293,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 17;
 				DEVELOPMENT_TEAM = NH364DL3M9;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = FelicityDashboard/Info.plist;
@@ -302,7 +302,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.4.7;
+				MARKETING_VERSION = 0.4.13;
 				PRODUCT_BUNDLE_IDENTIFIER = io.github.homedashboard.ios;
 				PRODUCT_MODULE_NAME = FelicityDashboard;
 				PRODUCT_NAME = "Felicity Dashboard";
@@ -319,7 +319,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 17;
 				DEVELOPMENT_TEAM = NH364DL3M9;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = FelicityDashboard/Info.plist;
@@ -328,7 +328,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.4.7;
+				MARKETING_VERSION = 0.4.13;
 				PRODUCT_BUNDLE_IDENTIFIER = io.github.homedashboard.ios;
 				PRODUCT_MODULE_NAME = FelicityDashboard;
 				PRODUCT_NAME = "Felicity Dashboard";

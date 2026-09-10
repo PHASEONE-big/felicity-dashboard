@@ -17,7 +17,8 @@ struct VideoAccessUnit: Sendable {
 /// Reassembles H.264/H.265 RTP payloads into complete Annex-B access units.
 final class RTPDepacketizer {
     private let isHEVC: Bool
-    private let output: (VideoAccessUnit) -> Void
+    private let output: ((VideoAccessUnit) -> Void)?
+    private var emitted: [VideoAccessUnit] = []
     private var access = Data()
     private var timestamp: UInt32?
     private var archiveTime: Date?
@@ -25,7 +26,7 @@ final class RTPDepacketizer {
     private var keyframe = false
     private var fragmentOpen = false
 
-    init(isHEVC: Bool, output: @escaping (VideoAccessUnit) -> Void) {
+    init(isHEVC: Bool, output: ((VideoAccessUnit) -> Void)? = nil) {
         self.isHEVC = isHEVC
         self.output = output
         access.reserveCapacity(256 * 1024)
@@ -40,11 +41,13 @@ final class RTPDepacketizer {
         fragmentOpen = false
     }
 
-    func accept(_ packet: Data, archiveTime nextArchiveTime: Date? = nil) {
-        let bytes = [UInt8](packet)
-        guard let payload = Self.payloadRange(bytes) else { return }
-        let sequence = UInt16(bytes[2]) << 8 | UInt16(bytes[3])
-        let nextTimestamp = Self.readUInt32(bytes, 4)
+    @discardableResult
+    func accept(_ packet: Data, archiveTime nextArchiveTime: Date? = nil) -> [VideoAccessUnit] {
+        emitted.removeAll(keepingCapacity: true)
+        guard let payload = Self.payloadRange(packet) else { return emitted }
+        let start = packet.startIndex
+        let sequence = UInt16(packet[start + 2]) << 8 | UInt16(packet[start + 3])
+        let nextTimestamp = Self.readUInt32(packet, start + 4)
         if let expectedSequence, expectedSequence != sequence {
             access.removeAll(keepingCapacity: true)
             keyframe = false
@@ -54,12 +57,13 @@ final class RTPDepacketizer {
         if let timestamp, timestamp != nextTimestamp { emit() }
         timestamp = nextTimestamp
         if archiveTime == nil { archiveTime = nextArchiveTime }
-        if isHEVC { appendH265(bytes, payload) } else { appendH264(bytes, payload) }
-        if bytes[1] & 0x80 != 0 { emit() }
+        if isHEVC { appendH265(packet, payload) } else { appendH264(packet, payload) }
+        if packet[start + 1] & 0x80 != 0 { emit() }
+        return emitted
     }
 
-    private func appendH264(_ packet: [UInt8], _ payload: Range<Int>) {
-        guard let first = packet[safe: payload.lowerBound] else { return }
+    private func appendH264(_ packet: Data, _ payload: Range<Data.Index>) {
+        let first = packet[payload.lowerBound]
         let type = first & 0x1f
         if (1...23).contains(type) {
             appendNAL(packet[payload])
@@ -91,7 +95,7 @@ final class RTPDepacketizer {
         }
     }
 
-    private func appendH265(_ packet: [UInt8], _ payload: Range<Int>) {
+    private func appendH265(_ packet: Data, _ payload: Range<Data.Index>) {
         guard payload.count >= 2 else { return }
         let first = packet[payload.lowerBound]
         let type = (first >> 1) & 0x3f
@@ -127,7 +131,7 @@ final class RTPDepacketizer {
         }
     }
 
-    private func appendNAL(_ bytes: ArraySlice<UInt8>) {
+    private func appendNAL<Bytes: Collection>(_ bytes: Bytes) where Bytes.Element == UInt8 {
         appendStartCode()
         access.append(contentsOf: bytes)
     }
@@ -136,7 +140,9 @@ final class RTPDepacketizer {
 
     private func emit() {
         if access.count > 4, let timestamp {
-            output(VideoAccessUnit(annexB: access, rtpTimestamp: timestamp, isKeyframe: keyframe, archiveTime: archiveTime))
+            let unit = VideoAccessUnit(annexB: access, rtpTimestamp: timestamp, isKeyframe: keyframe, archiveTime: archiveTime)
+            emitted.append(unit)
+            output?(unit)
         }
         access.removeAll(keepingCapacity: true)
         keyframe = false
@@ -144,26 +150,23 @@ final class RTPDepacketizer {
         archiveTime = nil
     }
 
-    private static func payloadRange(_ packet: [UInt8]) -> Range<Int>? {
-        guard packet.count >= 12, packet[0] & 0xc0 == 0x80 else { return nil }
-        var offset = 12 + Int(packet[0] & 0x0f) * 4
-        guard offset <= packet.count else { return nil }
-        if packet[0] & 0x10 != 0 {
-            guard offset + 4 <= packet.count else { return nil }
+    private static func payloadRange(_ packet: Data) -> Range<Data.Index>? {
+        let start = packet.startIndex
+        guard packet.count >= 12, packet[start] & 0xc0 == 0x80 else { return nil }
+        var offset = start + 12 + Int(packet[start] & 0x0f) * 4
+        guard offset <= packet.endIndex else { return nil }
+        if packet[start] & 0x10 != 0 {
+            guard offset + 4 <= packet.endIndex else { return nil }
             let words = Int(packet[offset + 2]) << 8 | Int(packet[offset + 3])
             offset += 4 + words * 4
         }
-        var end = packet.count
-        if packet[0] & 0x20 != 0, let padding = packet.last, padding > 0 { end -= Int(padding) }
+        var end = packet.endIndex
+        if packet[start] & 0x20 != 0, let padding = packet.last, padding > 0 { end -= Int(padding) }
         guard offset < end else { return nil }
         return offset..<end
     }
 
-    private static func readUInt32(_ bytes: [UInt8], _ offset: Int) -> UInt32 {
+    private static func readUInt32(_ bytes: Data, _ offset: Data.Index) -> UInt32 {
         UInt32(bytes[offset]) << 24 | UInt32(bytes[offset + 1]) << 16 | UInt32(bytes[offset + 2]) << 8 | UInt32(bytes[offset + 3])
     }
-}
-
-private extension Array {
-    subscript(safe index: Index) -> Element? { indices.contains(index) ? self[index] : nil }
 }

@@ -79,6 +79,11 @@ Home Assistant backups.
 
 ## Choose your client
 
+Current recovered baselines: **iOS 0.4.13 (17)**, **Android 0.7.23 (30)**,
+**ESP32 + Nextion 0.14.1**. These clients have independent version histories.
+See [client versions and repository layout](docs/CLIENT_VERSIONS.md) for exact
+version sources, baseline tags, artifact checks, and the active workspace.
+
 - [Home Assistant app guide](felicity_dashboard_addon/DOCS.md)
 - [Android kiosk guide](android/README.md)
 - [iOS client guide](ios/README.md)

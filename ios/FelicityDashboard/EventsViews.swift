@@ -125,7 +125,10 @@ struct EventsView: View {
             .background(eventBackground.ignoresSafeArea())
         }
         .preferredColorScheme(.dark)
-        .task { await model.run() }
+        .task(id: selectedEvent == nil) {
+            guard selectedEvent == nil else { return }
+            await model.run()
+        }
         .fullScreenCover(item: $selectedEvent) { event in
             if let camera = camera(for: event) {
                 ArchiveView(camera: camera, event: event, backLabel: "EVENTS", repository: repository, preferences: preferences)
@@ -284,7 +287,9 @@ private struct ThreeEyeImage: View {
             guard let url else { failed = true; return }
             do {
                 let data = try await ThreeEyeImageStore.shared.data(for: url, configuration: configuration)
-                image = UIImage(data: data)
+                image = await Task.detached(priority: .utility) {
+                    CameraPreviewStore.thumbnail(from: data)
+                }.value
                 failed = image == nil
             } catch {
                 failed = true

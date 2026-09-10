@@ -11,7 +11,7 @@ enum ArchivePlaybackState: Equatable, Sendable {
 }
 
 actor ArchiveRTSPSession {
-    typealias FrameHandler = @Sendable (VideoAccessUnit, UInt64) -> Void
+    typealias FrameHandler = @MainActor @Sendable (VideoAccessUnit, UInt64) -> Void
     typealias StatisticsHandler = @Sendable (LiveStreamStatistics) -> Void
     typealias StateHandler = @Sendable (ArchivePlaybackState) -> Void
 
@@ -26,6 +26,7 @@ actor ArchiveRTSPSession {
     private var isHEVC = false
     private var keepAlive: Task<Void, Never>?
     private var generation = 0
+    private var frameGeneration: UInt64 = 0
     private var requestedTarget = Date.distantPast
     private var waitingForKeyframe = true
     private var pauseAfterFirstFrame = true
@@ -103,15 +104,14 @@ actor ArchiveRTSPSession {
         guard !sessionID.isEmpty else { throw RTSPError.disconnected }
         generation += 1
         let seekGeneration = generation
+        self.frameGeneration = frameGeneration
         requestedTarget = target
         waitingForKeyframe = true
         pauseAfterFirstFrame = !autoplay
         acceptingFrames = false
         playAnchorDate = nil
         playAnchorRTP = nil
-        depacketizer = RTPDepacketizer(isHEVC: isHEVC) { [weak self] unit in
-            Task { await self?.accept(unit, generation: seekGeneration, frameGeneration: frameGeneration) }
-        }
+        depacketizer = RTPDepacketizer(isHEVC: isHEVC)
         resetStatistics()
         setState(.seeking)
         if serverPlaying {
@@ -167,7 +167,7 @@ actor ArchiveRTSPSession {
         setState(.idle)
     }
 
-    private func accept(channel: Int, packet: Data) {
+    private func accept(channel: Int, packet: Data) async {
         guard channel == videoChannel, acceptingFrames else { return }
         receivedPackets += 1
         if receivedPackets == 1 { trace("First replay RTP packet bytes=\(packet.count) channel=\(channel)") }
@@ -179,7 +179,12 @@ actor ArchiveRTSPSession {
         if let timestamp, let anchorTimestamp = playAnchorRTP, let anchorDate = playAnchorDate {
             fallbackTime = ReplayClock.date(rtpTimestamp: timestamp, anchorTimestamp: anchorTimestamp, anchorDate: anchorDate)
         } else { fallbackTime = nil }
-        depacketizer?.accept(packet, archiveTime: ReplayClock.date(fromRTP: packet) ?? fallbackTime)
+        let units = depacketizer?.accept(packet, archiveTime: ReplayClock.date(fromRTP: packet) ?? fallbackTime) ?? []
+        let packetGeneration = generation
+        let packetFrameGeneration = frameGeneration
+        for unit in units {
+            await accept(unit, generation: packetGeneration, frameGeneration: packetFrameGeneration)
+        }
         publishStatisticsIfNeeded()
     }
 
@@ -190,7 +195,7 @@ actor ArchiveRTSPSession {
             waitingForKeyframe = false
             trace("First replay keyframe actual=\(unit.archiveTime?.timeIntervalSince1970 ?? 0) requested=\(requestedTarget.timeIntervalSince1970)")
         }
-        onFrame?(unit, frameGeneration)
+        await onFrame?(unit, frameGeneration)
         if pauseAfterFirstFrame {
             acceptingFrames = false
             let response = try? await authorized("PAUSE", target: uri, headers: ["Session: \(sessionID)", "Require: onvif-replay"])
