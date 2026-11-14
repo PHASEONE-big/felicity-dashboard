@@ -12,6 +12,50 @@ Native iPhone and iPad client for the Felicity energy and ONVIF camera system.
 The default server is `http://homeassistant.local:8000`. Tap the yin-yang mark
 to change it. The app requests local-network access on first connection.
 
+Personal Team installs need renewal: Apple's free provisioning profiles expire
+after seven days. Rebuild and install with the same team and bundle identifier
+(`io.github.homedashboard.ios`) to preserve the existing app's data. Do not delete
+the existing app to renew its signature. A network address alone is not enough:
+the iPad must already be paired with Xcode, or first connected by USB and trusted.
+
+## Dim clock and motion wake (0.4.15, build 19)
+
+On the energy dashboard, one minute without detected activity shows only large
+red time, date and household power consumption on black, at 4% display
+brightness by default. The clock updates and shifts position once per minute;
+household power refreshes every 30 seconds. A tap or camera movement wakes the
+dashboard. Dashboard brightness follows the camera's light estimate, with a
+manual adjustment and a 5–85% range; automatic changes occur at most once every
+10 seconds.
+
+Camera processing compares an 8 × 6 brightness grid about once a second.
+Capture uses low resolution and a low supported frame rate. There is no face,
+body or other object recognition. A person who remains still may let the clock
+appear; this is a motion trigger, not room-occupancy detection.
+
+In **Settings → Clock & presence**, change the timeout (30 seconds to 5 minutes),
+clock brightness (1–20%), motion sensitivity, and dashboard brightness
+adjustment. Camera wake and automatic brightness can be disabled, and the clock
+can be disabled or previewed.
+The camera permission prompt explains its use. Only the front camera is used,
+with no microphone, recording, or uploads. The system camera indicator is visible.
+If camera access is denied or interrupted, touch wake remains available.
+
+Felicity keeps the device awake only while this mode is enabled and the app is
+in the foreground. Camera capture and idle clock pause in settings, camera/event
+views and energy details. Original display brightness and idle-timer state are
+restored when leaving the mode/app. Idle polling requests only current power;
+summary/status requests are skipped. These changes reduce processing and
+network work, but battery or wall-power savings have not been measured.
+
+Build 19 also replaces the global SwiftUI drag gesture with a passive UIKit
+touch observer to address the reported touch failure on the restored iPad.
+The signed build passed 48 simulator tests and was installed on the requested
+iPad Pro. Physical touch, clock, motion and brightness retesting remain pending.
+Darkness, a covered camera, reflections and moving objects can affect motion
+detection. See [installation and validation](../docs/IOS_KIOSK_HANDOFF.md) for the
+exact device and current validation status.
+
 ## Cameras, events and archive
 
 Version 0.4 includes the native camera, 3ye event and Profile G archive slices:

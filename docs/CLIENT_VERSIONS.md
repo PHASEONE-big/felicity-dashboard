@@ -6,19 +6,25 @@ APK, iOS app, or display firmware.
 
 | Client | Current source version | Build | Source | Git snapshot |
 |---|---|---|---|---|
-| iOS / iPadOS | 0.4.13 | 17 | `ios/` | `snapshots/ios/0.4.13-build17` |
+| iOS / iPadOS | 0.4.15 | 19 | `ios/` | baseline: `snapshots/ios/0.4.13-build17` |
 | Android / dragon | 0.7.25 | 32 | `android/app/` | `snapshots/android/0.7.25-build32` |
 | ESP32 + Nextion | 0.14.1 | — | `esp32/`, `nextion/`, `firmware/` | `snapshots/esp32-nextion/0.14.1` |
 
-These tags preserve development baselines. iOS includes the recovered 0.4.13
-changes. Android 0.7.25 preserves short ONVIF activity boundaries discovered
+These tags preserve development baselines. iOS 0.4.15 replaces the restored
+0.4.14 camera recognition with tiny-grid motion detection, adds adaptive
+dashboard brightness and a red clock/date/home-load screen, and addresses the
+reported touch failure. The signed build 19 passed 48 simulator tests and was
+installed on the requested iPad; physical touch, clock and motion retesting
+remain pending. The previous 0.4.13 tag remains the recovery baseline.
+See [iOS kiosk handoff](IOS_KIOSK_HANDOFF.md) for installation and validation.
+Android 0.7.25 preserves short ONVIF activity boundaries discovered
 during physical testing on dragon, and includes 0.7.24's playback/seek fixes.
 See [Android 0.7.25](ANDROID_0.7.25.md) for the evidence. The original Android
 baseline remains at `snapshots/android/0.7.23-build30`.
 The ESP32 binary reports 0.14.1; Nextion has no independently
 verified semantic version, so its exact HMI/TFT files are identified by hashes
-in the 0.14.1 hardware bundle. No new iOS or hardware release was issued.
-Verification passed: 65 Android unit tests and a debug APK build; 25 iOS tests
+in the 0.14.1 hardware bundle. No new hardware release was issued.
+Baseline verification passed: 65 Android unit tests and a debug APK build; 25 iOS tests
 on an iPad simulator; source-version and firmware-hash checks. These checks do
 not replace physical device testing of archive playback.
 

@@ -1,7 +1,44 @@
+import Combine
 import XCTest
 @testable import FelicityDashboard
 
 final class DashboardModelsTests: XCTestCase {
+    @MainActor
+    func testClockPollingFetchesOnlyHouseholdPowerAndCancelsPromptly() async throws {
+        try await checkFirstPoll(lowPower: true, expectedSummaryAndStatus: 0)
+    }
+
+    @MainActor
+    func testDashboardPollingStillFetchesSummaryAndStatus() async throws {
+        try await checkFirstPoll(lowPower: false, expectedSummaryAndStatus: 1)
+    }
+
+    @MainActor
+    private func checkFirstPoll(lowPower: Bool, expectedSummaryAndStatus: Int) async throws {
+        let suite = "DashboardPollingTests.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let api = DashboardPollingStub()
+        let model = DashboardViewModel(api: api, defaults: defaults)
+        let refreshed = expectation(description: "First refresh completed")
+        let subscription = model.$error.dropFirst().filter { $0.isEmpty }.first().sink { _ in
+            refreshed.fulfill()
+        }
+        defer { subscription.cancel() }
+        let polling = Task { await model.run(lowPower: lowPower) }
+        await fulfillment(of: [refreshed], timeout: 2)
+        polling.cancel()
+        await polling.value
+
+        let counts = await api.counts()
+        XCTAssertEqual(counts.current, 1)
+        XCTAssertEqual(counts.summary, expectedSummaryAndStatus)
+        XCTAssertEqual(counts.status, expectedSummaryAndStatus)
+        XCTAssertEqual(model.snapshot.load, 1_234)
+        XCTAssertTrue(model.status.online)
+        XCTAssertEqual(model.error, "")
+    }
+
     @MainActor
     func testCameraPreviewPersistsAcrossStoreRecreation() async throws {
         let root = FileManager.default.temporaryDirectory.appending(path: "CameraPreviewStoreTests-\(UUID().uuidString)", directoryHint: .isDirectory)
@@ -447,5 +484,35 @@ final class DashboardModelsTests: XCTestCase {
         while value >= 0x80 { output.append(UInt8(value & 0x7f) | 0x80); value >>= 7 }
         output.append(UInt8(value))
         return output
+    }
+}
+
+private actor DashboardPollingStub: DashboardProviding {
+    private var currentCount = 0
+    private var summaryCount = 0
+    private var statusCount = 0
+
+    func current(baseURL: URL, previous: DashboardSnapshot) async throws -> DashboardSnapshot {
+        currentCount += 1
+        var value = previous
+        value.load = 1_234
+        value.updatedAt = Date()
+        return value
+    }
+
+    func summary(baseURL: URL, previous: DashboardSnapshot) async throws -> DashboardSnapshot {
+        summaryCount += 1
+        return previous
+    }
+
+    func status(baseURL: URL) async throws -> ServerStatus {
+        statusCount += 1
+        return ServerStatus(online: true, version: "test")
+    }
+
+    func chart(baseURL: URL, metric: DashboardMetric) async throws -> DashboardChart { .init() }
+
+    func counts() -> (current: Int, summary: Int, status: Int) {
+        (currentCount, summaryCount, statusCount)
     }
 }

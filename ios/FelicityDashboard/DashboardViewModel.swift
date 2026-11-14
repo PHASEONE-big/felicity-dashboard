@@ -29,12 +29,19 @@ final class DashboardViewModel: ObservableObject {
         defaults.set(serverText, forKey: "felicity.server")
     }
 
-    func run() async {
+    func run(lowPower: Bool = false) async {
         var iteration = 0
         while !Task.isCancelled {
-            await refresh(includeSummary: iteration % 5 == 0, includeStatus: iteration % 3 == 0)
+            // The idle clock needs only household power, not charts, totals or
+            // server telemetry. Fetch it infrequently to keep the radio idle.
+            await refresh(
+                includeSummary: !lowPower && iteration % 5 == 0,
+                includeStatus: !lowPower && iteration % 3 == 0
+            )
+            guard !Task.isCancelled else { return }
             iteration += 1
-            try? await Task.sleep(for: .seconds(2))
+            do { try await Task.sleep(for: .seconds(lowPower ? 30 : 2)) }
+            catch { return }
         }
     }
 
@@ -68,12 +75,25 @@ final class DashboardViewModel: ObservableObject {
             return
         }
         do {
-            snapshot = try await api.current(baseURL: baseURL, previous: snapshot)
-            if includeSummary { snapshot = try await api.summary(baseURL: baseURL, previous: snapshot) }
-            if includeStatus { status = try await api.status(baseURL: baseURL) }
+            let current = try await api.current(baseURL: baseURL, previous: snapshot)
+            try Task.checkCancellation()
+            snapshot = current
+            if includeSummary {
+                let summary = try await api.summary(baseURL: baseURL, previous: snapshot)
+                try Task.checkCancellation()
+                snapshot = summary
+            }
+            if includeStatus {
+                let serverStatus = try await api.status(baseURL: baseURL)
+                try Task.checkCancellation()
+                status = serverStatus
+            }
             else { status.online = true }
             error = ""
         } catch {
+            // Switching between clock and dashboard cancels the previous poll;
+            // cancellation is not a lost connection and must not overwrite it.
+            guard !Task.isCancelled else { return }
             status.online = false
             self.error = error.localizedDescription
         }

@@ -27,10 +27,17 @@
 	<string>Felicity connects directly to your local Home Assistant and camera recorder.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Felicity uses the device location only to show local weather.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Felicity compares tiny low-resolution front-camera samples to detect movement and adjust screen brightness. No face recognition. Frames stay on this iPad and are never recorded or uploaded.</string>
 	<key>UILaunchScreen</key>
 	<dict>
 		<key>UIColorName</key>
 		<string></string>
+	</dict>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
 	</dict>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>

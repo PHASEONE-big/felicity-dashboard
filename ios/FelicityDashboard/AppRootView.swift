@@ -13,9 +13,11 @@ enum FelicityPalette {
 }
 
 struct AppRootView: View {
+    @Environment(\.scenePhase) private var scenePhase
     @StateObject private var model = DashboardViewModel()
     @StateObject private var cameras = CameraRepository()
     @StateObject private var cameraPreferences = CameraPreferences()
+    @StateObject private var kiosk = KioskController()
     @State private var settingsPresented = false
     @State private var activeCamera: CameraDescriptor?
     @State private var eventsPresented = false
@@ -59,13 +61,36 @@ struct AppRootView: View {
             }
         }
         .tint(FelicityPalette.accent)
+        .background(KioskScreenReader(attach: { kiosk.attach(screen: $0) }, activity: { kiosk.recordActivity() }).allowsHitTesting(false))
+        .overlay {
+            if kiosk.isSleeping {
+                KioskClockView(load: model.snapshot.load, updatedAt: model.snapshot.updatedAt, online: model.status.online) { kiosk.recordActivity() }
+            }
+        }
+        .statusBarHidden(kiosk.isSleeping)
+        .task {
+            kiosk.setContext(active: scenePhase == .active, dashboardVisible: isDashboardVisible)
+            await kiosk.run()
+        }
+        .onChange(of: scenePhase) { phase in
+            kiosk.setContext(active: phase == .active, dashboardVisible: isDashboardVisible)
+        }
+        .onChange(of: isDashboardVisible) { visible in
+            kiosk.setContext(active: scenePhase == .active, dashboardVisible: visible)
+        }
         .task { await runArchiveSelfTestIfRequested() }
-        .task(id: isDashboardVisible) {
-            guard isDashboardVisible else { return }
-            await model.run()
+        .task(id: "\(isDashboardVisible)-\(kiosk.isSleeping)-\(scenePhase == .active)") {
+            guard isDashboardVisible && scenePhase == .active else { return }
+            await model.run(lowPower: kiosk.isSleeping)
         }
         .sheet(isPresented: $settingsPresented) {
-            SettingsView(model: model, cameras: cameras, cameraPreferences: cameraPreferences)
+            SettingsView(model: model, cameras: cameras, cameraPreferences: cameraPreferences, kiosk: kiosk) {
+                model.saveServer()
+                cameraPreferences.save()
+                settingsPresented = false
+                kiosk.setContext(active: scenePhase == .active, dashboardVisible: true)
+                kiosk.showClock()
+            }
                 .presentationDetents([.large])
         }
         .fullScreenCover(item: $activeCamera) { camera in
@@ -223,7 +248,7 @@ private struct HeaderView: View {
                     .accessibilityLabel("Settings")
             }
             .buttonStyle(.plain)
-            Text("v0.4.13 · iOS")
+            Text("v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—") · iOS")
                 .font(.headline.monospaced())
                 .foregroundStyle(FelicityPalette.accent)
             Spacer()
@@ -588,11 +613,14 @@ private struct SettingsView: View {
     @ObservedObject var model: DashboardViewModel
     @ObservedObject var cameras: CameraRepository
     @ObservedObject var cameraPreferences: CameraPreferences
+    @ObservedObject var kiosk: KioskController
+    let previewClock: () -> Void
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         NavigationStack {
             Form {
+                KioskSettingsSection(kiosk: kiosk, preview: previewClock)
                 Section("Felicity server") {
                     TextField("http://homeassistant.local:8000", text: $model.serverText)
                         .textInputAutocapitalization(.never)
@@ -639,7 +667,7 @@ private struct SettingsView: View {
                         .foregroundStyle(.secondary)
                 }
                 Section {
-                    LabeledContent("Client", value: "iOS 0.4.13")
+                    LabeledContent("Client", value: "iOS \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—")")
                     LabeledContent("Server", value: model.status.version)
                     LabeledContent("Connection", value: model.isLive ? "Live" : "Offline")
                     if !cameraPreferences.saveError.isEmpty {
