@@ -104,4 +104,94 @@ final class KioskIdlePolicyTests: XCTestCase {
         policy.update(at: 160, idleTimeout: 60, eligible: true)
         XCTAssertTrue(policy.isSleeping)
     }
+
+    func testInitialSustainedDarknessSleepsAfterThreeSecondsDespiteActivity() {
+        var policy = KioskIdlePolicy(now: 0)
+        policy.update(at: 0, idleTimeout: 60, eligible: true, lightLevel: 0.1)
+        for time in 1...2 {
+            policy.recordActivity(at: Double(time))
+            policy.update(at: Double(time), idleTimeout: 60, eligible: true, lightLevel: 0.1)
+            XCTAssertFalse(policy.isSleeping)
+        }
+        policy.recordActivity(at: 3)
+        policy.update(at: 3, idleTimeout: 60, eligible: true, lightLevel: 0.1)
+        XCTAssertTrue(policy.isSleeping)
+    }
+
+    func testBriefDarkFlickerDoesNotShortenTheNextDarknessDelay() {
+        var policy = KioskIdlePolicy(now: 0)
+        policy.update(at: 0, idleTimeout: 60, eligible: true, lightLevel: 0.1)
+        policy.update(at: 2, idleTimeout: 60, eligible: true, lightLevel: 0.5)
+        policy.update(at: 3, idleTimeout: 60, eligible: true, lightLevel: 0.1)
+        policy.update(at: 5.9, idleTimeout: 60, eligible: true, lightLevel: 0.1)
+        XCTAssertFalse(policy.isSleeping)
+        policy.update(at: 6, idleTimeout: 60, eligible: true, lightLevel: 0.1)
+        XCTAssertTrue(policy.isSleeping)
+    }
+
+    func testDarkHysteresisDoesNotRearmUntilLightClearsExitThreshold() {
+        var policy = KioskIdlePolicy(now: 0)
+        policy.update(at: 0, idleTimeout: 60, eligible: true, lightLevel: 0.1)
+        policy.update(at: 1, idleTimeout: 60, eligible: true, lightLevel: 0.21)
+        policy.update(at: 3, idleTimeout: 60, eligible: true, lightLevel: 0.21)
+        XCTAssertTrue(policy.isSleeping)
+        policy.recordActivity(at: 4)
+        policy.update(at: 10, idleTimeout: 60, eligible: true, lightLevel: 0.23)
+        XCTAssertFalse(policy.isSleeping)
+        policy.update(at: 11, idleTimeout: 60, eligible: true, lightLevel: 0.25)
+        policy.update(at: 12, idleTimeout: 60, eligible: true, lightLevel: 0.1)
+        policy.update(at: 15, idleTimeout: 60, eligible: true, lightLevel: 0.1)
+        XCTAssertTrue(policy.isSleeping)
+    }
+
+    func testWakeInSameDarknessUsesOrdinaryIdleTimeout() {
+        var policy = KioskIdlePolicy(now: 0)
+        policy.update(at: 0, idleTimeout: 60, eligible: true, lightLevel: 0.1)
+        policy.update(at: 3, idleTimeout: 60, eligible: true, lightLevel: 0.1)
+        policy.recordActivity(at: 4)
+        policy.update(at: 7, idleTimeout: 60, eligible: true, lightLevel: 0.1)
+        XCTAssertFalse(policy.isSleeping)
+        policy.update(at: 63, idleTimeout: 60, eligible: true, lightLevel: 0.1)
+        XCTAssertFalse(policy.isSleeping)
+        policy.update(at: 64, idleTimeout: 60, eligible: true, lightLevel: 0.1)
+        XCTAssertTrue(policy.isSleeping)
+    }
+
+    func testMissingLightAndIneligibleContextResetDarknessTracking() {
+        for interruptWithMissingLight in [true, false] {
+            var policy = KioskIdlePolicy(now: 0)
+            policy.update(at: 0, idleTimeout: 60, eligible: true, lightLevel: 0.1)
+            policy.update(at: 2, idleTimeout: 60, eligible: interruptWithMissingLight,
+                          lightLevel: interruptWithMissingLight ? nil : 0.1)
+            policy.update(at: 3, idleTimeout: 60, eligible: true, lightLevel: 0.1)
+            policy.update(at: 5.9, idleTimeout: 60, eligible: true, lightLevel: 0.1)
+            XCTAssertFalse(policy.isSleeping)
+            policy.update(at: 6, idleTimeout: 60, eligible: true, lightLevel: 0.1)
+            XCTAssertTrue(policy.isSleeping)
+        }
+    }
+
+    func testPreviewInDarknessDoesNotRestartDarknessDelayAfterWake() {
+        var policy = KioskIdlePolicy(now: 0)
+        policy.showClock(at: 0)
+        policy.update(at: 1, idleTimeout: 60, eligible: true, lightLevel: 0.1)
+        policy.recordActivity(at: 2)
+        policy.update(at: 5, idleTimeout: 60, eligible: true, lightLevel: 0.1)
+        XCTAssertFalse(policy.isSleeping)
+        policy.update(at: 61, idleTimeout: 60, eligible: true, lightLevel: 0.1)
+        XCTAssertFalse(policy.isSleeping)
+    }
+
+    func testCustomDarkThresholdAndInvalidLightFallback() {
+        var policy = KioskIdlePolicy(now: 0)
+        policy.update(at: 0, idleTimeout: 60, eligible: true, lightLevel: 0.25, darkThreshold: 0.3)
+        policy.update(at: 3, idleTimeout: 60, eligible: true, lightLevel: 0.25, darkThreshold: 0.3)
+        XCTAssertTrue(policy.isSleeping)
+        policy.recordActivity(at: 4)
+        policy.update(at: 5, idleTimeout: 60, eligible: true, lightLevel: .nan)
+        policy.update(at: 63, idleTimeout: 60, eligible: true)
+        XCTAssertFalse(policy.isSleeping)
+        policy.update(at: 64, idleTimeout: 60, eligible: true)
+        XCTAssertTrue(policy.isSleeping)
+    }
 }

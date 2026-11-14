@@ -12,6 +12,7 @@ final class KioskController: ObservableObject {
     @Published var adaptiveBrightness: Bool { didSet { savePreferences(); applyBrightness(force: true) } }
     @Published var brightnessAdjustment: Double { didSet { savePreferences(); applyBrightness(force: true) } }
     @Published var motionSensitivity: Double { didSet { savePreferences(); camera.motionSensitivity = motionSensitivity } }
+    @Published var darknessThreshold: Double { didSet { savePreferences() } }
     @Published private(set) var lightLevel: Double?
     @Published private(set) var isSleeping = false
     @Published private(set) var cameraStatus: PresenceCameraStatus = .stopped
@@ -40,6 +41,7 @@ final class KioskController: ObservableObject {
         adaptiveBrightness = defaults.object(forKey: "kiosk.adaptiveBrightness") as? Bool ?? true
         brightnessAdjustment = min(0.25, max(-0.25, defaults.double(forKey: "kiosk.brightnessAdjustment")))
         motionSensitivity = min(1, max(0, defaults.object(forKey: "kiosk.motionSensitivity") as? Double ?? 0.5))
+        darknessThreshold = min(0.45, max(0.05, defaults.object(forKey: "kiosk.darknessThreshold") as? Double ?? 0.18))
         camera.motionSensitivity = motionSensitivity
         camera.lightLevelChanged = { [weak self] level in
             guard let self, self.eligible else { return }
@@ -51,7 +53,10 @@ final class KioskController: ObservableObject {
         camera.statusChanged = { [weak self] status in
             self?.cameraStatus = status
             switch status {
-            case .permissionDenied, .unavailable, .failed: self?.cameraProblem = status.description
+            case .permissionDenied, .unavailable, .failed:
+                self?.cameraProblem = status.description
+                self?.lightLevel = nil
+                self?.applyBrightness(force: true)
             case .running: self?.cameraProblem = nil
             default: break
             }
@@ -85,7 +90,7 @@ final class KioskController: ObservableObject {
         runGeneration += 1
         let generation = runGeneration
         while !Task.isCancelled {
-            policy.update(at: now, idleTimeout: idleTimeout, eligible: eligible)
+            updatePolicy()
             synchronizeDisplay()
             do { try await Task.sleep(for: .seconds(1)) }
             catch { break }
@@ -109,6 +114,12 @@ final class KioskController: ObservableObject {
     private var now: TimeInterval { ProcessInfo.processInfo.systemUptime }
     private var eligible: Bool { enabled && sceneIsActive && dashboardVisible }
 
+    private func updatePolicy() {
+        policy.update(at: now, idleTimeout: idleTimeout, eligible: eligible,
+                      lightLevel: cameraWakeEnabled ? lightLevel : nil,
+                      darkThreshold: darknessThreshold)
+    }
+
     private func updateRuntime() {
         if enabled && sceneIsActive {
             if savedIdleTimerDisabled == nil {
@@ -120,8 +131,8 @@ final class KioskController: ObservableObject {
             savedIdleTimerDisabled = nil
         }
         if eligible && cameraWakeEnabled { camera.start() }
-        else { camera.stop() }
-        policy.update(at: now, idleTimeout: idleTimeout, eligible: eligible)
+        else { camera.stop(); lightLevel = nil }
+        updatePolicy()
         synchronizeDisplay()
         applyBrightness(force: true)
     }
@@ -170,6 +181,7 @@ final class KioskController: ObservableObject {
         defaults.set(adaptiveBrightness, forKey: "kiosk.adaptiveBrightness")
         defaults.set(brightnessAdjustment, forKey: "kiosk.brightnessAdjustment")
         defaults.set(motionSensitivity, forKey: "kiosk.motionSensitivity")
+        defaults.set(darknessThreshold, forKey: "kiosk.darknessThreshold")
     }
 }
 
@@ -281,6 +293,13 @@ struct KioskSettingsSection: View {
             if kiosk.enabled {
                 Toggle("Motion wake with front camera", isOn: $kiosk.cameraWakeEnabled)
                 if kiosk.cameraWakeEnabled {
+                    VStack(alignment: .leading) {
+                        Text("Darkness threshold: \(Int(kiosk.darknessThreshold * 100))%")
+                        Slider(value: $kiosk.darknessThreshold, in: 0.05...0.45, step: 0.01)
+                            .accessibilityLabel("Darkness threshold")
+                        Text("Shows the clock after 3 seconds of darkness. Move or tap to wake; the usual idle timeout then applies.")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
                     Toggle("Brightness follows room light", isOn: $kiosk.adaptiveBrightness)
                     if kiosk.adaptiveBrightness {
                         VStack(alignment: .leading) {

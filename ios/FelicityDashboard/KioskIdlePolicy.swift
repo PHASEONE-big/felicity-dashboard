@@ -14,6 +14,8 @@ enum KioskBrightnessPolicy {
 struct KioskIdlePolicy {
     private(set) var isSleeping = false
     private(set) var lastActivity: TimeInterval
+    private var darknessStartedAt: TimeInterval?
+    private var darknessConsumed = false
 
     init(now: TimeInterval) {
         lastActivity = now
@@ -22,13 +24,42 @@ struct KioskIdlePolicy {
     mutating func recordActivity(at now: TimeInterval) {
         // A delayed callback must not move the inactivity deadline backwards.
         lastActivity = max(lastActivity, now)
+        if isSleeping, darknessStartedAt != nil {
+            darknessConsumed = true
+        }
         isSleeping = false
     }
 
-    mutating func update(at now: TimeInterval, idleTimeout: TimeInterval, eligible: Bool) {
+    mutating func update(
+        at now: TimeInterval,
+        idleTimeout: TimeInterval,
+        eligible: Bool,
+        lightLevel: Double? = nil,
+        darkThreshold: Double = 0.18
+    ) {
         guard eligible else {
+            resetDarkness()
             recordActivity(at: now)
             return
+        }
+        // Track light even while sleeping: a touch wake in the same dark room
+        // must get a full idle interval instead of immediately showing the clock.
+        if let lightLevel, lightLevel.isFinite {
+            let threshold = darkThreshold.isFinite ? min(1, max(0, darkThreshold)) : 0.18
+            if lightLevel >= min(1, threshold + 0.06) {
+                resetDarkness()
+            } else if lightLevel <= threshold, darknessStartedAt == nil {
+                darknessStartedAt = max(now, lastActivity)
+                darknessConsumed = isSleeping
+            }
+            if let start = darknessStartedAt, !darknessConsumed, now - start >= 3 {
+                // Ignore activity during the transition itself (for example,
+                // moving a hand over the camera), but trigger only once.
+                darknessConsumed = true
+                isSleeping = true
+            }
+        } else {
+            resetDarkness()
         }
         guard !isSleeping else { return }
         let elapsed = max(0, now - lastActivity)
@@ -39,6 +70,12 @@ struct KioskIdlePolicy {
 
     mutating func showClock(at now: TimeInterval) {
         lastActivity = max(lastActivity, now)
+        if darknessStartedAt != nil { darknessConsumed = true }
         isSleeping = true
+    }
+
+    private mutating func resetDarkness() {
+        darknessStartedAt = nil
+        darknessConsumed = false
     }
 }

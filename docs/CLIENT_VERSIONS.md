@@ -6,16 +6,18 @@ APK, iOS app, or display firmware.
 
 | Client | Current source version | Build | Source | Git snapshot |
 |---|---|---|---|---|
-| iOS / iPadOS | 0.4.15 | 19 | `ios/` | baseline: `snapshots/ios/0.4.13-build17` |
+| iOS / iPadOS | 0.4.16 | 20 | `ios/` | baseline: `snapshots/ios/0.4.13-build17` |
 | Android / dragon | 0.7.25 | 32 | `android/app/` | `snapshots/android/0.7.25-build32` |
 | ESP32 + Nextion | 0.14.1 | — | `esp32/`, `nextion/`, `firmware/` | `snapshots/esp32-nextion/0.14.1` |
 
-These tags preserve development baselines. iOS 0.4.15 replaces the restored
-0.4.14 camera recognition with tiny-grid motion detection, adds adaptive
-dashboard brightness and a red clock/date/home-load screen, and addresses the
-reported touch failure. The signed build 19 passed 48 simulator tests and was
-installed on the requested iPad; physical touch, clock and motion retesting
-remain pending. The previous 0.4.13 tag remains the recovery baseline.
+These tags preserve development baselines. iOS 0.4.16 adds a quick darkness
+transition to 0.4.15's tiny-grid motion detection, adaptive dashboard brightness
+and red clock/date/home-load screen. The clock triggers once per dark episode,
+after the smoothed light estimate stays below an adjustable threshold for three
+seconds (roughly 5–10 seconds after covering the camera). The signed build 20
+passed 55 simulator tests and was installed on the requested iPad; final physical
+darkness/motion validation is pending. Touch controls and the red clock were
+already confirmed on 0.4.15/19. The previous 0.4.13 tag remains the recovery baseline.
 See [iOS kiosk handoff](IOS_KIOSK_HANDOFF.md) for installation and validation.
 Android 0.7.25 preserves short ONVIF activity boundaries discovered
 during physical testing on dragon, and includes 0.7.24's playback/seek fixes.

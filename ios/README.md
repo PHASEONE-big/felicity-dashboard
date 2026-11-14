@@ -18,7 +18,7 @@ after seven days. Rebuild and install with the same team and bundle identifier
 the existing app to renew its signature. A network address alone is not enough:
 the iPad must already be paired with Xcode, or first connected by USB and trusted.
 
-## Dim clock and motion wake (0.4.15, build 19)
+## Dim clock and motion wake (0.4.16, build 20)
 
 On the energy dashboard, one minute without detected activity shows only large
 red time, date and household power consumption on black, at 4% display
@@ -28,13 +28,22 @@ dashboard. Dashboard brightness follows the camera's light estimate, with a
 manual adjustment and a 5–85% range; automatic changes occur at most once every
 10 seconds.
 
+Version 0.4.16 also switches to the clock when the camera's smoothed light estimate
+stays below the darkness threshold for three seconds. Smoothing comes first,
+so covering the camera should take roughly 5–10 seconds to show the clock; this
+timing still needs confirmation on the physical iPad. The default threshold is 18%
+on a relative camera scale, adjustable from 5–45%; it is not a lux measurement.
+The quick transition triggers once per dark episode. After motion or a tap
+wakes the dashboard, the usual inactivity timeout applies until the scene
+becomes bright again. Hysteresis prevents repeated switching near the threshold.
+
 Camera processing compares an 8 × 6 brightness grid about once a second.
 Capture uses low resolution and a low supported frame rate. There is no face,
 body or other object recognition. A person who remains still may let the clock
 appear; this is a motion trigger, not room-occupancy detection.
 
 In **Settings → Clock & presence**, change the timeout (30 seconds to 5 minutes),
-clock brightness (1–20%), motion sensitivity, and dashboard brightness
+clock brightness (1–20%), darkness threshold, motion sensitivity, and dashboard brightness
 adjustment. Camera wake and automatic brightness can be disabled, and the clock
 can be disabled or previewed.
 The camera permission prompt explains its use. Only the front camera is used,
@@ -48,10 +57,12 @@ restored when leaving the mode/app. Idle polling requests only current power;
 summary/status requests are skipped. These changes reduce processing and
 network work, but battery or wall-power savings have not been measured.
 
-Build 19 also replaces the global SwiftUI drag gesture with a passive UIKit
-touch observer to address the reported touch failure on the restored iPad.
-The signed build passed 48 simulator tests and was installed on the requested
-iPad Pro. Physical touch, clock, motion and brightness retesting remain pending.
+Version 0.4.15/19 replaced the global SwiftUI drag gesture with a passive
+UIKit touch observer. That signed build passed 48 simulator tests; the user
+confirmed touch controls and the red clock now work on the requested iPad Pro.
+The signed 0.4.16/20 build passed 55 simulator tests and is now installed on the
+same iPad. Physical testing of its darkness transition, motion and brightness
+in actual day/night conditions remains pending.
 Darkness, a covered camera, reflections and moving objects can affect motion
 detection. See [installation and validation](../docs/IOS_KIOSK_HANDOFF.md) for the
 exact device and current validation status.

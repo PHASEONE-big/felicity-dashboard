@@ -4,7 +4,7 @@ Requested device: iPad Pro, supplied LAN address `192.168.13.188`.
 Confirmed USB UDID: `86d36a369fdaeb458f5a65ba0136bec628ffd018`.
 USB detection now identifies this device as **iPad Pro (9.7-inch), J127AP**,
 running **iPadOS 16.7.16 (20H392)**.
-Source and last confirmed installation: iOS **0.4.15, build 19**.
+Source and last confirmed installation: iOS **0.4.16, build 20**.
 Android and hardware versions are unchanged.
 The bundle identifier and configured signing team are preserved.
 
@@ -17,11 +17,10 @@ it opens and the dashboard displays data. After the follow-up fixes below, the
 rebuilt 0.4.14 app was also installed successfully with `InstallComplete` and
 exit code 0.
 
-Repository access is restored: `git fetch origin` succeeded, and the checked-out
+At task start, `git fetch origin` succeeded, and the checked-out
 commit and upstream were both `2935d4a`, with ahead/behind counts `0 0` before
 creating the task branch **`codex/ios-kiosk-recovery`**. Recovered uncommitted
-changes were preserved. The earlier access failures below describe the previous
-restricted command environment, not the current installation status.
+changes were preserved.
 
 The 0.4.14 follow-up fixes saved settings before clock preview and reset the idle
 interval on return to the dashboard. That physical-device build and 38
@@ -34,12 +33,23 @@ recognition, use a very small camera image, show only large red clock/date/home
 consumption in dim mode, and adapt dashboard brightness to the light when motion
 wakes it. The resulting **0.4.15/19 source** removes Vision recognition and
 replaces the global zero-distance SwiftUI drag gesture with a passive UIKit
-window touch observer. The touch gesture conflict is a candidate diagnosis;
-the fix still needs physical confirmation. The signed 0.4.15/19 build and all
+window touch observer. The signed 0.4.15/19 build and all
 48 updated simulator tests passed. The exact iPad received the final update
 over USB: signature/profile validation succeeded, followed by `InstallComplete`
-and exit code 0. The user has been asked to retest touch controls and the clock;
-physical motion, night-lighting and brightness acceptance remain pending.
+and exit code 0. The user then confirmed that **touch controls work and the red
+clock appears** on the physical iPad. The reported failure to switch immediately
+when the camera was covered was not a completed inactivity-timeout test: the
+user expected a quick darkness transition rather than waiting 60 seconds.
+
+The installed **0.4.16/20** adds that behavior: the clock appears when the smoothed
+camera light estimate stays below an adjustable threshold (default 0.18) for
+three seconds. Smoothing precedes the hold, so covering the camera is expected
+to show the clock in roughly 5–10 seconds, pending physical confirmation. The
+shortcut triggers once per dark episode, so motion/touch wake is followed by
+ordinary inactivity; hysteresis prevents threshold flicker. The signed native
+build, all 55 simulator tests and exact-device USB installation passed. Final
+physical darkness, motion, night-lighting and adaptive-brightness acceptance
+remain pending.
 
 ## Installation
 
@@ -70,36 +80,30 @@ explicitly confirmed that this is a different iPad. Nothing was installed or
 launched on it. Do not use `ipad-rei` for this task. Use the confirmed USB UDID
 above for all subsequent installation commands.
 
-The previous chat's restricted terminal could not access USB mux, several Apple
-host services, or Git metadata. Those failures did not show that the iPad was
-offline. In the resumed task, the required Git and legacy USB operations
-succeeded outside that restricted runner.
-
 ### Signing and installation after target recovery
 
 Initially Xcode reported no account and no development profile. The user signed
 in to the Apple Account in Xcode. A new physical-device build then succeeded
 with the unchanged `io.github.homedashboard.ios` identifier and team NH364DL3M9.
-`codesign --verify --deep --strict` passed outside the restricted runner. The embedded profile explicitly
+`codesign --verify --deep --strict` passed. The embedded profile explicitly
 includes USB UDID `86d36a369fdaeb458f5a65ba0136bec628ffd018` and expires
 **2026-11-21 at 18:20:22 Madrid (17:20:22 UTC)**.
 
-Current verified 0.4.15/19 products:
+Current verified 0.4.16/20 products:
 
 - `ios/build/ipad/Payload/Felicity Dashboard.app`
-- `ios/build/ipad/Felicity-0.4.15-build19.ipa`
+- `ios/build/ipad/Felicity-0.4.16-build20.ipa`
 
-Both contain the final rebuilt 0.4.15 app. The previous 0.4.14 products are
+Both contain the final rebuilt 0.4.16 app. The 0.4.15 build with physically
+confirmed touch/clock behavior is retained as
+`ios/build/ipad/confirmed-0.4.15-build19.app` and
+`ios/build/ipad/Felicity-0.4.15-build19.ipa`. The previous 0.4.14 products are
 retained locally, including `ios/build/ipad/Felicity-0.4.14-build18.ipa`.
 The initial signed products are preserved as `ios/build/ipad/initial-build18.app` and
 `ios/build/ipad/Felicity-0.4.14-build18.initial.ipa`.
 
-The previous restricted command build used `OTHER_SWIFT_FLAGS='$(inherited) -Xfrontend
--disable-sandbox'` only for the nested Apple Swift macro compiler sandbox, which
-cannot initialize inside the command runner's existing sandbox. This is a build
-invocation override, not a source/project setting. The standard 0.4.15
-`xcodebuild` device build succeeded with approved expanded host access and
-without this workaround.
+The standard 0.4.16 `xcodebuild` device build succeeded without special Swift
+compiler overrides.
 
 The earlier `devicectl device install app --device` attempt timed out at 15
 seconds without an installation result. The subsequent legacy USB installation
@@ -114,29 +118,33 @@ Xcode installation lacks the legacy `DeveloperDiskImage.dmg` needed by
 `ios-deploy --justlaunch`, so that launch command fails. This does not prevent
 USB installation or opening the app manually; both have now succeeded.
 
-Upstream `ios-control/ios-deploy` was fetched through the GitHub connector and
-compiled locally with Apple clang for the legacy device transport. In the
-previous restricted runner, exact-UDID detection returned `0xe8000063`
-(`kAMDMuxCreateListenerError`), and connecting to `/var/run/usbmuxd` returned
-EPERM. Running with restored host access resolved that access restriction and
-allowed detection and installation on the confirmed target.
+Upstream `ios-control/ios-deploy` was compiled locally with Apple clang for the
+legacy device transport. Exact-UDID USB detection and installation succeed on
+the confirmed target.
 
-`ios/build/ipad/Install-Felicity.command` installed the final 0.4.15/19 on the Mac.
+`ios/build/ipad/Install-Felicity.command` installed the final 0.4.16/20 on the Mac.
 It checks the app signature, bundle/version, target inclusion and profile expiry,
 then uses the locally compiled helper at `ios/build/device-tools/ios-deploy` to
 install over the existing app through USB, with the exact known UDID and no
 uninstall/debugger options. It does not change global permissions or restart any
 system service. The helper's source provenance and licenses are adjacent to it.
 The installer validated the version, signature and profile before reporting
-`InstallComplete`. Legacy USB operations require access to the Mac's USB mux
-service, which the restricted runner does not provide. Installation of 0.4.15
-is confirmed complete; physical touch, clock and camera acceptance remain pending.
+`InstallComplete`. Installation of 0.4.16 is confirmed complete; final physical
+darkness/motion acceptance remains pending. The user confirmed touch and
+red-clock behavior on the preceding 0.4.15 build.
 
-## Requested behaviour in 0.4.15/19
+## Requested behaviour in 0.4.16/20
 
 - Default: 60 seconds since touch or camera movement → a black screen with only
   large red time, date and household power consumption, at 4% brightness.
   Clock brightness is adjustable from 1–20%; timeout is 30 seconds to 5 minutes.
+- Darkness shortcut: a smoothed light estimate below the adjustable threshold
+  (default 0.18, range 0.05–0.45) for three seconds shows the clock without waiting
+  for the full inactivity timeout. Smoothing occurs before that hold: allow
+  roughly 5–10 seconds after covering the camera, pending physical timing
+  confirmation. It triggers only once per dark episode. After motion
+  or touch wakes the dashboard, normal inactivity applies until the scene
+  becomes bright enough to rearm the shortcut; hysteresis avoids flicker.
 - The clock redraws once per minute. Current power data refreshes every 30
   seconds, with no summary/status requests while idle. Normal dashboard polling
   keeps its existing 2-second cadence.
@@ -161,7 +169,24 @@ The reduced sampling, removed recognition, slower clock updates and reduced
 network polling are intended to keep the work inexpensive. Actual battery or
 wall-power consumption has not been measured on this iPad.
 
-## Checks for the installed 0.4.15/19
+## Checks for the installed 0.4.16/20
+
+The final signed native device build passed. Full XCTest execution passed
+**55 tests, 0 failures**: 27 Dashboard tests, 16 Kiosk tests and 12 Presence tests.
+Signature and profile validation passed; the exact requested iPad received the
+app over USB with `InstallComplete` and exit code 0.
+
+Verification artifacts:
+
+- Device build log: `ios/build/recovery-device-0.4.16.log`
+- Test log: `ios/build/recovery-tests-0.4.16.log`
+- XCTest result bundle: `ios/build/recovery-tests-0.4.16.xcresult`
+- Installation log: `ios/build/recovery-install-0.4.16.log`
+
+The final physical darkness/motion test is pending. Actual energy use and
+day/night adaptive-brightness behavior have not been measured.
+
+### Confirmed 0.4.15/19 evidence
 
 The final signed native device build passed. Full XCTest execution passed
 **48 tests, 0 failures**: 27 Dashboard tests (including two polling tests),
@@ -175,18 +200,17 @@ Verification artifacts:
 - Installation log: `ios/build/recovery-install-0.4.15.log` (`InstallComplete`,
   exit code 0; installer verified signature and profile before installation)
 
-These results validate the 0.4.15 build and automated behavior. They do not
-establish physical touch, motion sensitivity, brightness behavior or energy use
-on the requested iPad. Those checks remain below.
+These results validate the 0.4.15 build and automated behavior. The user also
+confirmed physical touch controls and the red clock work. Motion sensitivity,
+adaptive brightness and energy use remain unmeasured; these results do not
+validate the new 0.4.16 darkness transition.
 
 ### Previous 0.4.14/18 evidence
 
 The standard 0.4.14 `xcodebuild` physical-device build passed, including the two
 follow-up source fixes, without the earlier compiler sandbox workaround. Full
 XCTest execution on the **iPad Pro 13-inch (M5), iOS 26.5 simulator** passed
-**38 tests, 0 failures** (25 baseline + 13 new). This supersedes the previous
-restricted-runner attempt that built but executed zero tests because the
-simulator could not boot through SimLaunchHostService XPC.
+**38 tests, 0 failures** (25 baseline + 13 new).
 
 0.4.14 verification artifacts (a subsequent build may replace these paths):
 
@@ -206,26 +230,31 @@ version, the user reported that leaving the camera's field of view for about
 one minute did **not** show the clock. Settings → “Show clock now” also did not
 display it. The user subsequently reported that touch controls were unresponsive
 while data kept updating. The new passive touch observer is intended to address
-this failure. The 0.4.15 replacement is now installed and has passed automated
-tests, but physical retesting remains pending.
+this failure. The installed 0.4.15 replacement passed automated tests, and the
+user subsequently confirmed touch controls and the red clock work.
 
-## Pending 0.4.15/19 acceptance
+## Pending 0.4.16/20 acceptance
 
-The signed build, updated simulator tests and exact-device USB installation are
-complete. Record the following physical results separately from automated
-checks and the older 0.4.14 evidence.
+The 0.4.16/20 build, automated tests and installation are complete. Record the
+following physical results separately from confirmed 0.4.15 touch/clock behavior
+and the earlier 0.4.14 evidence.
 
-1. Verify Settings, buttons and scrolling respond to touch; preview the clock.
-2. Leave the scene still: the red time/date/home-load screen appears at the
+1. Confirm Settings, buttons, scrolling and manual clock preview still work.
+2. Darken or cover the camera: once the smoothed light estimate remains below
+   the chosen threshold for three seconds, the red clock appears. Allow roughly
+   5–10 seconds from covering the camera and record the actual delay. Move or tap to wake in
+   darkness; the dashboard should remain until ordinary inactivity expires.
+   Brighten then darken again to verify the quick transition rearms.
+3. Leave the scene still: the red time/date/home-load screen appears at the
    selected timeout and remains dim for two minutes without a self-wake loop.
    A still visible person is allowed to time out; no person detector is used.
-3. Approach or pass beside the iPad in day/night lighting: motion wakes the
+4. Approach or pass beside the iPad in day/night lighting: motion wakes the
    dashboard, whose brightness follows the available light. Test sensitivity
    and brightness sliders in the actual installation position.
-4. Confirm household power continues to update about every 30 seconds in clock
+5. Confirm household power continues to update about every 30 seconds in clock
    mode, and stale/offline data is not presented as a fresh reading.
-5. Touch clock, open settings/live/archive/details, rotate, lock/unlock and switch
+6. Touch clock, open settings/live/archive/details, rotate, lock/unlock and switch
    apps: no unintended clock overlay; normal brightness returns outside the mode.
-6. Deny/re-enable permission, interrupt camera capture, and cover the camera:
+7. Deny/re-enable permission, interrupt camera capture, and cover the camera:
    no crash; manual wake remains usable. Measure energy use before making
    quantitative power-saving claims.
