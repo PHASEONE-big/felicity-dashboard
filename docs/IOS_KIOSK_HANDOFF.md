@@ -44,12 +44,14 @@ user expected a quick darkness transition rather than waiting 60 seconds.
 The installed **0.4.16/20** adds that behavior: the clock appears when the smoothed
 camera light estimate stays below an adjustable threshold (default 0.18) for
 three seconds. Smoothing precedes the hold, so covering the camera is expected
-to show the clock in roughly 5–10 seconds, pending physical confirmation. The
+to show the clock in roughly 5–10 seconds; exact latency has not been measured. The
 shortcut triggers once per dark episode, so motion/touch wake is followed by
 ordinary inactivity; hysteresis prevents threshold flicker. The signed native
-build, all 55 simulator tests and exact-device USB installation passed. Final
-physical darkness, motion, night-lighting and adaptive-brightness acceptance
-remain pending.
+build, all 55 simulator tests and exact-device USB installation passed. On
+2026-11-14 the user confirmed both physical transitions: covering the camera
+shows the red clock, and uncovering it with hand movement returns the dashboard.
+The user plans to leave the iPad running overnight. Overnight stability,
+adaptive-brightness behavior and measured energy use remain to be checked.
 
 ## Installation
 
@@ -129,9 +131,9 @@ install over the existing app through USB, with the exact known UDID and no
 uninstall/debugger options. It does not change global permissions or restart any
 system service. The helper's source provenance and licenses are adjacent to it.
 The installer validated the version, signature and profile before reporting
-`InstallComplete`. Installation of 0.4.16 is confirmed complete; final physical
-darkness/motion acceptance remains pending. The user confirmed touch and
-red-clock behavior on the preceding 0.4.15 build.
+`InstallComplete`. Installation and the basic darkness/motion transitions of
+0.4.16 are confirmed complete. The user also confirmed touch and red-clock
+behavior on the preceding 0.4.15 build.
 
 ## Requested behaviour in 0.4.16/20
 
@@ -183,8 +185,10 @@ Verification artifacts:
 - XCTest result bundle: `ios/build/recovery-tests-0.4.16.xcresult`
 - Installation log: `ios/build/recovery-install-0.4.16.log`
 
-The final physical darkness/motion test is pending. Actual energy use and
-day/night adaptive-brightness behavior have not been measured.
+On 2026-11-14 the user confirmed the physical cover/uncover-and-move test:
+red clock on darkness, dashboard on movement. Exact transition latency was not
+measured. The user plans an overnight run; its outcome, actual energy use and
+day/night adaptive-brightness behavior remain unverified.
 
 ### Confirmed 0.4.15/19 evidence
 
@@ -233,11 +237,12 @@ while data kept updating. The new passive touch observer is intended to address
 this failure. The installed 0.4.15 replacement passed automated tests, and the
 user subsequently confirmed touch controls and the red clock work.
 
-## Pending 0.4.16/20 acceptance
+## Further 0.4.16/20 acceptance
 
-The 0.4.16/20 build, automated tests and installation are complete. Record the
-following physical results separately from confirmed 0.4.15 touch/clock behavior
-and the earlier 0.4.14 evidence.
+Build, automated tests, installation and the basic darkness-to-clock and
+motion-to-dashboard transitions are confirmed. The user plans to run the iPad
+overnight. The checks below extend that successful basic test; they are not yet
+all completed.
 
 1. Confirm Settings, buttons, scrolling and manual clock preview still work.
 2. Darken or cover the camera: once the smoothed light estimate remains below

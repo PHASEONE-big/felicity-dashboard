@@ -61,8 +61,9 @@ Version 0.4.15/19 replaced the global SwiftUI drag gesture with a passive
 UIKit touch observer. That signed build passed 48 simulator tests; the user
 confirmed touch controls and the red clock now work on the requested iPad Pro.
 The signed 0.4.16/20 build passed 55 simulator tests and is now installed on the
-same iPad. Physical testing of its darkness transition, motion and brightness
-in actual day/night conditions remains pending.
+same iPad. On 2026-11-14 the user confirmed that covering the camera shows the
+red clock and movement returns the dashboard. An overnight run is planned;
+long-term stability, day/night brightness and actual energy use remain unverified.
 Darkness, a covered camera, reflections and moving objects can affect motion
 detection. See [installation and validation](../docs/IOS_KIOSK_HANDOFF.md) for the
 exact device and current validation status.

@@ -15,8 +15,9 @@ transition to 0.4.15's tiny-grid motion detection, adaptive dashboard brightness
 and red clock/date/home-load screen. The clock triggers once per dark episode,
 after the smoothed light estimate stays below an adjustable threshold for three
 seconds (roughly 5–10 seconds after covering the camera). The signed build 20
-passed 55 simulator tests and was installed on the requested iPad; final physical
-darkness/motion validation is pending. Touch controls and the red clock were
+passed 55 simulator tests and was installed on the requested iPad. The user
+confirmed both physical darkness/motion transitions on 2026-11-14; an overnight
+run is planned. Touch controls and the red clock were
 already confirmed on 0.4.15/19. The previous 0.4.13 tag remains the recovery baseline.
 See [iOS kiosk handoff](IOS_KIOSK_HANDOFF.md) for installation and validation.
 Android 0.7.25 preserves short ONVIF activity boundaries discovered
