@@ -15,8 +15,9 @@ details for portrait scrolling, with separate unit panels, interactive series
 legends, point inspection and cached chart loading. Its 81 simulator tests
 passed, and portrait/landscape layouts were checked in the simulator. The final
 signed build passed and 0.4.18/22 was installed over direct Wi-Fi on the exact
-requested iPad, with its installed version verified afterward. Physical chart
-readability, point inspection and scrolling feedback are pending. See the
+requested iPad, with its installed version verified afterward. On 2026-11-16
+the user confirmed improved portrait readability, working point inspection and
+smooth vertical scrolling. See the
 [iOS charts handoff](IOS_CHARTS_HANDOFF.md) for release behavior and validation.
 
 iOS 0.4.17 added white daytime and red

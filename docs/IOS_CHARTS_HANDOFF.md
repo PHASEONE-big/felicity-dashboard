@@ -5,7 +5,9 @@ simulator suite passed all **81 tests**: 62 existing tests, 10 chart-loading
 tests and 9 chart-data tests. The final signed device build passed. Signature
 and provisioning checks verified the exact target iPad, then direct Wi-Fi
 installation reached 100% and exited with code 0. A subsequent device lookup
-confirmed version 0.4.18/build 22. Physical chart feedback is pending.
+confirmed version 0.4.18/build 22. On 2026-11-16 the user confirmed that the
+portrait charts are noticeably better and that point inspection and vertical
+scrolling work smoothly on the physical iPad.
 The preceding 0.4.17/21 daytime clock and wake brightness were confirmed by the user.
 Earlier kiosk recovery and the verified Wi-Fi installation path remain in
 [IOS_KIOSK_HANDOFF.md](IOS_KIOSK_HANDOFF.md).
@@ -57,7 +59,9 @@ Build/test evidence is kept locally under the ignored `ios/build/` directory:
 The existing signing profile still expires on 2026-11-21 at 17:20:22 UTC
 (18:20:22 in Madrid); this release does not extend that expiry.
 
-The physical iPad still needs checks of portrait scrolling, metric switching,
-legend toggles, point inspection and rotation on the installed 0.4.18 build.
+Portrait readability, point inspection and smooth vertical scrolling were
+confirmed by the user on the installed 0.4.18 build. Metric switching, legend
+toggles and rotation remain useful regression checks; they were not separately
+confirmed in that feedback.
 No physical frame-rate, battery-use or wall-power measurements have been made.
 Doorbell work is outside this release.

@@ -13,7 +13,8 @@ The bundle identifier and configured signing team are preserved.
 
 The subsequent **0.4.18/22** chart release passed its signed build and all
 81 simulator tests, then was installed and version-verified over Wi-Fi on this
-exact iPad; physical chart feedback is pending. See the
+exact iPad. The user confirmed improved portrait readability, working point
+inspection and smooth vertical scrolling. See the
 [charts handoff](IOS_CHARTS_HANDOFF.md). The kiosk validation below records 0.4.17.
 
 **0.4.17/21** adds white daytime and red nighttime clocks, plus independent

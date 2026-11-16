@@ -25,7 +25,8 @@ Current source and confirmed installation are **0.4.18, build 22**. All
 portrait/landscape chart layouts and point inspection were checked in the
 simulator. The final signed device build passed and direct Wi-Fi installation
 completed on the exact requested iPad; a subsequent device lookup verified
-0.4.18/build 22. Physical chart feedback is pending. See
+0.4.18/build 22. The user confirmed improved portrait readability, working point
+inspection and smooth vertical scrolling on the physical iPad. See
 the [charts handoff](../docs/IOS_CHARTS_HANDOFF.md) for validation and remaining
 physical checks.
 
