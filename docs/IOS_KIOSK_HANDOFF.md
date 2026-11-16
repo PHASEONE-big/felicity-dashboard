@@ -4,14 +4,16 @@ Requested device: iPad Pro, user-confirmed current LAN address `192.168.13.188`.
 Confirmed USB UDID: `86d36a369fdaeb458f5a65ba0136bec628ffd018`.
 USB detection now identifies this device as **iPad Pro (9.7-inch), J127AP**,
 running **iPadOS 16.7.16 (20H392)**.
-Source: iOS **0.4.20, build 24**.
-Last confirmed installation: **0.4.20, build 24**, over direct Wi-Fi.
+Source: iOS **0.4.21, build 25**; see [weather handoff](IOS_WEATHER_HANDOFF.md)
+for the new header/clock weather, passing build/tests and pending physical checks.
+Last confirmed installation: **0.4.21, build 25**, over direct Wi-Fi, with
+the installed version verified by device lookup.
 Android and hardware versions are unchanged.
 The bundle identifier and configured signing team are preserved.
 
 ## Latest status — 2026-11-16
 
-Current 0.4.20/24 combines Solar and Today series into one chart per screen;
+The preceding 0.4.20/24 combined Solar and Today series into one chart per screen;
 its signed build and 125 tests passed, followed by a successful, version-verified
 Wi-Fi installation. Physical feedback on these combined charts has not yet been
 collected. The earlier 0.4.19/23 added doorbell calls and Today PV1/PV2 data; its final signed

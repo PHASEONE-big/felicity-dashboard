@@ -6,11 +6,21 @@ APK, iOS app, or display firmware.
 
 | Client | Current source version | Build | Source | Git snapshot |
 |---|---|---|---|---|
-| iOS / iPadOS | 0.4.20 | 24 | `ios/` | baseline: `snapshots/ios/0.4.13-build17` |
+| iOS / iPadOS | 0.4.21 | 25 | `ios/` | baseline: `snapshots/ios/0.4.13-build17` |
 | Android / dragon | 0.7.25 | 32 | `android/app/` | `snapshots/android/0.7.25-build32` |
 | ESP32 + Nextion | 0.14.1 | — | `esp32/`, `nextion/`, `firmware/` | `snapshots/esp32-nextion/0.14.1` |
 
-These tags preserve development baselines. Current iOS 0.4.20 puts all Solar
+These tags preserve development baselines. Current iOS **0.4.21/25** adds
+manually selected city weather to the dashboard header and idle clock, plus a
+full-screen hourly and seven-day forecast. Open-Meteo requests and cache are
+shared, with 30-minute foreground refresh and no GPS. The final signed build,
+all 151 native simulator tests, simulator UI checks and a live public-city API
+check passed. Direct Wi-Fi installation completed on the exact requested iPad,
+and device lookup verified **0.4.21/25**. Its weather city is not yet selected;
+physical weather acceptance remains pending. See the
+[weather handoff](IOS_WEATHER_HANDOFF.md).
+
+iOS 0.4.20 puts all Solar
 series in one chart and all Today series in one chart, so PV1/PV2 no longer
 require scrolling to additional panels. Legend toggles and point inspection
 remain available, with PV1 blue and PV2 purple on both screens. The signed

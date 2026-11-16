@@ -20,8 +20,17 @@ the iPad must already be paired with Xcode, or first connected by USB and truste
 
 ## Latest status — 2026-11-16
 
-Current source and confirmed installation are **0.4.20, build 24**, combining
-all Solar series in one chart and all Today series in one chart. The signed
+Current source and confirmed installation are **0.4.21, build 25**, adding city
+weather to the dashboard and idle clock plus a full-screen hourly/seven-day
+forecast. The final signed build,
+all **151 native simulator tests**, simulator UI checks and a live public-city
+API check passed. Direct Wi-Fi installation on the exact requested iPad reached
+100%, and device lookup verified the installed version. The physical iPad's city
+is not yet selected; physical weather checks remain pending. See the
+[weather handoff](../docs/IOS_WEATHER_HANDOFF.md).
+
+The preceding **0.4.20, build 24** release combined all Solar
+series in one chart and all Today series in one chart. Its signed
 native build and all **125 simulator tests passed**. Wi-Fi installation on the
 exact requested iPad succeeded, with its installed version verified afterward.
 Physical feedback on the combined charts has not yet been collected.
@@ -39,6 +48,25 @@ build and 62 simulator tests passed; USB installation and a subsequent Wi-Fi
 reinstall succeeded on the exact requested iPad. The user confirmed the white
 daytime clock and sufficient dashboard brightness on wake. See the
 [Wi-Fi installation path](../docs/IOS_KIOSK_HANDOFF.md#verified-wi-fi-path).
+
+## Weather (0.4.21, build 25)
+
+Choose your city in **Settings → Weather location**; there is no preset user
+city or GPS request. Search waits 500 ms after typing and offers up to five
+matches. A small dashboard weather button opens current conditions, today's
+hourly forecast and a seven-day forecast. The idle clock shows the same weather
+icon and temperature, retaining its white daytime/red nighttime appearance.
+The weather page pauses the idle clock and presence camera; doorbell calls can
+still open over it.
+
+The shared [Open-Meteo](https://open-meteo.com/) forecast refreshes every
+30 minutes while the app is active. A local cache retains up to six hours of
+data, with saved/stale indicators after one hour, a refresh failure or a change
+of local day. Failed automatic requests have a five-minute retry guard; manual
+refresh is available. Labels use the selected city's time zone and handle
+daylight-saving transitions. Weather adds no GPS or continuous animation.
+Choose the actual city on the iPad; physical weather acceptance remains
+pending. See the [weather handoff](../docs/IOS_WEATHER_HANDOFF.md) for validation.
 
 ## Doorbell calls (0.4.19, build 23)
 
@@ -95,9 +123,10 @@ have not been measured on the physical iPad.
 
 ## Dim clock and motion wake (0.4.17, build 21)
 
-On the energy dashboard, one minute without detected activity shows only large
-time, date and household power consumption on black: **white in daylight, red
-at night**. The clock updates and shifts position once per minute; household
+On the energy dashboard, one minute without detected activity shows large
+time, date and household power consumption on black, plus weather when a city
+is configured: **white in daylight, red at night**. The clock updates and shifts
+position once per minute; household
 power refreshes every 30 seconds. A tap or camera movement wakes the dashboard.
 
 Day and night brightness are set independently and apply directly, up to 100%:
@@ -141,7 +170,8 @@ If camera access is denied or interrupted, touch wake remains available.
 
 Felicity keeps the device awake only while this mode is enabled and the app is
 in the foreground. Camera capture and idle clock pause in settings, camera/event
-views and energy details. Original display brightness and idle-timer state are
+views, energy details and weather. Original display brightness and idle-timer
+state are
 restored when leaving the mode/app. Idle polling requests only current power;
 summary/status requests are skipped. These changes reduce processing and
 network work, but battery or wall-power savings have not been measured.
@@ -189,5 +219,5 @@ Passwords are stored in Keychain and are never written into the repository.
 The 0.4.19 doorbell audio implementation follows the contracts in
 [`Docs/ARCHITECTURE.md`](Docs/ARCHITECTURE.md) and the behavioral checklist in
 [`Docs/PORTING_PLAN.md`](Docs/PORTING_PLAN.md); physical audio validation remains
-deferred. The requested weather feature is planned for after the doorbell work
-in the [iOS roadmap](../docs/IOS_ROADMAP.md).
+deferred. Weather is implemented in 0.4.21; its remaining physical checks are
+tracked in the [iOS roadmap](../docs/IOS_ROADMAP.md).

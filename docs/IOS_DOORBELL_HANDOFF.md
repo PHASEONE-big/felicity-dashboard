@@ -1,12 +1,14 @@
 # iOS doorbell and Today PV details — 0.4.19, build 23
 
-Current source and confirmed installation are **0.4.20/24**, combining all Solar
+Current source and confirmed installation are **0.4.21/25**; see
+[weather handoff](IOS_WEATHER_HANDOFF.md) for its passing checks and verified
+Wi-Fi installation. The preceding **0.4.20/24** combined all Solar
 series in one chart and all Today series in one chart. The signed native build
 and all 125 tests passed. Wi-Fi installation on the exact iPad exited with code
 0, and a subsequent lookup verified 0.4.20/build 24. Physical feedback on the
 combined charts has not yet been collected. Doorbell behavior below is unchanged.
 
-Current release evidence: `ios/build/recovery-device-0.4.20.log`,
+0.4.20 release evidence: `ios/build/recovery-device-0.4.20.log`,
 `ios/build/recovery-tests-0.4.20.log`,
 `ios/build/recovery-tests-0.4.20.xcresult` and
 `ios/build/recovery-install-0.4.20-wifi.log`. Installed IPA:
@@ -61,7 +63,7 @@ did not change device settings, trigger a ring or start audio. See
 
 ## Today and Solar graphs
 
-Version 0.4.19 introduced Today PV1/PV2 power data. In current 0.4.20, Today
+Version 0.4.19 introduced Today PV1/PV2 power data. Since 0.4.20, Today
 shows Solar, Load, PV1 and PV2 in one watt chart; Solar likewise shows Total,
 PV1 and PV2 in one chart. PV1 stays blue and PV2 purple across both screens,
 with legend toggles and point inspection retained.

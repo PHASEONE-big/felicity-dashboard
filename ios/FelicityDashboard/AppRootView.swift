@@ -18,10 +18,13 @@ struct AppRootView: View {
     @StateObject private var cameraPreferences = CameraPreferences()
     @StateObject private var kiosk = KioskController()
     @StateObject private var doorbell = DoorbellController()
+    @StateObject private var weather = WeatherViewModel()
     @State private var settingsPresented = false
     @State private var activeCamera: CameraDescriptor?
     @State private var eventsPresented = false
     @State private var selectedMetric: DashboardMetric?
+    @State private var weatherPresented = false
+    @State private var weatherSettingsRequested = false
 
     var body: some View {
         NavigationStack {
@@ -34,6 +37,7 @@ struct AppRootView: View {
                 VStack(spacing: 0) {
                     HeaderView(
                         model: model,
+                        weather: weather,
                         selectedCamera: cameras.selected,
                         compact: compact,
                         settingsPresented: $settingsPresented,
@@ -44,6 +48,9 @@ struct AppRootView: View {
                         eventsAction: {
                             if cameraPreferences.threeEyeConfiguration != nil { eventsPresented = true }
                             else { settingsPresented = true }
+                        },
+                        weatherAction: {
+                            weatherPresented = true
                         }
                     )
                     ScrollView {
@@ -65,7 +72,7 @@ struct AppRootView: View {
         .background(DoorbellOverlayHost(controller: doorbell, repository: cameras, preferences: cameraPreferences).allowsHitTesting(false))
         .overlay {
             if kiosk.isSleeping {
-                KioskClockView(isNight: kiosk.isNight, load: model.snapshot.load, updatedAt: model.snapshot.updatedAt, online: model.status.online) { kiosk.recordActivity() }
+                KioskClockView(weather: weather, isNight: kiosk.isNight, load: model.snapshot.load, updatedAt: model.snapshot.updatedAt, online: model.status.online) { kiosk.recordActivity() }
             }
         }
         .statusBarHidden(kiosk.isSleeping)
@@ -88,8 +95,14 @@ struct AppRootView: View {
             eventsPresented = false
             selectedMetric = nil
             settingsPresented = false
+            weatherPresented = false
+            weatherSettingsRequested = false
         }
         .task { await runArchiveSelfTestIfRequested() }
+        .task(id: scenePhase == .active) {
+            guard scenePhase == .active else { return }
+            await weather.run()
+        }
         .task {
             doorbell.setActive(scenePhase != .background)
             await doorbell.restorePreview()
@@ -108,7 +121,7 @@ struct AppRootView: View {
             await model.run(lowPower: kiosk.isSleeping)
         }
         .sheet(isPresented: $settingsPresented) {
-            SettingsView(model: model, cameras: cameras, cameraPreferences: cameraPreferences, kiosk: kiosk, doorbell: doorbell) {
+            SettingsView(model: model, cameras: cameras, cameraPreferences: cameraPreferences, kiosk: kiosk, doorbell: doorbell, weather: weather) {
                 model.saveServer()
                 cameraPreferences.save()
                 settingsPresented = false
@@ -128,10 +141,19 @@ struct AppRootView: View {
         .fullScreenCover(item: $selectedMetric) { metric in
             EnergyDetailView(metric: metric, model: model)
         }
+        .fullScreenCover(isPresented: $weatherPresented, onDismiss: {
+            if weatherSettingsRequested && !doorbell.isPresenting { settingsPresented = true }
+            weatherSettingsRequested = false
+        }) {
+            WeatherScreen(weather: weather) {
+                weatherSettingsRequested = true
+                weatherPresented = false
+            }
+        }
     }
 
     private var isDashboardVisible: Bool {
-        !settingsPresented && activeCamera == nil && !eventsPresented && selectedMetric == nil && !doorbell.isPresenting
+        !settingsPresented && activeCamera == nil && !eventsPresented && selectedMetric == nil && !weatherPresented && !doorbell.isPresenting
     }
 
     private struct DoorbellMonitorKey: Hashable {
@@ -266,14 +288,16 @@ private enum ArchiveSelfTestError: LocalizedError {
 
 private struct HeaderView: View {
     @ObservedObject var model: DashboardViewModel
+    @ObservedObject var weather: WeatherViewModel
     let selectedCamera: CameraDescriptor?
     let compact: Bool
     @Binding var settingsPresented: Bool
     let cameraAction: () -> Void
     let eventsAction: () -> Void
+    let weatherAction: () -> Void
 
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: compact ? 8 : 16) {
             Button { settingsPresented = true } label: {
                 Text("☯")
                     .font(.system(size: 38, weight: .semibold))
@@ -281,8 +305,8 @@ private struct HeaderView: View {
                     .accessibilityLabel("Settings")
             }
             .buttonStyle(.plain)
-            Text("v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—") · iOS")
-                .font(.headline.monospaced())
+            Text("v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—")\(compact ? "" : " · iOS")")
+                .font(compact ? .caption.monospaced() : .headline.monospaced())
                 .foregroundStyle(FelicityPalette.accent)
             Spacer()
             Button(action: cameraAction) {
@@ -312,9 +336,15 @@ private struct HeaderView: View {
                 }
             }
             .buttonStyle(HomeHeaderButtonStyle())
-            Text(model.isLive ? "LIVE" : "NO DATA")
-                .font((compact ? Font.subheadline : Font.headline).bold())
-                .foregroundStyle(model.isLive ? FelicityPalette.live : FelicityPalette.warning)
+            WeatherBadge(weather: weather, compact: compact, action: weatherAction)
+            if compact {
+                Circle().fill(model.isLive ? FelicityPalette.live : FelicityPalette.warning).frame(width: 7, height: 7)
+                    .accessibilityLabel(model.isLive ? "Live" : "Offline")
+            } else {
+                Text(model.isLive ? "LIVE" : "NO DATA")
+                    .font(.headline.bold())
+                    .foregroundStyle(model.isLive ? FelicityPalette.live : FelicityPalette.warning)
+            }
             TimelineView(.periodic(from: .now, by: 1)) { context in
                 Group {
                     if compact {
@@ -636,12 +666,14 @@ private struct SettingsView: View {
     @ObservedObject var cameraPreferences: CameraPreferences
     @ObservedObject var kiosk: KioskController
     @ObservedObject var doorbell: DoorbellController
+    @ObservedObject var weather: WeatherViewModel
     let previewClock: () -> Void
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         NavigationStack {
             Form {
+                WeatherLocationSettingsSection(weather: weather)
                 KioskSettingsSection(kiosk: kiosk, preview: previewClock)
                 Section("Doorbell") {
                     Toggle("Show incoming doorbell calls", isOn: $doorbell.enabled)

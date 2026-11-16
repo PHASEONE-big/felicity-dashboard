@@ -1,8 +1,11 @@
 # iOS energy charts — 0.4.18, build 22
 
-Current source and confirmed installation are 0.4.20/24: Solar has Total/PV1/PV2 together in one chart and
+Current source and confirmed installation are **0.4.21/25**; see
+[weather handoff](IOS_WEATHER_HANDOFF.md) for its passing checks and verified
+Wi-Fi installation. Chart behavior is unchanged from 0.4.20/24:
+Solar has Total/PV1/PV2 together in one chart and
 Today has Solar/Load/PV1/PV2 together in one chart. PV1 stays blue and PV2 purple;
-legend toggles and point inspection remain. Its signed native build and all
+legend toggles and point inspection remain. The 0.4.20 signed native build and all
 125 tests passed; Wi-Fi installation succeeded and a subsequent device lookup
 verified 0.4.20/build 24. Physical feedback on the combined charts has not yet
 been collected.
