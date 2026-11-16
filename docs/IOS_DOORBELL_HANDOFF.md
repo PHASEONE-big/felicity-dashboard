@@ -44,6 +44,9 @@ enabled the microphone. Two-way audio remains physically unverified.
 Open the installed Felicity and verify event-subscription status and a
 real doorbell press, including while the idle clock is visible. **Listening**
 status and successful real-ring delivery have not yet been confirmed.
+The post-install process check found the app was not running; the retained
+**Connecting** value came from before the update and is not a new subscription
+result. Manual opening and fresh status/ring verification remain pending.
 
 ## Historical release evidence
 

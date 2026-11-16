@@ -20,7 +20,8 @@ the iPad must already be paired with Xcode, or first connected by USB and truste
 
 ## Latest status — 2026-11-16
 
-Current source and confirmed installation are **0.4.23, build 27**. The idle clock's six-hour weather outlook
+Current source and confirmed installation are **0.4.23, build 27**. The idle
+clock's six-hour weather outlook
 now shows its actual forecast hour in the selected city's time zone. This
 release also addresses stalled doorbell event authentication after a missed
 ring on 0.4.22. Its signed build and all **154 native simulator tests passed**;

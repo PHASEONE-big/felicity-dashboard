@@ -2,7 +2,8 @@
 
 ## Status — 2026-11-16
 
-Current source and confirmed installation are **0.4.23/27**. The idle clock labels its six-hour outlook with
+Current source and confirmed installation are **0.4.23/27**. The idle clock
+labels its six-hour outlook with
 the forecast's actual local hour, replacing **In 6h**. It uses the forecast
 city's time zone and the same hourly cache, with no additional requests or
 timers. Its signed build and all 154 native simulator tests passed. Exact-device
