@@ -40,10 +40,17 @@ actor CameraPreviewStore {
     }
 
     func save(_ jpeg: Data, for camera: CameraDescriptor) {
+        _ = saveAndReturn(jpeg, for: camera)
+    }
+
+    /// Keep the caller image tied to this exact frame even if another preview
+    /// writer updates the same camera's cache immediately afterward.
+    func saveAndReturn(_ jpeg: Data, for camera: CameraDescriptor) -> UIImage? {
         guard let source = Self.thumbnail(from: jpeg),
               let oriented = Self.rotated(source, degrees: camera.rotationDegrees),
-              let output = oriented.jpegData(compressionQuality: 0.82) else { return }
+              let output = oriented.jpegData(compressionQuality: 0.82) else { return nil }
         try? output.write(to: url(for: camera.id), options: .atomic)
+        return oriented
     }
 
     private func url(for id: String) -> URL {

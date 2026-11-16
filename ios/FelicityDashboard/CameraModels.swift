@@ -42,7 +42,7 @@ struct CameraDescriptor: Codable, Hashable, Identifiable, Sendable {
     }
 }
 
-struct RecorderConfiguration: Sendable {
+struct RecorderConfiguration: Sendable, Hashable {
     let host: String
     let username: String
     let password: String

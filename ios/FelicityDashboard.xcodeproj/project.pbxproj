@@ -38,6 +38,17 @@
 		110000000000000000000020 /* EnergyChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000020 /* EnergyChartView.swift */; };
 		110000000000000000000021 /* EnergyChartDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000021 /* EnergyChartDataTests.swift */; };
 		110000000000000000000022 /* ChartLoadingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000022 /* ChartLoadingTests.swift */; };
+		110000000000000000000023 /* DoorbellController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000023 /* DoorbellController.swift */; };
+		110000000000000000000024 /* DoorbellViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000024 /* DoorbellViews.swift */; };
+		110000000000000000000025 /* DoorbellAudio.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000025 /* DoorbellAudio.swift */; };
+		110000000000000000000026 /* DoorbellG722.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000026 /* DoorbellG722.swift */; };
+		110000000000000000000027 /* DoorbellCallPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000027 /* DoorbellCallPolicy.swift */; };
+		110000000000000000000028 /* OnvifDoorbellEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000028 /* OnvifDoorbellEvents.swift */; };
+		110000000000000000000029 /* DoorbellEventTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000029 /* DoorbellEventTests.swift */; };
+		11000000000000000000002A /* DoorbellAudioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12000000000000000000002A /* DoorbellAudioTests.swift */; };
+		11000000000000000000002B /* DoorbellCallPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12000000000000000000002B /* DoorbellCallPolicyTests.swift */; };
+		11000000000000000000002C /* TodayChartTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12000000000000000000002C /* TodayChartTests.swift */; };
+		11000000000000000000002D /* DoorbellControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12000000000000000000002D /* DoorbellControllerTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -85,6 +96,17 @@
 		120000000000000000000020 /* EnergyChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnergyChartView.swift; sourceTree = "<group>"; };
 		120000000000000000000021 /* EnergyChartDataTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnergyChartDataTests.swift; sourceTree = "<group>"; };
 		120000000000000000000022 /* ChartLoadingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartLoadingTests.swift; sourceTree = "<group>"; };
+		120000000000000000000023 /* DoorbellController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoorbellController.swift; sourceTree = "<group>"; };
+		120000000000000000000024 /* DoorbellViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoorbellViews.swift; sourceTree = "<group>"; };
+		120000000000000000000025 /* DoorbellAudio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoorbellAudio.swift; sourceTree = "<group>"; };
+		120000000000000000000026 /* DoorbellG722.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoorbellG722.swift; sourceTree = "<group>"; };
+		120000000000000000000027 /* DoorbellCallPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoorbellCallPolicy.swift; sourceTree = "<group>"; };
+		120000000000000000000028 /* OnvifDoorbellEvents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnvifDoorbellEvents.swift; sourceTree = "<group>"; };
+		120000000000000000000029 /* DoorbellEventTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoorbellEventTests.swift; sourceTree = "<group>"; };
+		12000000000000000000002A /* DoorbellAudioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoorbellAudioTests.swift; sourceTree = "<group>"; };
+		12000000000000000000002B /* DoorbellCallPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoorbellCallPolicyTests.swift; sourceTree = "<group>"; };
+		12000000000000000000002C /* TodayChartTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayChartTests.swift; sourceTree = "<group>"; };
+		12000000000000000000002D /* DoorbellControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoorbellControllerTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -131,6 +153,12 @@
 				12000000000000000000001C /* KioskController.swift */,
 				12000000000000000000001B /* KioskIdlePolicy.swift */,
 				120000000000000000000002 /* AppRootView.swift */,
+				120000000000000000000028 /* OnvifDoorbellEvents.swift */,
+				120000000000000000000027 /* DoorbellCallPolicy.swift */,
+				120000000000000000000026 /* DoorbellG722.swift */,
+				120000000000000000000025 /* DoorbellAudio.swift */,
+				120000000000000000000024 /* DoorbellViews.swift */,
+				120000000000000000000023 /* DoorbellController.swift */,
 				120000000000000000000020 /* EnergyChartView.swift */,
 				120000000000000000000003 /* CoreContracts.swift */,
 				120000000000000000000004 /* DashboardModels.swift */,
@@ -161,6 +189,11 @@
 			isa = PBXGroup;
 			children = (
 				120000000000000000000009 /* DashboardModelsTests.swift */,
+				12000000000000000000002D /* DoorbellControllerTests.swift */,
+				12000000000000000000002C /* TodayChartTests.swift */,
+				12000000000000000000002B /* DoorbellCallPolicyTests.swift */,
+				12000000000000000000002A /* DoorbellAudioTests.swift */,
+				120000000000000000000029 /* DoorbellEventTests.swift */,
 				120000000000000000000022 /* ChartLoadingTests.swift */,
 				120000000000000000000021 /* EnergyChartDataTests.swift */,
 				12000000000000000000001F /* PresenceCameraTests.swift */,
@@ -273,6 +306,12 @@
 				11000000000000000000001C /* KioskController.swift in Sources */,
 				11000000000000000000001B /* KioskIdlePolicy.swift in Sources */,
 				110000000000000000000002 /* AppRootView.swift in Sources */,
+				110000000000000000000028 /* OnvifDoorbellEvents.swift in Sources */,
+				110000000000000000000027 /* DoorbellCallPolicy.swift in Sources */,
+				110000000000000000000026 /* DoorbellG722.swift in Sources */,
+				110000000000000000000025 /* DoorbellAudio.swift in Sources */,
+				110000000000000000000024 /* DoorbellViews.swift in Sources */,
+				110000000000000000000023 /* DoorbellController.swift in Sources */,
 				110000000000000000000020 /* EnergyChartView.swift in Sources */,
 				110000000000000000000003 /* CoreContracts.swift in Sources */,
 				110000000000000000000004 /* DashboardModels.swift in Sources */,
@@ -301,6 +340,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				110000000000000000000008 /* DashboardModelsTests.swift in Sources */,
+				11000000000000000000002D /* DoorbellControllerTests.swift in Sources */,
+				11000000000000000000002C /* TodayChartTests.swift in Sources */,
+				11000000000000000000002B /* DoorbellCallPolicyTests.swift in Sources */,
+				11000000000000000000002A /* DoorbellAudioTests.swift in Sources */,
+				110000000000000000000029 /* DoorbellEventTests.swift in Sources */,
 				110000000000000000000022 /* ChartLoadingTests.swift in Sources */,
 				110000000000000000000021 /* EnergyChartDataTests.swift in Sources */,
 				11000000000000000000001F /* PresenceCameraTests.swift in Sources */,
@@ -325,7 +369,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 22;
+				CURRENT_PROJECT_VERSION = 23;
 				DEVELOPMENT_TEAM = NH364DL3M9;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = FelicityDashboard/Info.plist;
@@ -334,7 +378,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.4.18;
+				MARKETING_VERSION = 0.4.19;
 				PRODUCT_BUNDLE_IDENTIFIER = io.github.homedashboard.ios;
 				PRODUCT_MODULE_NAME = FelicityDashboard;
 				PRODUCT_NAME = "Felicity Dashboard";
@@ -351,7 +395,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 22;
+				CURRENT_PROJECT_VERSION = 23;
 				DEVELOPMENT_TEAM = NH364DL3M9;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = FelicityDashboard/Info.plist;
@@ -360,7 +404,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.4.18;
+				MARKETING_VERSION = 0.4.19;
 				PRODUCT_BUNDLE_IDENTIFIER = io.github.homedashboard.ios;
 				PRODUCT_MODULE_NAME = FelicityDashboard;
 				PRODUCT_NAME = "Felicity Dashboard";

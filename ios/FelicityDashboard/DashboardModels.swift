@@ -36,9 +36,13 @@ enum DashboardMetric: String, CaseIterable, Identifiable, Sendable {
     var chartPanels: [EnergyChartPanel] {
         switch self {
         case .solar:
-            return [.init(id: "solar-power", title: "Solar power", unit: "W", series: [
-                .init(id: 0, name: "Total"), .init(id: 1, name: "PV1"), .init(id: 2, name: "PV2")
-            ])]
+            return [
+                .init(id: "solar-power", title: "Solar power", unit: "W", series: [
+                    .init(id: 0, name: "Total"), .init(id: 1, name: "PV1"), .init(id: 2, name: "PV2")
+                ]),
+                .init(id: "solar-pv1", title: "PV1", unit: "W", series: [.init(id: 1, name: "PV1")]),
+                .init(id: "solar-pv2", title: "PV2", unit: "W", series: [.init(id: 2, name: "PV2")])
+            ]
         case .load:
             return [.init(id: "load-power", title: "Home load", unit: "W", series: [
                 .init(id: 0, name: "Total"), .init(id: 1, name: "L1"), .init(id: 2, name: "L2"), .init(id: 3, name: "L3")
@@ -63,9 +67,13 @@ enum DashboardMetric: String, CaseIterable, Identifiable, Sendable {
                 .init(id: "system-temperature", title: "CPU temperature", unit: "°C", series: [.init(id: 2, name: "Temperature")])
             ]
         case .today:
-            return [.init(id: "today-power", title: "Today's power", unit: "W", series: [
-                .init(id: 0, name: "Solar"), .init(id: 1, name: "Load")
-            ])]
+            return [
+                .init(id: "today-power", title: "Today's power", unit: "W", series: [
+                    .init(id: 0, name: "Solar"), .init(id: 1, name: "Load")
+                ]),
+                .init(id: "today-pv1", title: "PV1", unit: "W", series: [.init(id: 2, name: "PV1")]),
+                .init(id: "today-pv2", title: "PV2", unit: "W", series: [.init(id: 3, name: "PV2")])
+            ]
         }
     }
 }
@@ -104,6 +112,52 @@ struct DashboardChart: Equatable, Sendable {
                      intervalMinutes: positiveInterval(response.intervalMinutes),
                      intervalSeconds: positiveInterval(response.intervalSeconds),
                      metric: response.metric.flatMap(DashboardMetric.init(rawValue:)))
+    }
+
+    /// Both endpoints aggregate the same [start, end) buckets. Refuse to join
+    /// different days or resolutions, including requests crossing midnight.
+    func addingSolarStrings(from solar: DashboardChart) -> Self {
+        guard metric == nil || metric == .today,
+              solar.metric == nil || solar.metric == .solar,
+              let start, let end, start.timeIntervalSince1970.isFinite,
+              end.timeIntervalSince1970.isFinite, end > start,
+              solar.start == start, solar.end == end,
+              !samples.isEmpty, samples.count == solar.samples.count else { return self }
+        var merged = self
+        merged.channels = 4
+        merged.samples = samples.indices.map { index in
+            let todayRow = samples[index]
+            let solarRow = solar.samples[index]
+            let pv1 = Self.reading(solarRow, channel: 1, channels: solar.channels)
+            let pv2 = Self.reading(solarRow, channel: 2, channels: solar.channels)
+            if todayRow == nil, !pv1.isFinite, !pv2.isFinite { return nil }
+            // NaN exists only in this in-memory merge, never in the JSON. Each
+            // missing channel stays a gap while other real readings survive.
+            return [Self.reading(todayRow, channel: 0, channels: channels),
+                    Self.reading(todayRow, channel: 1, channels: channels), pv1, pv2]
+        }
+        return merged
+    }
+
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        guard lhs.channels == rhs.channels, lhs.start == rhs.start, lhs.end == rhs.end,
+              lhs.intervalMinutes == rhs.intervalMinutes, lhs.intervalSeconds == rhs.intervalSeconds,
+              lhs.metric == rhs.metric, lhs.samples.count == rhs.samples.count else { return false }
+        return zip(lhs.samples, rhs.samples).allSatisfy { left, right in
+            switch (left, right) {
+            case (nil, nil): return true
+            case let (left?, right?):
+                return left.count == right.count && zip(left, right).allSatisfy {
+                    $0 == $1 || ($0.isNaN && $1.isNaN)
+                }
+            default: return false
+            }
+        }
+    }
+
+    private static func reading(_ row: [Double]?, channel: Int, channels: Int) -> Double {
+        guard channel < channels, let row, row.indices.contains(channel), row[channel].isFinite else { return .nan }
+        return row[channel]
     }
 
     /// Keep original bucket indices and gaps; never join across missing readings.

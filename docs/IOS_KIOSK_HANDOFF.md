@@ -4,12 +4,18 @@ Requested device: iPad Pro, user-confirmed current LAN address `192.168.13.188`.
 Confirmed USB UDID: `86d36a369fdaeb458f5a65ba0136bec628ffd018`.
 USB detection now identifies this device as **iPad Pro (9.7-inch), J127AP**,
 running **iPadOS 16.7.16 (20H392)**.
-Source: iOS **0.4.18, build 22**.
-Last confirmed installation: **0.4.18, build 22**, over direct Wi-Fi.
+Source: iOS **0.4.19, build 23**.
+Last confirmed installation: **0.4.19, build 23**, over direct Wi-Fi.
 Android and hardware versions are unchanged.
 The bundle identifier and configured signing team are preserved.
 
 ## Latest status — 2026-11-16
+
+Current 0.4.19/23 adds doorbell calls and Today PV1/PV2 details; its final signed
+release build and 125 tests passed, followed by a successful, version-verified
+Wi-Fi installation. The user deferred physical ring/snapshot and two-way audio
+checks; both remain unverified. See the
+[doorbell handoff](IOS_DOORBELL_HANDOFF.md); kiosk history below is retained.
 
 The subsequent **0.4.18/22** chart release passed its signed build and all
 81 simulator tests, then was installed and version-verified over Wi-Fi on this

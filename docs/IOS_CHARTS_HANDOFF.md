@@ -1,6 +1,13 @@
 # iOS energy charts — 0.4.18, build 22
 
-As of 2026-11-16, source and confirmed installation are **0.4.18/22**. The
+Current source is 0.4.19/23, adding separate Today PV1/PV2 panels and retaining
+the Solar overview with separate string panels. Its final signed build and
+125 tests passed, and 0.4.19/23 was installed and version-verified over Wi-Fi.
+Real ring/snapshot and two-way audio checks were deferred by the user. See the
+[doorbell and Today handoff](IOS_DOORBELL_HANDOFF.md). The 0.4.18 evidence below
+records the latest user-confirmed physical chart validation.
+
+On 2026-11-16, **0.4.18/22** was installed and confirmed. The
 simulator suite passed all **81 tests**: 62 existing tests, 10 chart-loading
 tests and 9 chart-data tests. The final signed device build passed. Signature
 and provisioning checks verified the exact target iPad, then direct Wi-Fi

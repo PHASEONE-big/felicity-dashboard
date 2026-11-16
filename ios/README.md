@@ -20,29 +20,54 @@ the iPad must already be paired with Xcode, or first connected by USB and truste
 
 ## Latest status — 2026-11-16
 
-Current source and confirmed installation are **0.4.18, build 22**. All
-**81 simulator tests passed**, and
-portrait/landscape chart layouts and point inspection were checked in the
-simulator. The final signed device build passed and direct Wi-Fi installation
-completed on the exact requested iPad; a subsequent device lookup verified
-0.4.18/build 22. The user confirmed improved portrait readability, working point
-inspection and smooth vertical scrolling on the physical iPad. See
-the [charts handoff](../docs/IOS_CHARTS_HANDOFF.md) for validation and remaining
-physical checks.
+Current source and confirmed installation are **0.4.19, build 23**. The final
+signed release build and all **125 simulator tests passed**. Wi-Fi installation
+completed on the exact requested iPad, with the installed version verified by
+device lookup. The user chose to check the real ring/snapshot and two-way audio
+later; those physical behaviors remain unverified.
+See the [doorbell handoff](../docs/IOS_DOORBELL_HANDOFF.md).
 
-The preceding release was **0.4.17, build 21**. Its signed
+Version 0.4.18 passed its signed build and 81 simulator tests, was installed and
+version-verified over Wi-Fi, and received physical confirmation of improved
+portrait readability, working point inspection and smooth vertical scrolling.
+See the [charts handoff](../docs/IOS_CHARTS_HANDOFF.md).
+
+For the earlier **0.4.17, build 21** release, the signed
 build and 62 simulator tests passed; USB installation and a subsequent Wi-Fi
 reinstall succeeded on the exact requested iPad. The user confirmed the white
 daytime clock and sufficient dashboard brightness on wake. See the
 [Wi-Fi installation path](../docs/IOS_KIOSK_HANDOFF.md#verified-wi-fi-path).
 
-## Energy charts (0.4.18, build 22)
+## Doorbell calls (0.4.19, build 23)
+
+While Felicity is in the foreground, the recorder's ONVIF PullPoint events can
+open the matching doorbell over the current screen. Initial subscription state
+does not ring. Calls start with speaker and microphone off, and close after
+60 seconds. Enable listening separately, or tap the microphone to talk and
+listen. Microphone activation requires permission and has a 30-second safety
+limit that closes the call; turning it off restarts the 60-second video limit.
+Leaving the foreground stops the call, audio and event subscription.
+
+A real ring saves one early video frame. After the call, a static thumbnail
+appears at the bottom left for 30 minutes; tapping it reopens live video.
+The thumbnail keeps no live stream running, and manually opening it does not
+create a new ring or replace the ring snapshot. Recorder passwords remain in Keychain.
+Physical speaker, microphone and echo-cancellation checks are deferred.
+
+## Energy charts (0.4.19, build 23)
 
 Tap any energy card to open a vertically scrolling detail page. The six metric
 buttons switch between Solar, Home Load, Battery, Grid, System and Today.
 Current readings remain live while the charts are open. Panels stack in
 portrait and use the available width in landscape; watts, volts, percentages
 and degrees have separate scales rather than sharing one axis.
+
+Today keeps its Solar/Load overview and adds individual **PV1** and **PV2**
+power graphs. It loads the existing Today and Solar endpoints concurrently and
+joins them only when their start, end and bucket count match. Missing readings
+remain gaps; if the Solar request fails, the Today overview still works and
+the PV panels show no data. Solar also keeps its overview with separate PV1/PV2
+panels. These are power histories in watts, not voltage or current histories.
 
 Tap a legend item to hide or show that series. Tap a chart or drag horizontally
 to inspect a sample and its time; vertical movement scrolls the page. VoiceOver
@@ -155,6 +180,8 @@ screen opens the selected camera; tap its name in Live to switch cameras. Open
 the 3ye credentials stored in Keychain; generic motion is deliberately excluded.
 Passwords are stored in Keychain and are never written into the repository.
 
-Audio follows as the next vertical slice on top of the contracts documented in
-[`Docs/ARCHITECTURE.md`](Docs/ARCHITECTURE.md) and the behavioural checklist in
-[`Docs/PORTING_PLAN.md`](Docs/PORTING_PLAN.md).
+The 0.4.19 doorbell audio implementation follows the contracts in
+[`Docs/ARCHITECTURE.md`](Docs/ARCHITECTURE.md) and the behavioral checklist in
+[`Docs/PORTING_PLAN.md`](Docs/PORTING_PLAN.md); physical audio validation remains
+deferred. The requested weather feature is planned for after the doorbell work
+in the [iOS roadmap](../docs/IOS_ROADMAP.md).

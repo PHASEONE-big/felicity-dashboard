@@ -17,6 +17,7 @@ struct AppRootView: View {
     @StateObject private var cameras = CameraRepository()
     @StateObject private var cameraPreferences = CameraPreferences()
     @StateObject private var kiosk = KioskController()
+    @StateObject private var doorbell = DoorbellController()
     @State private var settingsPresented = false
     @State private var activeCamera: CameraDescriptor?
     @State private var eventsPresented = false
@@ -61,6 +62,7 @@ struct AppRootView: View {
         }
         .tint(FelicityPalette.accent)
         .background(KioskScreenReader(attach: { kiosk.attach(screen: $0) }, activity: { kiosk.recordActivity() }).allowsHitTesting(false))
+        .background(DoorbellOverlayHost(controller: doorbell, repository: cameras, preferences: cameraPreferences).allowsHitTesting(false))
         .overlay {
             if kiosk.isSleeping {
                 KioskClockView(isNight: kiosk.isNight, load: model.snapshot.load, updatedAt: model.snapshot.updatedAt, online: model.status.online) { kiosk.recordActivity() }
@@ -73,17 +75,40 @@ struct AppRootView: View {
         }
         .onChange(of: scenePhase) { phase in
             kiosk.setContext(active: phase == .active, dashboardVisible: isDashboardVisible)
+            doorbell.setActive(phase != .background)
         }
         .onChange(of: isDashboardVisible) { visible in
             kiosk.setContext(active: scenePhase == .active, dashboardVisible: visible)
         }
+        .onChange(of: doorbell.isPresenting) { presenting in
+            guard presenting else { return }
+            // Pause the previous camera/archive/chart route while the doorbell
+            // owns video, rather than decoding a second hidden stream.
+            activeCamera = nil
+            eventsPresented = false
+            selectedMetric = nil
+            settingsPresented = false
+        }
         .task { await runArchiveSelfTestIfRequested() }
+        .task {
+            doorbell.setActive(scenePhase != .background)
+            await doorbell.restorePreview()
+        }
+        .task(id: doorbellMonitorKey) {
+            guard doorbellMonitorKey.foreground, doorbell.enabled else { return }
+            let configuration = cameraPreferences.recorderConfiguration
+            if cameras.cameras.isEmpty, !configuration.username.isEmpty {
+                await cameras.discover(using: configuration)
+            }
+            guard !Task.isCancelled else { return }
+            await doorbell.monitor(configuration: configuration, cameras: { cameras.cameras })
+        }
         .task(id: "\(isDashboardVisible)-\(kiosk.isSleeping)-\(scenePhase == .active)") {
             guard isDashboardVisible && scenePhase == .active else { return }
             await model.run(lowPower: kiosk.isSleeping)
         }
         .sheet(isPresented: $settingsPresented) {
-            SettingsView(model: model, cameras: cameras, cameraPreferences: cameraPreferences, kiosk: kiosk) {
+            SettingsView(model: model, cameras: cameras, cameraPreferences: cameraPreferences, kiosk: kiosk, doorbell: doorbell) {
                 model.saveServer()
                 cameraPreferences.save()
                 settingsPresented = false
@@ -106,7 +131,16 @@ struct AppRootView: View {
     }
 
     private var isDashboardVisible: Bool {
-        !settingsPresented && activeCamera == nil && !eventsPresented && selectedMetric == nil
+        !settingsPresented && activeCamera == nil && !eventsPresented && selectedMetric == nil && !doorbell.isPresenting
+    }
+
+    private struct DoorbellMonitorKey: Hashable {
+        let foreground: Bool
+        let enabled: Bool
+        let configuration: RecorderConfiguration
+    }
+    private var doorbellMonitorKey: DoorbellMonitorKey {
+        .init(foreground: scenePhase != .background, enabled: doorbell.enabled, configuration: cameraPreferences.recorderConfiguration)
     }
 
     @MainActor
@@ -601,6 +635,7 @@ private struct SettingsView: View {
     @ObservedObject var cameras: CameraRepository
     @ObservedObject var cameraPreferences: CameraPreferences
     @ObservedObject var kiosk: KioskController
+    @ObservedObject var doorbell: DoorbellController
     let previewClock: () -> Void
     @Environment(\.dismiss) private var dismiss
 
@@ -608,6 +643,15 @@ private struct SettingsView: View {
         NavigationStack {
             Form {
                 KioskSettingsSection(kiosk: kiosk, preview: previewClock)
+                Section("Doorbell") {
+                    Toggle("Show incoming doorbell calls", isOn: $doorbell.enabled)
+                    Text(doorbell.status).font(.caption).foregroundStyle(.secondary)
+                    if let camera = cameras.cameras.first(where: \.isDoorbell) {
+                        Button("Open doorbell") { doorbell.preview(camera: camera) }
+                    }
+                    Text("While Felicity is open, a ring shows live video for 60 seconds. The microphone starts off and can be enabled for up to 30 seconds. A caller snapshot stays in the lower corner for 30 minutes.")
+                        .font(.footnote).foregroundStyle(.secondary)
+                }
                 Section("Felicity server") {
                     TextField("http://homeassistant.local:8000", text: $model.serverText)
                         .textInputAutocapitalization(.never)

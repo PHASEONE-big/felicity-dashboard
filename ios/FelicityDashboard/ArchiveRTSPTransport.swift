@@ -140,8 +140,12 @@ actor ArchiveRTSPClient {
     func connect(host: String, port: UInt16, interleaved: @escaping InterleavedHandler) async throws {
         close()
         let nextWire = try ArchiveRTSPWire(host: host, port: port)
-        let stream = try await nextWire.start()
         wire = nextWire
+        let stream = try await nextWire.start()
+        guard wire === nextWire else {
+            nextWire.cancel()
+            throw CancellationError()
+        }
         self.interleaved = interleaved
         let packets = AsyncStream<InterleavedPacket> { continuation in
             packetContinuation = continuation
