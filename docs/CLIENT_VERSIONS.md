@@ -16,11 +16,11 @@ and clock. Selected brightness applies directly, up to 100%; the old brightness
 bias and 85% dashboard limit are removed. Existing nighttime clock brightness
 is preserved. Tiny-grid motion detection, the darkness shortcut and reduced
 idle polling are unchanged. As of 2026-11-16, the signed 0.4.17/21 build and
-62 simulator tests passed; Wi-Fi installation remains pending. The last
-confirmed installed version is 0.4.16/20. That build passed 55 simulator tests,
-and its darkness/motion transitions were physically confirmed on 2026-11-14.
-The previous 0.4.13 tag
-remains the recovery baseline.
+62 simulator tests passed, and the update was installed on the exact requested
+iPad over USB and then successfully reinstalled over Wi-Fi. The user confirmed
+the white daytime clock and sufficient dashboard brightness on wake. Earlier
+darkness/motion transitions were physically confirmed
+on 0.4.16/20 on 2026-11-14. The previous 0.4.13 tag remains the recovery baseline.
 See [iOS kiosk handoff](IOS_KIOSK_HANDOFF.md) for installation and validation.
 Android 0.7.25 preserves short ONVIF activity boundaries discovered
 during physical testing on dragon, and includes 0.7.24's playback/seek fixes.

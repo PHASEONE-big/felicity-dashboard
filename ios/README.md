@@ -20,10 +20,12 @@ the iPad must already be paired with Xcode, or first connected by USB and truste
 
 ## Latest status — 2026-11-16
 
-Source is **0.4.17, build 21**. The signed device build and all **62 simulator
-tests passed**. The requested Wi-Fi installation remains pending. The last
-confirmed installed version is **0.4.16, build 20**; installation of 0.4.17 is
-not yet confirmed.
+Source and confirmed installation are **0.4.17, build 21**. The signed device
+build and all **62 simulator tests passed**. Installation on the exact requested
+iPad succeeded over USB after signature/profile verification, followed by a
+verified Wi-Fi reinstall of the same build. The user confirmed the white
+daytime clock and sufficient dashboard brightness on wake. See the
+[Wi-Fi installation path](../docs/IOS_KIOSK_HANDOFF.md#verified-wi-fi-path) for reuse.
 
 ## Dim clock and motion wake (0.4.17, build 21)
 
@@ -83,9 +85,9 @@ with a passive UIKit touch observer. That signed build passed 48 simulator tests
 confirmed touch controls and the red clock now work on the requested iPad Pro.
 The signed 0.4.16/20 build passed 55 simulator tests and was installed on the
 same iPad. On 2026-11-14 the user confirmed that covering the camera shows the
-red clock and movement returns the dashboard. These results do not validate
-0.4.17's new brightness controls. Long-term stability, the new day/night settings
-and actual energy use remain unverified on the physical iPad.
+red clock and movement returns the dashboard. The white daytime clock and
+dashboard wake brightness were subsequently confirmed on 0.4.17. Long-term
+stability and actual energy use have not been measured on the physical iPad.
 Darkness, a covered camera, reflections and moving objects can affect motion
 detection. See [installation and validation](../docs/IOS_KIOSK_HANDOFF.md) for the
 exact device and current validation status.

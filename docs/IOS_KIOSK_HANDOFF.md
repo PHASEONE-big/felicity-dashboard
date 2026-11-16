@@ -1,11 +1,11 @@
 # iPad restoration and clock mode
 
-Requested device: iPad Pro, supplied LAN address `192.168.13.188`.
+Requested device: iPad Pro, user-confirmed current LAN address `192.168.13.188`.
 Confirmed USB UDID: `86d36a369fdaeb458f5a65ba0136bec628ffd018`.
 USB detection now identifies this device as **iPad Pro (9.7-inch), J127AP**,
 running **iPadOS 16.7.16 (20H392)**.
 Source: iOS **0.4.17, build 21**.
-Last confirmed installation: **0.4.16, build 20**.
+Last confirmed installation: **0.4.17, build 21**, over USB and then Wi-Fi.
 Android and hardware versions are unchanged.
 The bundle identifier and configured signing team are preserved.
 
@@ -17,15 +17,18 @@ applies directly up to 100%, replacing the old 85% dashboard cap and brightness
 bias. Existing nighttime clock brightness is preserved. Camera sampling, motion
 detection, the darkness shortcut and idle polling are unchanged.
 
-The signed device build and all **62 simulator tests passed**. The last confirmed
-installed version is **0.4.16/20**. Wi-Fi installation was requested. A TCP connection to the previous address
-`192.168.13.188:62078` opens, but plaintext lockdown queries, an existing-pair
-StartSession and a TLS-first probe all close/reset before device identity can
-be verified. No wireless MobileDevice advertisement was found. The existing
-Mac pairing record for the exact UDID is present; no new pairing or network
-settings were changed. Confirm the current iPad IP/connection before retrying;
-USB may be needed for initial wireless setup. Neither 0.4.17 installation nor
-physical validation of its day/night settings is yet confirmed.
+The signed device build and all **62 simulator tests passed**. With the exact
+iPad connected by USB, signature/profile verification passed and installation
+of **0.4.17/21** completed with `InstallComplete` and exit code 0. The same IPA
+was then installed over direct Wi-Fi, with installation progress reaching 100%
+and a subsequent device lookup confirming version 0.4.17/build 21. The user
+confirmed that the daytime clock is white and dashboard brightness on wake is
+now sufficient.
+
+The earlier wireless probes failed while `EnableWifiConnections` was false.
+It was enabled through the existing trusted USB pairing and read back as true.
+Direct TCP authentication then verified the same iPad UDID using the existing
+pairing record; no automatic pairing was needed.
 
 ## Historical recovery — 2026-11-14
 
@@ -84,7 +87,7 @@ with the unchanged `io.github.homedashboard.ios` identifier and team NH364DL3M9.
 includes USB UDID `86d36a369fdaeb458f5a65ba0136bec628ffd018` and expires
 **2026-11-21 at 18:20:22 Madrid (17:20:22 UTC)**.
 
-Verified 0.4.17/21 products, ready for installation:
+Verified 0.4.17/21 products; this build is installed on the requested iPad:
 
 - `ios/build/ipad/Payload/Felicity Dashboard.app`
 - `ios/build/ipad/Felicity-0.4.17-build21.ipa`
@@ -118,16 +121,34 @@ Upstream `ios-control/ios-deploy` was compiled locally with Apple clang for the
 legacy device transport. Exact-UDID USB detection and installation succeed on
 the confirmed target.
 
-`ios/build/ipad/Install-Felicity.command` was used to install 0.4.16/20 on the Mac.
+`ios/build/ipad/Install-Felicity.command` installed 0.4.17/21 over USB on the Mac.
 It checks the app signature, bundle/version, target inclusion and profile expiry,
 then uses the locally compiled helper at `ios/build/device-tools/ios-deploy` to
 install over the existing app through USB, with the exact known UDID and no
 uninstall/debugger options. It does not change global permissions or restart any
 system service. The helper's source provenance and licenses are adjacent to it.
 The installer validated the version, signature and profile before reporting
-`InstallComplete`. Installation and the basic darkness/motion transitions of
-0.4.16 are confirmed complete. The user also confirmed touch and red-clock
-behavior on the preceding 0.4.15 build.
+`InstallComplete`. Earlier basic darkness/motion transitions were physically
+confirmed on 0.4.16; touch and red-clock behavior were confirmed on 0.4.15.
+The user also confirmed the white daytime clock and dashboard wake brightness
+on 0.4.17.
+
+### Verified Wi-Fi path
+
+The trusted iPad at `192.168.13.188` accepted an actual network installation of
+0.4.17/21. Keep the Mac and iPad on the same Wi-Fi network. To reinstall this
+verified package with the helper pinned to the exact iPad and IPA:
+
+```sh
+/private/tmp/felicity-network-ios-env/bin/python /private/tmp/felicity-install-known-ipad-wifi.py
+```
+
+The helper uses `pymobiledevice3` 11.55.1, the existing Mac pairing record and
+`autopair=False`; it verifies the device identity and installed version. Its
+IPA path and version assertions are specific to 0.4.17/21; update both for a
+future release before running it. Its runtime and script are temporary
+`/private/tmp` files. The successful run is
+recorded in `ios/build/recovery-install-0.4.17-wifi.log`.
 
 ## Behaviour in 0.4.17/21
 
@@ -178,14 +199,21 @@ The signed native device build passed. Full XCTest execution passed
 The new checks cover explicit brightness up to 100%, day/night mode hysteresis,
 legacy clock-setting migration and preference persistence. Code-signature
 verification passed, and the profile includes the exact requested iPad UDID
-with the unchanged expiry shown above. Wi-Fi installation and physical
-validation remain pending.
+with the unchanged expiry shown above. The USB installer rechecked the signature
+and profile, then reported `InstallComplete` and exit code 0 on that exact iPad.
+The same IPA was subsequently installed through authenticated direct TCP over
+Wi-Fi; InstallationProxy reached 100%, and a network lookup verified 0.4.17/21.
+The user confirmed the white daytime clock and sufficient dashboard brightness
+on wake. These checks do not constitute a power measurement or exhaustive
+regression testing.
 
 Verification artifacts:
 
 - Device build log: `ios/build/recovery-device-0.4.17.log`
 - Test log: `ios/build/recovery-tests-0.4.17.log`
 - XCTest result bundle: `ios/build/recovery-tests-0.4.17.xcresult`
+- Installation log: `ios/build/recovery-install-0.4.17.log`
+- Wi-Fi installation log: `ios/build/recovery-install-0.4.17-wifi.log`
 
 ## Historical checks — installed 0.4.16/20
 
@@ -253,11 +281,12 @@ while data kept updating. The new passive touch observer is intended to address
 this failure. The installed 0.4.15 replacement passed automated tests, and the
 user subsequently confirmed touch controls and the red clock work.
 
-## Physical acceptance for 0.4.17/21
+## Physical acceptance and regression checklist
 
-The checks below are pending installation of 0.4.17. Physical darkness/motion
-transitions were confirmed on 0.4.16; they do not validate the new brightness
-settings or daytime color.
+On 2026-11-16 the user confirmed the white daytime clock and sufficient
+dashboard brightness on wake in 0.4.17. Darkness/motion transitions were
+confirmed on 0.4.16. The checklist below is retained for broader regression
+coverage in future changes; not every scenario has been executed.
 
 1. Confirm Settings, buttons, scrolling and manual clock preview still work.
 2. Darken or cover the camera: once the smoothed light estimate remains below
