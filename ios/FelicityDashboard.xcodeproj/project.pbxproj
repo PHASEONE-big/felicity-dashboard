@@ -35,6 +35,9 @@
 		11000000000000000000001D /* PresenceCamera.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12000000000000000000001D /* PresenceCamera.swift */; };
 		11000000000000000000001E /* KioskIdlePolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12000000000000000000001E /* KioskIdlePolicyTests.swift */; };
 		11000000000000000000001F /* PresenceCameraTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12000000000000000000001F /* PresenceCameraTests.swift */; };
+		110000000000000000000020 /* EnergyChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000020 /* EnergyChartView.swift */; };
+		110000000000000000000021 /* EnergyChartDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000021 /* EnergyChartDataTests.swift */; };
+		110000000000000000000022 /* ChartLoadingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000022 /* ChartLoadingTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -79,6 +82,9 @@
 		12000000000000000000001D /* PresenceCamera.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresenceCamera.swift; sourceTree = "<group>"; };
 		12000000000000000000001E /* KioskIdlePolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KioskIdlePolicyTests.swift; sourceTree = "<group>"; };
 		12000000000000000000001F /* PresenceCameraTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresenceCameraTests.swift; sourceTree = "<group>"; };
+		120000000000000000000020 /* EnergyChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnergyChartView.swift; sourceTree = "<group>"; };
+		120000000000000000000021 /* EnergyChartDataTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnergyChartDataTests.swift; sourceTree = "<group>"; };
+		120000000000000000000022 /* ChartLoadingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartLoadingTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -125,6 +131,7 @@
 				12000000000000000000001C /* KioskController.swift */,
 				12000000000000000000001B /* KioskIdlePolicy.swift */,
 				120000000000000000000002 /* AppRootView.swift */,
+				120000000000000000000020 /* EnergyChartView.swift */,
 				120000000000000000000003 /* CoreContracts.swift */,
 				120000000000000000000004 /* DashboardModels.swift */,
 				120000000000000000000005 /* DashboardViewModel.swift */,
@@ -154,6 +161,8 @@
 			isa = PBXGroup;
 			children = (
 				120000000000000000000009 /* DashboardModelsTests.swift */,
+				120000000000000000000022 /* ChartLoadingTests.swift */,
+				120000000000000000000021 /* EnergyChartDataTests.swift */,
 				12000000000000000000001F /* PresenceCameraTests.swift */,
 				12000000000000000000001E /* KioskIdlePolicyTests.swift */,
 			);
@@ -264,6 +273,7 @@
 				11000000000000000000001C /* KioskController.swift in Sources */,
 				11000000000000000000001B /* KioskIdlePolicy.swift in Sources */,
 				110000000000000000000002 /* AppRootView.swift in Sources */,
+				110000000000000000000020 /* EnergyChartView.swift in Sources */,
 				110000000000000000000003 /* CoreContracts.swift in Sources */,
 				110000000000000000000004 /* DashboardModels.swift in Sources */,
 				110000000000000000000005 /* DashboardViewModel.swift in Sources */,
@@ -291,6 +301,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				110000000000000000000008 /* DashboardModelsTests.swift in Sources */,
+				110000000000000000000022 /* ChartLoadingTests.swift in Sources */,
+				110000000000000000000021 /* EnergyChartDataTests.swift in Sources */,
 				11000000000000000000001F /* PresenceCameraTests.swift in Sources */,
 				11000000000000000000001E /* KioskIdlePolicyTests.swift in Sources */,
 			);
@@ -313,7 +325,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 21;
+				CURRENT_PROJECT_VERSION = 22;
 				DEVELOPMENT_TEAM = NH364DL3M9;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = FelicityDashboard/Info.plist;
@@ -322,7 +334,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.4.17;
+				MARKETING_VERSION = 0.4.18;
 				PRODUCT_BUNDLE_IDENTIFIER = io.github.homedashboard.ios;
 				PRODUCT_MODULE_NAME = FelicityDashboard;
 				PRODUCT_NAME = "Felicity Dashboard";
@@ -339,7 +351,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 21;
+				CURRENT_PROJECT_VERSION = 22;
 				DEVELOPMENT_TEAM = NH364DL3M9;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = FelicityDashboard/Info.plist;
@@ -348,7 +360,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.4.17;
+				MARKETING_VERSION = 0.4.18;
 				PRODUCT_BUNDLE_IDENTIFIER = io.github.homedashboard.ios;
 				PRODUCT_MODULE_NAME = FelicityDashboard;
 				PRODUCT_NAME = "Felicity Dashboard";

@@ -20,12 +20,46 @@ the iPad must already be paired with Xcode, or first connected by USB and truste
 
 ## Latest status — 2026-11-16
 
-Source and confirmed installation are **0.4.17, build 21**. The signed device
-build and all **62 simulator tests passed**. Installation on the exact requested
-iPad succeeded over USB after signature/profile verification, followed by a
-verified Wi-Fi reinstall of the same build. The user confirmed the white
+Current source and confirmed installation are **0.4.18, build 22**. All
+**81 simulator tests passed**, and
+portrait/landscape chart layouts and point inspection were checked in the
+simulator. The final signed device build passed and direct Wi-Fi installation
+completed on the exact requested iPad; a subsequent device lookup verified
+0.4.18/build 22. Physical chart feedback is pending. See
+the [charts handoff](../docs/IOS_CHARTS_HANDOFF.md) for validation and remaining
+physical checks.
+
+The preceding release was **0.4.17, build 21**. Its signed
+build and 62 simulator tests passed; USB installation and a subsequent Wi-Fi
+reinstall succeeded on the exact requested iPad. The user confirmed the white
 daytime clock and sufficient dashboard brightness on wake. See the
-[Wi-Fi installation path](../docs/IOS_KIOSK_HANDOFF.md#verified-wi-fi-path) for reuse.
+[Wi-Fi installation path](../docs/IOS_KIOSK_HANDOFF.md#verified-wi-fi-path).
+
+## Energy charts (0.4.18, build 22)
+
+Tap any energy card to open a vertically scrolling detail page. The six metric
+buttons switch between Solar, Home Load, Battery, Grid, System and Today.
+Current readings remain live while the charts are open. Panels stack in
+portrait and use the available width in landscape; watts, volts, percentages
+and degrees have separate scales rather than sharing one axis.
+
+Tap a legend item to hide or show that series. Tap a chart or drag horizontally
+to inspect a sample and its time; vertical movement scrolls the page. VoiceOver
+can adjust the selected sample. Gaps remain gaps, signed power values retain
+their direction, and time labels use the server's chart metadata.
+
+Previously loaded charts reopen immediately. The cache is separate for each
+server and metric, with a 60-second lifetime for energy charts and 10 seconds
+for System. Charts refresh only while the detail page is in the foreground;
+manual refresh bypasses the cache. A failed refresh keeps the visible chart,
+and late or canceled requests cannot replace a newer selection.
+
+Each panel draws its lines and axes in one Canvas. Unchanged chart data is not
+republished, and the equatable panel avoids redrawing for unrelated live
+readings. There are no per-sample views or continuous chart animations. The
+client uses the server's existing buckets, typically 180 energy samples or
+60 System samples; it does not downsample them. Frame rate and battery savings
+have not been measured on the physical iPad.
 
 ## Dim clock and motion wake (0.4.17, build 21)
 

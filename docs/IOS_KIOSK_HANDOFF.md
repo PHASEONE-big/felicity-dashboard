@@ -4,12 +4,17 @@ Requested device: iPad Pro, user-confirmed current LAN address `192.168.13.188`.
 Confirmed USB UDID: `86d36a369fdaeb458f5a65ba0136bec628ffd018`.
 USB detection now identifies this device as **iPad Pro (9.7-inch), J127AP**,
 running **iPadOS 16.7.16 (20H392)**.
-Source: iOS **0.4.17, build 21**.
-Last confirmed installation: **0.4.17, build 21**, over USB and then Wi-Fi.
+Source: iOS **0.4.18, build 22**.
+Last confirmed installation: **0.4.18, build 22**, over direct Wi-Fi.
 Android and hardware versions are unchanged.
 The bundle identifier and configured signing team are preserved.
 
 ## Latest status — 2026-11-16
+
+The subsequent **0.4.18/22** chart release passed its signed build and all
+81 simulator tests, then was installed and version-verified over Wi-Fi on this
+exact iPad; physical chart feedback is pending. See the
+[charts handoff](IOS_CHARTS_HANDOFF.md). The kiosk validation below records 0.4.17.
 
 **0.4.17/21** adds white daytime and red nighttime clocks, plus independent
 day/night brightness settings for the dashboard and clock. Selected brightness

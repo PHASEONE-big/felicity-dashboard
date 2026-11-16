@@ -44,9 +44,13 @@ actor FelicityAPI: DashboardProviding {
         let candidates = ipv4PreferredCandidates(for: originalURL)
         var lastError: Error?
         for candidate in candidates {
+            try Task.checkCancellation()
             do {
                 return try await data(url: candidate.url, hostHeader: candidate.hostHeader)
             } catch {
+                if Task.isCancelled || error is CancellationError || (error as? URLError)?.code == .cancelled {
+                    throw error
+                }
                 lastError = error
             }
         }

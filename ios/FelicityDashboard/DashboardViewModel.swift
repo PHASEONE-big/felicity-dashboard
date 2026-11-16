@@ -9,14 +9,24 @@ final class DashboardViewModel: ObservableObject {
     @Published private(set) var chartMetric: DashboardMetric?
     @Published private(set) var chartError = ""
     @Published private(set) var isLoadingChart = false
-    @Published var serverText: String
+    @Published var serverText: String {
+        didSet {
+            guard Self.serverIdentity(oldValue) != Self.serverIdentity(serverText), let metric = chartMetric else { return }
+            selectChart(metric)
+        }
+    }
 
     private let api: any DashboardProviding
     private let defaults: UserDefaults
+    private let now: () -> Date
+    private var chartCache: [ChartCacheKey: CachedChart] = [:]
+    private var selectedChartKey: ChartCacheKey?
+    private var chartRequestGeneration: UInt = 0
 
-    init(api: any DashboardProviding = FelicityAPI(), defaults: UserDefaults = .standard) {
+    init(api: any DashboardProviding = FelicityAPI(), defaults: UserDefaults = .standard, now: @escaping () -> Date = Date.init) {
         self.api = api
         self.defaults = defaults
+        self.now = now
         serverText = defaults.string(forKey: "felicity.server") ?? "http://homeassistant.local:8000"
     }
 
@@ -45,27 +55,93 @@ final class DashboardViewModel: ObservableObject {
         }
     }
 
-    func refreshChart(_ metric: DashboardMetric) async {
-        guard let baseURL = URL(string: serverText), baseURL.scheme != nil else {
-            chartError = APIError.invalidServer.localizedDescription
-            return
-        }
+    func chartRefreshInterval(for metric: DashboardMetric) -> TimeInterval {
+        metric == .system ? 10 : 60
+    }
+
+    /// Restore the matching route immediately, including a stale chart while it
+    /// refreshes. A different metric or server must never show the previous one.
+    func selectChart(_ metric: DashboardMetric) {
+        let key = ChartCacheKey(server: Self.serverIdentity(serverText), metric: metric)
+        guard selectedChartKey != key else { return }
+        chartRequestGeneration &+= 1
+        selectedChartKey = key
         chartMetric = metric
-        if chart.samples.isEmpty { isLoadingChart = true }
-        do {
-            chart = try await api.chart(baseURL: baseURL, metric: metric)
-            chartError = ""
-        } catch {
-            chartError = error.localizedDescription
-        }
+        let restored = chartCache[key]?.chart ?? DashboardChart()
+        if chart != restored { chart = restored }
+        chartError = ""
         isLoadingChart = false
     }
 
+    func refreshChart(_ metric: DashboardMetric, force: Bool = false) async {
+        guard !Task.isCancelled else { return }
+        selectChart(metric)
+        guard let baseURL = Self.chartBaseURL(serverText), let key = selectedChartKey else {
+            chartError = APIError.invalidServer.localizedDescription
+            isLoadingChart = false
+            return
+        }
+        if !force, let cached = chartCache[key], now().timeIntervalSince(cached.fetchedAt) < chartRefreshInterval(for: metric) {
+            return
+        }
+        chartRequestGeneration &+= 1
+        let generation = chartRequestGeneration
+        // Keep an existing chart steady during its background refresh.
+        isLoadingChart = chart.samples.isEmpty
+        defer {
+            if chartRequestGeneration == generation, selectedChartKey == key {
+                isLoadingChart = false
+            }
+        }
+        do {
+            let refreshed = try await api.chart(baseURL: baseURL, metric: metric)
+            try Task.checkCancellation()
+            guard isCurrentChartRequest(generation, key: key) else { return }
+            chartCache[key] = CachedChart(chart: refreshed, fetchedAt: now())
+            if chart != refreshed { chart = refreshed }
+            chartError = ""
+        } catch {
+            guard isCurrentChartRequest(generation, key: key), !Task.isCancelled,
+                  !(error is CancellationError), (error as? URLError)?.code != .cancelled else { return }
+            chartError = error.localizedDescription
+        }
+    }
+
     func clearChart() {
-        chart = .init()
+        chartRequestGeneration &+= 1
+        selectedChartKey = nil
+        if chart != DashboardChart() { chart = .init() }
         chartMetric = nil
         chartError = ""
         isLoadingChart = false
+    }
+
+    private func isCurrentChartRequest(_ generation: UInt, key: ChartCacheKey) -> Bool {
+        chartRequestGeneration == generation && selectedChartKey == key && key.server == Self.serverIdentity(serverText)
+    }
+
+    private static func chartBaseURL(_ text: String) -> URL? {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines).trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        guard var components = URLComponents(string: trimmed),
+              let scheme = components.scheme?.lowercased(), ["http", "https"].contains(scheme),
+              let host = components.host, !host.isEmpty else { return nil }
+        components.scheme = scheme
+        components.host = host.lowercased()
+        return components.url
+    }
+
+    private static func serverIdentity(_ text: String) -> String {
+        chartBaseURL(text)?.absoluteString ?? text.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private struct ChartCacheKey: Hashable {
+        let server: String
+        let metric: DashboardMetric
+    }
+
+    private struct CachedChart {
+        let chart: DashboardChart
+        let fetchedAt: Date
     }
 
     private func refresh(includeSummary: Bool, includeStatus: Bool) async {

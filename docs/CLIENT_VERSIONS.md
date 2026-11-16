@@ -6,11 +6,20 @@ APK, iOS app, or display firmware.
 
 | Client | Current source version | Build | Source | Git snapshot |
 |---|---|---|---|---|
-| iOS / iPadOS | 0.4.17 | 21 | `ios/` | baseline: `snapshots/ios/0.4.13-build17` |
+| iOS / iPadOS | 0.4.18 | 22 | `ios/` | baseline: `snapshots/ios/0.4.13-build17` |
 | Android / dragon | 0.7.25 | 32 | `android/app/` | `snapshots/android/0.7.25-build32` |
 | ESP32 + Nextion | 0.14.1 | — | `esp32/`, `nextion/`, `firmware/` | `snapshots/esp32-nextion/0.14.1` |
 
-These tags preserve development baselines. iOS 0.4.17 adds white daytime and red
+These tags preserve development baselines. iOS 0.4.18 rebuilds the energy
+details for portrait scrolling, with separate unit panels, interactive series
+legends, point inspection and cached chart loading. Its 81 simulator tests
+passed, and portrait/landscape layouts were checked in the simulator. The final
+signed build passed and 0.4.18/22 was installed over direct Wi-Fi on the exact
+requested iPad, with its installed version verified afterward. Physical chart
+readability, point inspection and scrolling feedback are pending. See the
+[iOS charts handoff](IOS_CHARTS_HANDOFF.md) for release behavior and validation.
+
+iOS 0.4.17 added white daytime and red
 nighttime clocks, with separate day/night brightness settings for the dashboard
 and clock. Selected brightness applies directly, up to 100%; the old brightness
 bias and 85% dashboard limit are removed. Existing nighttime clock brightness
