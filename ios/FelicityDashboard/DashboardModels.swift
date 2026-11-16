@@ -39,9 +39,7 @@ enum DashboardMetric: String, CaseIterable, Identifiable, Sendable {
             return [
                 .init(id: "solar-power", title: "Solar power", unit: "W", series: [
                     .init(id: 0, name: "Total"), .init(id: 1, name: "PV1"), .init(id: 2, name: "PV2")
-                ]),
-                .init(id: "solar-pv1", title: "PV1", unit: "W", series: [.init(id: 1, name: "PV1")]),
-                .init(id: "solar-pv2", title: "PV2", unit: "W", series: [.init(id: 2, name: "PV2")])
+                ])
             ]
         case .load:
             return [.init(id: "load-power", title: "Home load", unit: "W", series: [
@@ -69,10 +67,9 @@ enum DashboardMetric: String, CaseIterable, Identifiable, Sendable {
         case .today:
             return [
                 .init(id: "today-power", title: "Today's power", unit: "W", series: [
-                    .init(id: 0, name: "Solar"), .init(id: 1, name: "Load")
-                ]),
-                .init(id: "today-pv1", title: "PV1", unit: "W", series: [.init(id: 2, name: "PV1")]),
-                .init(id: "today-pv2", title: "PV2", unit: "W", series: [.init(id: 3, name: "PV2")])
+                    .init(id: 0, name: "Solar"), .init(id: 1, name: "Load"),
+                    .init(id: 2, name: "PV1"), .init(id: 3, name: "PV2")
+                ])
             ]
         }
     }

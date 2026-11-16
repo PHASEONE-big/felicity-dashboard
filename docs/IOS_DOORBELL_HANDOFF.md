@@ -1,6 +1,19 @@
 # iOS doorbell and Today PV details — 0.4.19, build 23
 
-As of 2026-11-16, source and confirmed installation are **0.4.19/23**. The final
+Current source and confirmed installation are **0.4.20/24**, combining all Solar
+series in one chart and all Today series in one chart. The signed native build
+and all 125 tests passed. Wi-Fi installation on the exact iPad exited with code
+0, and a subsequent lookup verified 0.4.20/build 24. Physical feedback on the
+combined charts has not yet been collected. Doorbell behavior below is unchanged.
+
+Current release evidence: `ios/build/recovery-device-0.4.20.log`,
+`ios/build/recovery-tests-0.4.20.log`,
+`ios/build/recovery-tests-0.4.20.xcresult` and
+`ios/build/recovery-install-0.4.20-wifi.log`. Installed IPA:
+`ios/build/ipad/Felicity-0.4.20-build24.ipa`; previous app retained at
+`ios/build/ipad/installed-0.4.19-build23.app`.
+
+On 2026-11-16, **0.4.19/23** was installed and version-verified. Its final
 signed release build and all **125 simulator tests passed**. Direct Wi-Fi
 installation reached 100% and exited with code 0; a subsequent exact-device
 lookup confirmed version 0.4.19/build 23. The user answered “Проверю позже”
@@ -48,22 +61,22 @@ did not change device settings, trigger a ring or start audio. See
 
 ## Today and Solar graphs
 
-Today retains its Solar/Load overview and gains separate PV1/PV2 watt panels.
+Version 0.4.19 introduced Today PV1/PV2 power data. In current 0.4.20, Today
+shows Solar, Load, PV1 and PV2 in one watt chart; Solar likewise shows Total,
+PV1 and PV2 in one chart. PV1 stays blue and PV2 purple across both screens,
+with legend toggles and point inspection retained.
 The client fetches the existing `today` and `pv` chart endpoints concurrently,
 joining only equal finite start/end windows with equal bucket counts. This
 prevents cross-midnight responses from attaching strings to the wrong day.
 Real PV readings can remain visible when the matching overview bucket is
 missing; absent or invalid channel values stay gaps. A failed PV request leaves
 the Today overview available. No backend deployment or invented voltage/current
-history is involved. Solar also retains its overview and has separate PV1/PV2
-panels. Existing 60-second chart caching limits these requests; stable missing
+history is involved. Existing 60-second chart caching limits these requests; stable missing
 values compare equal so repeated partial data does not force chart redraws.
 
 ## Validation and remaining checks
 
-The 125-test suite comprises 81 previous tests, one PV-scale test, 10 Today
-chart tests, nine call-policy tests, 11 event tests, nine audio tests and three
-controller tests. It covers chart merging and HTTP fallback, call deadlines,
+The 0.4.19 suite passed 125 tests. It covers chart merging and HTTP fallback, call deadlines,
 duplicate suppression, event filtering, G.722 vectors and cancellation of queued
 audio work. Local evidence:
 

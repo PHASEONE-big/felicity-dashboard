@@ -6,14 +6,22 @@ APK, iOS app, or display firmware.
 
 | Client | Current source version | Build | Source | Git snapshot |
 |---|---|---|---|---|
-| iOS / iPadOS | 0.4.19 | 23 | `ios/` | baseline: `snapshots/ios/0.4.13-build17` |
+| iOS / iPadOS | 0.4.20 | 24 | `ios/` | baseline: `snapshots/ios/0.4.13-build17` |
 | Android / dragon | 0.7.25 | 32 | `android/app/` | `snapshots/android/0.7.25-build32` |
 | ESP32 + Nextion | 0.14.1 | — | `esp32/`, `nextion/`, `firmware/` | `snapshots/esp32-nextion/0.14.1` |
 
-These tags preserve development baselines. Current iOS 0.4.19 adds foreground
+These tags preserve development baselines. Current iOS 0.4.20 puts all Solar
+series in one chart and all Today series in one chart, so PV1/PV2 no longer
+require scrolling to additional panels. Legend toggles and point inspection
+remain available, with PV1 blue and PV2 purple on both screens. The signed
+native build and all 125 tests passed; 0.4.20/24 was installed over Wi-Fi on
+the exact requested iPad and verified by device lookup. Physical feedback on
+the combined charts has not yet been collected.
+
+iOS 0.4.19 added foreground
 ONVIF doorbell calls, native two-way audio with explicit microphone activation,
-and a static last-ring preview. Today gains separate PV1/PV2 power graphs from
-the existing chart endpoints; Solar also has separate string panels. The final
+and a static last-ring preview, and introduced Today PV1/PV2 power data from
+the existing chart endpoints. The final
 signed release build and all 125 simulator tests passed. Version 0.4.19/23 was
 installed over Wi-Fi on the exact requested iPad and verified by device lookup.
 The user deferred real ring/snapshot and two-way audio checks; both remain

@@ -181,7 +181,14 @@ struct EnergyChartPanelView: View, Equatable {
         guard let date = chart.date(at: index, metric: metric) else { return detail ? "Sample \(index + 1)" : "\(index + 1)" }
         return date.formatted(detail && metric == .system ? .dateTime.hour().minute().second() : .dateTime.hour().minute())
     }
-    private func color(_ channel: Int) -> Color { colors[max(0, channel) % colors.count] }
+    private func color(_ channel: Int) -> Color {
+        // Keep string colors the same in Solar and Today despite channel order.
+        switch panel.series.first(where: { $0.id == channel })?.name {
+        case "PV1": return colors[2]
+        case "PV2": return colors[3]
+        default: return colors[max(0, channel) % colors.count]
+        }
+    }
     private func axisValue(_ value: Double) -> String {
         if abs(value) >= 1000 { return (value / 1000).formatted(.number.precision(.fractionLength(1))) + "k" }
         return value.formatted(.number.precision(.fractionLength(panel.unit == "V" || panel.unit == "°C" ? 1 : 0)))

@@ -1,8 +1,11 @@
 # iOS energy charts — 0.4.18, build 22
 
-Current source is 0.4.19/23, adding separate Today PV1/PV2 panels and retaining
-the Solar overview with separate string panels. Its final signed build and
-125 tests passed, and 0.4.19/23 was installed and version-verified over Wi-Fi.
+Current source and confirmed installation are 0.4.20/24: Solar has Total/PV1/PV2 together in one chart and
+Today has Solar/Load/PV1/PV2 together in one chart. PV1 stays blue and PV2 purple;
+legend toggles and point inspection remain. Its signed native build and all
+125 tests passed; Wi-Fi installation succeeded and a subsequent device lookup
+verified 0.4.20/build 24. Physical feedback on the combined charts has not yet
+been collected.
 Real ring/snapshot and two-way audio checks were deferred by the user. See the
 [doorbell and Today handoff](IOS_DOORBELL_HANDOFF.md). The 0.4.18 evidence below
 records the latest user-confirmed physical chart validation.

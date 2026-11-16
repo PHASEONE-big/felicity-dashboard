@@ -20,11 +20,13 @@ the iPad must already be paired with Xcode, or first connected by USB and truste
 
 ## Latest status — 2026-11-16
 
-Current source and confirmed installation are **0.4.19, build 23**. The final
-signed release build and all **125 simulator tests passed**. Wi-Fi installation
-completed on the exact requested iPad, with the installed version verified by
-device lookup. The user chose to check the real ring/snapshot and two-way audio
-later; those physical behaviors remain unverified.
+Current source and confirmed installation are **0.4.20, build 24**, combining
+all Solar series in one chart and all Today series in one chart. The signed
+native build and all **125 simulator tests passed**. Wi-Fi installation on the
+exact requested iPad succeeded, with its installed version verified afterward.
+Physical feedback on the combined charts has not yet been collected.
+The user chose to check the real ring/snapshot and two-way audio later; those
+physical behaviors remain unverified.
 See the [doorbell handoff](../docs/IOS_DOORBELL_HANDOFF.md).
 
 Version 0.4.18 passed its signed build and 81 simulator tests, was installed and
@@ -54,7 +56,7 @@ The thumbnail keeps no live stream running, and manually opening it does not
 create a new ring or replace the ring snapshot. Recorder passwords remain in Keychain.
 Physical speaker, microphone and echo-cancellation checks are deferred.
 
-## Energy charts (0.4.19, build 23)
+## Energy charts (0.4.20, build 24)
 
 Tap any energy card to open a vertically scrolling detail page. The six metric
 buttons switch between Solar, Home Load, Battery, Grid, System and Today.
@@ -62,12 +64,16 @@ Current readings remain live while the charts are open. Panels stack in
 portrait and use the available width in landscape; watts, volts, percentages
 and degrees have separate scales rather than sharing one axis.
 
-Today keeps its Solar/Load overview and adds individual **PV1** and **PV2**
-power graphs. It loads the existing Today and Solar endpoints concurrently and
-joins them only when their start, end and bucket count match. Missing readings
-remain gaps; if the Solar request fails, the Today overview still works and
-the PV panels show no data. Solar also keeps its overview with separate PV1/PV2
-panels. These are power histories in watts, not voltage or current histories.
+Solar shows **Total, PV1 and PV2 together in one chart**. Today shows **Solar,
+Load, PV1 and PV2 together in one chart**, with no additional PV panels to
+scroll down to. PV1 is blue and PV2 is purple consistently on both screens.
+Each line can still be hidden through its legend item and inspected by point.
+
+Today loads the existing Today and Solar endpoints concurrently and joins them
+only when their start, end and bucket count match. Missing readings remain gaps;
+if the Solar request fails, the Today Solar/Load lines still work and the PV
+lines have no data. These are power histories in watts, not voltage or current
+histories.
 
 Tap a legend item to hide or show that series. Tap a chart or drag horizontally
 to inspect a sample and its time; vertical movement scrolls the page. VoiceOver

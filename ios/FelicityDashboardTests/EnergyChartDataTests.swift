@@ -43,7 +43,7 @@ final class EnergyChartDataTests: XCTestCase {
 
     func testPanelsSeparateDifferentUnitsAndMatchServerChannelOrder() {
         XCTAssertEqual(DashboardMetric.solar.chartPanels.first?.series.map(\.name), ["Total", "PV1", "PV2"])
-        XCTAssertEqual(DashboardMetric.solar.chartPanels.map { $0.series.map(\.id) }, [[0, 1, 2], [1], [2]])
+        XCTAssertEqual(DashboardMetric.solar.chartPanels.map { $0.series.map(\.id) }, [[0, 1, 2]])
         XCTAssertEqual(DashboardMetric.load.chartPanels.first?.series.map(\.id), [0, 1, 2, 3])
         XCTAssertEqual(DashboardMetric.battery.chartPanels.map(\.unit), ["%", "W"])
         XCTAssertEqual(DashboardMetric.battery.chartPanels.map { $0.series.map(\.id) }, [[0], [1]])
@@ -52,28 +52,30 @@ final class EnergyChartDataTests: XCTestCase {
         XCTAssertEqual(DashboardMetric.system.chartPanels.map(\.unit), ["%", "°C"])
         XCTAssertEqual(DashboardMetric.system.chartPanels.map { $0.series.map(\.id) }, [[0, 1, 3], [2]])
         XCTAssertEqual(DashboardMetric.system.chartPanels.first?.series.map(\.name), ["CPU", "RAM", "Disk"])
-        XCTAssertEqual(DashboardMetric.today.chartPanels.first?.series.map(\.name), ["Solar", "Load"])
-        XCTAssertEqual(DashboardMetric.today.chartPanels.map { $0.series.map(\.id) }, [[0, 1], [2], [3]])
-        XCTAssertEqual(DashboardMetric.today.chartPanels.map(\.unit), ["W", "W", "W"])
+        XCTAssertEqual(DashboardMetric.today.chartPanels.first?.series.map(\.name), ["Solar", "Load", "PV1", "PV2"])
+        XCTAssertEqual(DashboardMetric.today.chartPanels.map { $0.series.map(\.id) }, [[0, 1, 2, 3]])
+        XCTAssertEqual(DashboardMetric.today.chartPanels.map(\.unit), ["W"])
         for metric in DashboardMetric.allCases {
             XCTAssertEqual(Set(metric.chartPanels.map(\.id)).count, metric.chartPanels.count)
         }
     }
 
-    func testPVDetailsUseIndependentPowerScalesFromTheSamePayload() throws {
+    func testSolarSinglePanelKeepsPVSeriesAndScalesToVisibleChannels() throws {
         let chart = DashboardChart(samples: [[5_200, 5_000, 200], [6_300, 6_000, 300]], channels: 3)
         let panels = DashboardMetric.solar.chartPanels
-        let pv1 = try XCTUnwrap(panels.first { $0.id == "solar-pv1" })
-        let pv2 = try XCTUnwrap(panels.first { $0.id == "solar-pv2" })
+        XCTAssertEqual(panels.count, 1)
+        let panel = try XCTUnwrap(panels.first)
+        let pv1 = try XCTUnwrap(panel.series.first { $0.name == "PV1" })
+        let pv2 = try XCTUnwrap(panel.series.first { $0.name == "PV2" })
 
-        XCTAssertEqual(pv1.title, "PV1")
-        XCTAssertEqual(pv2.title, "PV2")
-        XCTAssertEqual(pv1.unit, "W")
-        XCTAssertEqual(pv2.unit, "W")
-        XCTAssertEqual(chart.segments(channel: try XCTUnwrap(pv1.series.first).id).flatMap { $0.map(\.value) }, [5_000, 6_000])
-        XCTAssertEqual(chart.segments(channel: try XCTUnwrap(pv2.series.first).id).flatMap { $0.map(\.value) }, [200, 300])
-        XCTAssertGreaterThan(chart.domain(channels: pv1.series.map(\.id)).upperBound, 6_000)
-        XCTAssertLessThan(chart.domain(channels: pv2.series.map(\.id)).upperBound, 1_000)
+        XCTAssertEqual(panel.unit, "W")
+        XCTAssertEqual(chart.segments(channel: pv1.id).flatMap { $0.map(\.value) }, [5_000, 6_000])
+        XCTAssertEqual(chart.segments(channel: pv2.id).flatMap { $0.map(\.value) }, [200, 300])
+        XCTAssertGreaterThan(chart.domain(channels: panel.series.map(\.id)).upperBound, 6_300)
+        let visibleChannels = panel.series.filter { $0.id == pv2.id }.map(\.id)
+        let visibleDomain = chart.domain(channels: visibleChannels)
+        XCTAssertGreaterThan(visibleDomain.upperBound, 300)
+        XCTAssertLessThan(visibleDomain.upperBound, 1_000)
     }
 
     func testDayMetadataDecodesOffsetAndOneHundredEightyActualBuckets() throws {
