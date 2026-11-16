@@ -64,7 +64,7 @@ struct AppRootView: View {
         .background(KioskScreenReader(attach: { kiosk.attach(screen: $0) }, activity: { kiosk.recordActivity() }).allowsHitTesting(false))
         .overlay {
             if kiosk.isSleeping {
-                KioskClockView(load: model.snapshot.load, updatedAt: model.snapshot.updatedAt, online: model.status.online) { kiosk.recordActivity() }
+                KioskClockView(isNight: kiosk.isNight, load: model.snapshot.load, updatedAt: model.snapshot.updatedAt, online: model.status.online) { kiosk.recordActivity() }
             }
         }
         .statusBarHidden(kiosk.isSleeping)

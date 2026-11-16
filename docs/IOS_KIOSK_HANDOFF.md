@@ -4,54 +4,47 @@ Requested device: iPad Pro, supplied LAN address `192.168.13.188`.
 Confirmed USB UDID: `86d36a369fdaeb458f5a65ba0136bec628ffd018`.
 USB detection now identifies this device as **iPad Pro (9.7-inch), J127AP**,
 running **iPadOS 16.7.16 (20H392)**.
-Source and last confirmed installation: iOS **0.4.16, build 20**.
+Source: iOS **0.4.17, build 21**.
+Last confirmed installation: **0.4.16, build 20**.
 Android and hardware versions are unchanged.
 The bundle identifier and configured signing team are preserved.
 
-## Current recovery status — 2026-11-14
+## Latest status — 2026-11-16
 
-The signed 0.4.14/18 app was installed over the existing application on the exact
-USB device above. The installer reported `InstallComplete`; no uninstall was
-performed. The user then opened Felicity manually and explicitly confirmed that
-it opens and the dashboard displays data. After the follow-up fixes below, the
-rebuilt 0.4.14 app was also installed successfully with `InstallComplete` and
-exit code 0.
+**0.4.17/21** adds white daytime and red nighttime clocks, plus independent
+day/night brightness settings for the dashboard and clock. Selected brightness
+applies directly up to 100%, replacing the old 85% dashboard cap and brightness
+bias. Existing nighttime clock brightness is preserved. Camera sampling, motion
+detection, the darkness shortcut and idle polling are unchanged.
 
-At task start, `git fetch origin` succeeded, and the checked-out
-commit and upstream were both `2935d4a`, with ahead/behind counts `0 0` before
-creating the task branch **`codex/ios-kiosk-recovery`**. Recovered uncommitted
-changes were preserved.
+The signed device build and all **62 simulator tests passed**. The last confirmed
+installed version is **0.4.16/20**. Wi-Fi installation was requested. A TCP connection to the previous address
+`192.168.13.188:62078` opens, but plaintext lockdown queries, an existing-pair
+StartSession and a TLS-first probe all close/reset before device identity can
+be verified. No wireless MobileDevice advertisement was found. The existing
+Mac pairing record for the exact UDID is present; no new pairing or network
+settings were changed. Confirm the current iPad IP/connection before retrying;
+USB may be needed for initial wireless setup. Neither 0.4.17 installation nor
+physical validation of its day/night settings is yet confirmed.
 
-The 0.4.14 follow-up fixes saved settings before clock preview and reset the idle
-interval on return to the dashboard. That physical-device build and 38
-simulator tests passed. On the physical iPad, however, the user reported that
-neither the automatic clock nor “Show clock now” appeared, then clarified that
-touch controls did not work while dashboard data continued updating.
+## Historical recovery — 2026-11-14
 
-The user then requested a practical, inexpensive motion trigger: remove complex
-recognition, use a very small camera image, show only large red clock/date/home
-consumption in dim mode, and adapt dashboard brightness to the light when motion
-wakes it. The resulting **0.4.15/19 source** removes Vision recognition and
-replaces the global zero-distance SwiftUI drag gesture with a passive UIKit
-window touch observer. The signed 0.4.15/19 build and all
-48 updated simulator tests passed. The exact iPad received the final update
-over USB: signature/profile validation succeeded, followed by `InstallComplete`
-and exit code 0. The user then confirmed that **touch controls work and the red
-clock appears** on the physical iPad. The reported failure to switch immediately
-when the camera was covered was not a completed inactivity-timeout test: the
-user expected a quick darkness transition rather than waiting 60 seconds.
+Recovery used branch **`codex/ios-kiosk-recovery`**, preserving the uncommitted
+changes. At that task's start, fetching succeeded and HEAD/upstream were both
+`2935d4a`, with ahead/behind counts `0 0`.
 
-The installed **0.4.16/20** adds that behavior: the clock appears when the smoothed
-camera light estimate stays below an adjustable threshold (default 0.18) for
-three seconds. Smoothing precedes the hold, so covering the camera is expected
-to show the clock in roughly 5–10 seconds; exact latency has not been measured. The
-shortcut triggers once per dark episode, so motion/touch wake is followed by
-ordinary inactivity; hysteresis prevents threshold flicker. The signed native
-build, all 55 simulator tests and exact-device USB installation passed. On
-2026-11-14 the user confirmed both physical transitions: covering the camera
-shows the red clock, and uncovering it with hand movement returns the dashboard.
-The user plans to leave the iPad running overnight. Overnight stability,
-adaptive-brightness behavior and measured energy use remain to be checked.
+The signed 0.4.14/18 restored the app and dashboard data, but physical testing
+exposed unresponsive touch controls. Version 0.4.15/19 replaced the global
+SwiftUI drag gesture with a passive UIKit touch observer and removed Vision
+recognition. Its build, 48 simulator tests and exact-device USB installation
+passed; the user confirmed working touch controls and the red clock.
+
+Version 0.4.16/20 added the three-second darkness hold after the smoothed light
+estimate crosses the threshold. Its signed build, 55 simulator tests and USB
+installation passed. On 2026-11-14 the user confirmed that covering the camera
+shows the red clock and hand movement returns the dashboard. Exact latency,
+overnight stability and energy use were not measured. Historical results and
+artifact paths are retained below.
 
 ## Installation
 
@@ -91,12 +84,14 @@ with the unchanged `io.github.homedashboard.ios` identifier and team NH364DL3M9.
 includes USB UDID `86d36a369fdaeb458f5a65ba0136bec628ffd018` and expires
 **2026-11-21 at 18:20:22 Madrid (17:20:22 UTC)**.
 
-Current verified 0.4.16/20 products:
+Verified 0.4.17/21 products, ready for installation:
 
 - `ios/build/ipad/Payload/Felicity Dashboard.app`
-- `ios/build/ipad/Felicity-0.4.16-build20.ipa`
+- `ios/build/ipad/Felicity-0.4.17-build21.ipa`
 
-Both contain the final rebuilt 0.4.16 app. The 0.4.15 build with physically
+The preceding installed build is preserved as
+`ios/build/ipad/confirmed-0.4.16-build20.app` and
+`ios/build/ipad/Felicity-0.4.16-build20.ipa`. The 0.4.15 build with physically
 confirmed touch/clock behavior is retained as
 `ios/build/ipad/confirmed-0.4.15-build19.app` and
 `ios/build/ipad/Felicity-0.4.15-build19.ipa`. The previous 0.4.14 products are
@@ -104,8 +99,7 @@ retained locally, including `ios/build/ipad/Felicity-0.4.14-build18.ipa`.
 The initial signed products are preserved as `ios/build/ipad/initial-build18.app` and
 `ios/build/ipad/Felicity-0.4.14-build18.initial.ipa`.
 
-The standard 0.4.16 `xcodebuild` device build succeeded without special Swift
-compiler overrides.
+The native 0.4.17 device build and simulator tests passed; see the checks below.
 
 The earlier `devicectl device install app --device` attempt timed out at 15
 seconds without an installation result. The subsequent legacy USB installation
@@ -124,7 +118,7 @@ Upstream `ios-control/ios-deploy` was compiled locally with Apple clang for the
 legacy device transport. Exact-UDID USB detection and installation succeed on
 the confirmed target.
 
-`ios/build/ipad/Install-Felicity.command` installed the final 0.4.16/20 on the Mac.
+`ios/build/ipad/Install-Felicity.command` was used to install 0.4.16/20 on the Mac.
 It checks the app signature, bundle/version, target inclusion and profile expiry,
 then uses the locally compiled helper at `ios/build/device-tools/ios-deploy` to
 install over the existing app through USB, with the exact known UDID and no
@@ -135,11 +129,19 @@ The installer validated the version, signature and profile before reporting
 0.4.16 are confirmed complete. The user also confirmed touch and red-clock
 behavior on the preceding 0.4.15 build.
 
-## Requested behaviour in 0.4.16/20
+## Behaviour in 0.4.17/21
 
 - Default: 60 seconds since touch or camera movement → a black screen with only
-  large red time, date and household power consumption, at 4% brightness.
-  Clock brightness is adjustable from 1–20%; timeout is 30 seconds to 5 minutes.
+  large time, date and household power consumption: **white in daylight, red
+  at night**. Timeout is adjustable from 30 seconds to 5 minutes.
+- Four independent brightness settings apply directly: day dashboard defaults
+  to **100%**, night dashboard to **12%**, day clock to **50%**, and night clock
+  preserves the legacy clock setting (otherwise **4%**). Dashboard settings
+  allow 5–100%; clock settings allow 1–100%. The old brightness bias is ignored.
+- Day/night mode uses the existing darkness threshold and a 0.06 hysteresis gap.
+  Clock color and brightness change together. Motion/touch wake immediately
+  applies the selected dashboard brightness; disabling adaptive dashboard
+  brightness uses the day dashboard value in both modes.
 - Darkness shortcut: a smoothed light estimate below the adjustable threshold
   (default 0.18, range 0.05–0.45) for three seconds shows the clock without waiting
   for the full inactivity timeout. Smoothing occurs before that hold: allow
@@ -153,10 +155,8 @@ behavior on the preceding 0.4.15 build.
 - Camera capture uses low resolution and a low supported frame rate. Processing
   compares an **8 × 6 brightness grid about once per second**. There is no Vision,
   face, body or other object recognition. A still person may let the display dim.
-- Camera movement or touch wakes the dashboard. Dashboard brightness follows
-  a camera-derived light estimate within **5–85%**, with a manual brightness
-  adjustment. Automatic brightness changes happen at most once every 10 seconds.
-  Motion sensitivity is adjustable. The camera estimate is not a calibrated lux
+- Camera movement or touch wakes the dashboard. Motion sensitivity is
+  adjustable. The camera estimate is not a calibrated lux
   measurement and does not use the restricted ambient-light sensor.
 - Three-second recalibration after dim/wake avoids screen reflections causing
   immediate wake. Slow daylight drift and a single global flicker are filtered.
@@ -171,7 +171,23 @@ The reduced sampling, removed recognition, slower clock updates and reduced
 network polling are intended to keep the work inexpensive. Actual battery or
 wall-power consumption has not been measured on this iPad.
 
-## Checks for the installed 0.4.16/20
+## Checks for 0.4.17/21
+
+The signed native device build passed. Full XCTest execution passed
+**62 tests, 0 failures**: 27 Dashboard tests, 23 Kiosk tests and 12 Presence tests.
+The new checks cover explicit brightness up to 100%, day/night mode hysteresis,
+legacy clock-setting migration and preference persistence. Code-signature
+verification passed, and the profile includes the exact requested iPad UDID
+with the unchanged expiry shown above. Wi-Fi installation and physical
+validation remain pending.
+
+Verification artifacts:
+
+- Device build log: `ios/build/recovery-device-0.4.17.log`
+- Test log: `ios/build/recovery-tests-0.4.17.log`
+- XCTest result bundle: `ios/build/recovery-tests-0.4.17.xcresult`
+
+## Historical checks — installed 0.4.16/20
 
 The final signed native device build passed. Full XCTest execution passed
 **55 tests, 0 failures**: 27 Dashboard tests, 16 Kiosk tests and 12 Presence tests.
@@ -190,7 +206,7 @@ red clock on darkness, dashboard on movement. Exact transition latency was not
 measured. The user plans an overnight run; its outcome, actual energy use and
 day/night adaptive-brightness behavior remain unverified.
 
-### Confirmed 0.4.15/19 evidence
+### Historical 0.4.15/19 evidence
 
 The final signed native device build passed. Full XCTest execution passed
 **48 tests, 0 failures**: 27 Dashboard tests (including two polling tests),
@@ -209,7 +225,7 @@ confirmed physical touch controls and the red clock work. Motion sensitivity,
 adaptive brightness and energy use remain unmeasured; these results do not
 validate the new 0.4.16 darkness transition.
 
-### Previous 0.4.14/18 evidence
+### Historical 0.4.14/18 evidence
 
 The standard 0.4.14 `xcodebuild` physical-device build passed, including the two
 follow-up source fixes, without the earlier compiler sandbox workaround. Full
@@ -237,12 +253,11 @@ while data kept updating. The new passive touch observer is intended to address
 this failure. The installed 0.4.15 replacement passed automated tests, and the
 user subsequently confirmed touch controls and the red clock work.
 
-## Further 0.4.16/20 acceptance
+## Physical acceptance for 0.4.17/21
 
-Build, automated tests, installation and the basic darkness-to-clock and
-motion-to-dashboard transitions are confirmed. The user plans to run the iPad
-overnight. The checks below extend that successful basic test; they are not yet
-all completed.
+The checks below are pending installation of 0.4.17. Physical darkness/motion
+transitions were confirmed on 0.4.16; they do not validate the new brightness
+settings or daytime color.
 
 1. Confirm Settings, buttons, scrolling and manual clock preview still work.
 2. Darken or cover the camera: once the smoothed light estimate remains below
@@ -250,12 +265,14 @@ all completed.
    5–10 seconds from covering the camera and record the actual delay. Move or tap to wake in
    darkness; the dashboard should remain until ordinary inactivity expires.
    Brighten then darken again to verify the quick transition rearms.
-3. Leave the scene still: the red time/date/home-load screen appears at the
-   selected timeout and remains dim for two minutes without a self-wake loop.
+3. Leave the scene still: the time/date/home-load screen appears at the selected
+   timeout, white in daylight and red in darkness, without a self-wake loop.
    A still visible person is allowed to time out; no person detector is used.
 4. Approach or pass beside the iPad in day/night lighting: motion wakes the
-   dashboard, whose brightness follows the available light. Test sensitivity
-   and brightness sliders in the actual installation position.
+   dashboard at its selected day/night brightness. Set day dashboard brightness
+   to 100% and confirm full output; test all four brightness settings, including
+   lower night values and persistence after relaunch. Clock color and brightness
+   should switch together, without flicker near the threshold.
 5. Confirm household power continues to update about every 30 seconds in clock
    mode, and stale/offline data is not presented as a fresh reading.
 6. Touch clock, open settings/live/archive/details, rotate, lock/unlock and switch

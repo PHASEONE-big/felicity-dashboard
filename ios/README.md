@@ -18,17 +18,37 @@ after seven days. Rebuild and install with the same team and bundle identifier
 the existing app to renew its signature. A network address alone is not enough:
 the iPad must already be paired with Xcode, or first connected by USB and trusted.
 
-## Dim clock and motion wake (0.4.16, build 20)
+## Latest status — 2026-11-16
+
+Source is **0.4.17, build 21**. The signed device build and all **62 simulator
+tests passed**. The requested Wi-Fi installation remains pending. The last
+confirmed installed version is **0.4.16, build 20**; installation of 0.4.17 is
+not yet confirmed.
+
+## Dim clock and motion wake (0.4.17, build 21)
 
 On the energy dashboard, one minute without detected activity shows only large
-red time, date and household power consumption on black, at 4% display
-brightness by default. The clock updates and shifts position once per minute;
-household power refreshes every 30 seconds. A tap or camera movement wakes the
-dashboard. Dashboard brightness follows the camera's light estimate, with a
-manual adjustment and a 5–85% range; automatic changes occur at most once every
-10 seconds.
+time, date and household power consumption on black: **white in daylight, red
+at night**. The clock updates and shifts position once per minute; household
+power refreshes every 30 seconds. A tap or camera movement wakes the dashboard.
 
-Version 0.4.16 also switches to the clock when the camera's smoothed light estimate
+Day and night brightness are set independently and apply directly, up to 100%:
+
+| Setting | Default | Range |
+|---|---|---|
+| Day dashboard | 100% | 5–100% |
+| Night dashboard | 12% | 5–100% |
+| Day clock · white | 50% | 1–100% |
+| Night clock · red | Existing clock setting, otherwise 4% | 1–100% |
+
+Version 0.4.17 preserves the existing nighttime clock brightness and replaces
+the old dashboard brightness bias/curve. Day/night mode uses the existing
+darkness threshold, with a 0.06 hysteresis gap to avoid flicker. Clock color and
+brightness change together; waking applies the selected dashboard brightness
+immediately. With automatic dashboard brightness disabled, the day dashboard
+setting applies in both lighting conditions.
+
+The clock also appears when the camera's smoothed light estimate
 stays below the darkness threshold for three seconds. Smoothing comes first,
 so covering the camera should take roughly 5–10 seconds to show the clock; this
 timing still needs confirmation on the physical iPad. The default threshold is 18%
@@ -43,9 +63,10 @@ body or other object recognition. A person who remains still may let the clock
 appear; this is a motion trigger, not room-occupancy detection.
 
 In **Settings → Clock & presence**, change the timeout (30 seconds to 5 minutes),
-clock brightness (1–20%), darkness threshold, motion sensitivity, and dashboard brightness
-adjustment. Camera wake and automatic brightness can be disabled, and the clock
-can be disabled or previewed.
+the four brightness settings above, darkness threshold and motion sensitivity.
+The night dashboard setting is shown when automatic brightness and camera wake
+are enabled. Camera wake and automatic dashboard brightness can be disabled,
+and the clock can be disabled or previewed.
 The camera permission prompt explains its use. Only the front camera is used,
 with no microphone, recording, or uploads. The system camera indicator is visible.
 If camera access is denied or interrupted, touch wake remains available.
@@ -57,13 +78,14 @@ restored when leaving the mode/app. Idle polling requests only current power;
 summary/status requests are skipped. These changes reduce processing and
 network work, but battery or wall-power savings have not been measured.
 
-Version 0.4.15/19 replaced the global SwiftUI drag gesture with a passive
-UIKit touch observer. That signed build passed 48 simulator tests; the user
+Historical validation: version 0.4.15/19 replaced the global SwiftUI drag gesture
+with a passive UIKit touch observer. That signed build passed 48 simulator tests; the user
 confirmed touch controls and the red clock now work on the requested iPad Pro.
-The signed 0.4.16/20 build passed 55 simulator tests and is now installed on the
+The signed 0.4.16/20 build passed 55 simulator tests and was installed on the
 same iPad. On 2026-11-14 the user confirmed that covering the camera shows the
-red clock and movement returns the dashboard. An overnight run is planned;
-long-term stability, day/night brightness and actual energy use remain unverified.
+red clock and movement returns the dashboard. These results do not validate
+0.4.17's new brightness controls. Long-term stability, the new day/night settings
+and actual energy use remain unverified on the physical iPad.
 Darkness, a covered camera, reflections and moving objects can affect motion
 detection. See [installation and validation](../docs/IOS_KIOSK_HANDOFF.md) for the
 exact device and current validation status.

@@ -1,12 +1,33 @@
 import Foundation
 
-/// Relative camera light is not a lux measurement. Keep night wake comfortable
-/// and cap the backlight, with a user adjustment for the installation location.
+/// Apply the selected display brightness directly; ambient light chooses a mode
+/// rather than silently reducing the user's chosen value.
 enum KioskBrightnessPolicy {
-    static func dashboard(level: Double, adjustment: Double) -> Double {
-        let light = level.isFinite ? min(1, max(0, level)) : 0.5
-        let offset = adjustment.isFinite ? min(0.25, max(-0.25, adjustment)) : 0
-        return min(0.85, max(0.05, 0.06 + 0.68 * light * light + offset))
+    static func dashboard(isNight: Bool, day: Double, night: Double, adaptive: Bool) -> Double {
+        bounded(adaptive && isNight ? night : day, minimum: 0.05)
+    }
+
+    static func clock(isNight: Bool, day: Double, night: Double) -> Double {
+        bounded(isNight ? night : day, minimum: 0.01)
+    }
+
+    private static func bounded(_ value: Double, minimum: Double) -> Double {
+        min(1, max(minimum, value.isFinite ? value : minimum))
+    }
+}
+
+/// Hysteresis keeps small camera fluctuations from changing color/brightness.
+struct KioskLightMode {
+    private(set) var isNight = false
+
+    mutating func update(level: Double?, darkThreshold: Double) {
+        guard let level, level.isFinite, (0...1).contains(level), darkThreshold.isFinite else { return }
+        let threshold = min(1, max(0, darkThreshold))
+        if isNight {
+            if level >= min(1, threshold + 0.06) { isNight = false }
+        } else if level < threshold {
+            isNight = true
+        }
     }
 }
 

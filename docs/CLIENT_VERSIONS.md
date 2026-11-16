@@ -6,19 +6,21 @@ APK, iOS app, or display firmware.
 
 | Client | Current source version | Build | Source | Git snapshot |
 |---|---|---|---|---|
-| iOS / iPadOS | 0.4.16 | 20 | `ios/` | baseline: `snapshots/ios/0.4.13-build17` |
+| iOS / iPadOS | 0.4.17 | 21 | `ios/` | baseline: `snapshots/ios/0.4.13-build17` |
 | Android / dragon | 0.7.25 | 32 | `android/app/` | `snapshots/android/0.7.25-build32` |
 | ESP32 + Nextion | 0.14.1 | — | `esp32/`, `nextion/`, `firmware/` | `snapshots/esp32-nextion/0.14.1` |
 
-These tags preserve development baselines. iOS 0.4.16 adds a quick darkness
-transition to 0.4.15's tiny-grid motion detection, adaptive dashboard brightness
-and red clock/date/home-load screen. The clock triggers once per dark episode,
-after the smoothed light estimate stays below an adjustable threshold for three
-seconds (roughly 5–10 seconds after covering the camera). The signed build 20
-passed 55 simulator tests and was installed on the requested iPad. The user
-confirmed both physical darkness/motion transitions on 2026-11-14; an overnight
-run is planned. Touch controls and the red clock were
-already confirmed on 0.4.15/19. The previous 0.4.13 tag remains the recovery baseline.
+These tags preserve development baselines. iOS 0.4.17 adds white daytime and red
+nighttime clocks, with separate day/night brightness settings for the dashboard
+and clock. Selected brightness applies directly, up to 100%; the old brightness
+bias and 85% dashboard limit are removed. Existing nighttime clock brightness
+is preserved. Tiny-grid motion detection, the darkness shortcut and reduced
+idle polling are unchanged. As of 2026-11-16, the signed 0.4.17/21 build and
+62 simulator tests passed; Wi-Fi installation remains pending. The last
+confirmed installed version is 0.4.16/20. That build passed 55 simulator tests,
+and its darkness/motion transitions were physically confirmed on 2026-11-14.
+The previous 0.4.13 tag
+remains the recovery baseline.
 See [iOS kiosk handoff](IOS_KIOSK_HANDOFF.md) for installation and validation.
 Android 0.7.25 preserves short ONVIF activity boundaries discovered
 during physical testing on dragon, and includes 0.7.24's playback/seek fixes.

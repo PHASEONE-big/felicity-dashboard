@@ -8,12 +8,15 @@ final class KioskController: ObservableObject {
     @Published var enabled: Bool { didSet { savePreferences(); updateRuntime() } }
     @Published var cameraWakeEnabled: Bool { didSet { savePreferences(); updateRuntime() } }
     @Published var idleTimeout: Double { didSet { savePreferences() } }
-    @Published var clockBrightness: Double { didSet { savePreferences(); applyBrightness(force: true) } }
+    @Published var dayClockBrightness: Double { didSet { savePreferences(); applyBrightness(force: true) } }
+    @Published var nightClockBrightness: Double { didSet { savePreferences(); applyBrightness(force: true) } }
+    @Published var dayDashboardBrightness: Double { didSet { savePreferences(); applyBrightness(force: true) } }
+    @Published var nightDashboardBrightness: Double { didSet { savePreferences(); applyBrightness(force: true) } }
     @Published var adaptiveBrightness: Bool { didSet { savePreferences(); applyBrightness(force: true) } }
-    @Published var brightnessAdjustment: Double { didSet { savePreferences(); applyBrightness(force: true) } }
     @Published var motionSensitivity: Double { didSet { savePreferences(); camera.motionSensitivity = motionSensitivity } }
-    @Published var darknessThreshold: Double { didSet { savePreferences() } }
+    @Published var darknessThreshold: Double { didSet { savePreferences(); updateLightMode(level: lightLevel); applyBrightness(force: true) } }
     @Published private(set) var lightLevel: Double?
+    @Published private(set) var isNight = false
     @Published private(set) var isSleeping = false
     @Published private(set) var cameraStatus: PresenceCameraStatus = .stopped
     @Published private(set) var cameraProblem: String?
@@ -21,6 +24,7 @@ final class KioskController: ObservableObject {
     private let defaults: UserDefaults
     private let camera = PresenceCamera()
     private var policy = KioskIdlePolicy(now: ProcessInfo.processInfo.systemUptime)
+    private var lightMode = KioskLightMode()
     private var sceneIsActive = false
     private var dashboardVisible = false
     private weak var screen: UIScreen?
@@ -36,10 +40,12 @@ final class KioskController: ObservableObject {
         cameraWakeEnabled = defaults.object(forKey: "kiosk.cameraWake") as? Bool ?? true
         let timeout = defaults.double(forKey: "kiosk.idleTimeout")
         idleTimeout = [30.0, 60, 120, 300].contains(timeout) ? timeout : 60
-        let brightness = defaults.object(forKey: "kiosk.clockBrightness") as? Double ?? 0.04
-        clockBrightness = min(0.2, max(0.01, brightness))
+        let legacyClockBrightness = defaults.object(forKey: "kiosk.clockBrightness") as? Double ?? 0.04
+        dayClockBrightness = Self.preference(defaults, key: "kiosk.dayClockBrightness", fallback: 0.5, minimum: 0.01)
+        nightClockBrightness = Self.preference(defaults, key: "kiosk.nightClockBrightness", fallback: legacyClockBrightness, minimum: 0.01)
+        dayDashboardBrightness = Self.preference(defaults, key: "kiosk.dayDashboardBrightness", fallback: 1, minimum: 0.05)
+        nightDashboardBrightness = Self.preference(defaults, key: "kiosk.nightDashboardBrightness", fallback: 0.12, minimum: 0.05)
         adaptiveBrightness = defaults.object(forKey: "kiosk.adaptiveBrightness") as? Bool ?? true
-        brightnessAdjustment = min(0.25, max(-0.25, defaults.double(forKey: "kiosk.brightnessAdjustment")))
         motionSensitivity = min(1, max(0, defaults.object(forKey: "kiosk.motionSensitivity") as? Double ?? 0.5))
         darknessThreshold = min(0.45, max(0.05, defaults.object(forKey: "kiosk.darknessThreshold") as? Double ?? 0.18))
         camera.motionSensitivity = motionSensitivity
@@ -48,7 +54,8 @@ final class KioskController: ObservableObject {
             if self.lightLevel == nil || abs((self.lightLevel ?? level) - level) >= 0.03 {
                 self.lightLevel = level
             }
-            self.applyBrightness(force: false)
+            let modeChanged = self.updateLightMode(level: level)
+            self.applyBrightness(force: modeChanged)
         }
         camera.statusChanged = { [weak self] status in
             self?.cameraStatus = status
@@ -65,6 +72,19 @@ final class KioskController: ObservableObject {
             guard let self, self.eligible, self.now >= self.ignorePresenceUntil else { return }
             self.recordActivity()
         }
+    }
+
+    private static func preference(_ defaults: UserDefaults, key: String, fallback: Double, minimum: Double) -> Double {
+        let stored = defaults.object(forKey: key) as? Double ?? fallback
+        return stored.isFinite ? min(1, max(minimum, stored)) : fallback
+    }
+
+    @discardableResult
+    private func updateLightMode(level: Double?) -> Bool {
+        let previous = isNight
+        lightMode.update(level: level, darkThreshold: darknessThreshold)
+        if lightMode.isNight != isNight { isNight = lightMode.isNight }
+        return previous != isNight
     }
 
     func attach(screen: UIScreen) {
@@ -152,14 +172,14 @@ final class KioskController: ObservableObject {
         if savedBrightness == nil { savedBrightness = screen.brightness }
         let target: CGFloat
         if isSleeping {
-            target = CGFloat(clockBrightness)
-        } else if adaptiveBrightness && cameraWakeEnabled, let lightLevel {
-            target = CGFloat(KioskBrightnessPolicy.dashboard(level: lightLevel, adjustment: brightnessAdjustment))
+            target = CGFloat(KioskBrightnessPolicy.clock(isNight: isNight, day: dayClockBrightness, night: nightClockBrightness))
         } else {
-            target = savedBrightness ?? screen.brightness
+            target = CGFloat(KioskBrightnessPolicy.dashboard(isNight: isNight, day: dayDashboardBrightness,
+                                                             night: nightDashboardBrightness,
+                                                             adaptive: adaptiveBrightness && cameraWakeEnabled))
         }
-        // Avoid brightness hunting and frequent camera recalibration. Clock
-        // brightness remains fixed; only the active dashboard adapts to light.
+        // Apply explicit selected brightness, including 100%. Hysteresis in the
+        // room-light mode prevents hunting; wake and mode changes apply at once.
         guard force || (now - lastBrightnessChange >= 10 && abs(screen.brightness - target) >= 0.04) else { return }
         guard abs(screen.brightness - target) >= 0.005 else { return }
         screen.brightness = target
@@ -177,15 +197,18 @@ final class KioskController: ObservableObject {
         defaults.set(enabled, forKey: "kiosk.enabled")
         defaults.set(cameraWakeEnabled, forKey: "kiosk.cameraWake")
         defaults.set(idleTimeout, forKey: "kiosk.idleTimeout")
-        defaults.set(clockBrightness, forKey: "kiosk.clockBrightness")
+        defaults.set(dayClockBrightness, forKey: "kiosk.dayClockBrightness")
+        defaults.set(nightClockBrightness, forKey: "kiosk.nightClockBrightness")
+        defaults.set(dayDashboardBrightness, forKey: "kiosk.dayDashboardBrightness")
+        defaults.set(nightDashboardBrightness, forKey: "kiosk.nightDashboardBrightness")
         defaults.set(adaptiveBrightness, forKey: "kiosk.adaptiveBrightness")
-        defaults.set(brightnessAdjustment, forKey: "kiosk.brightnessAdjustment")
         defaults.set(motionSensitivity, forKey: "kiosk.motionSensitivity")
         defaults.set(darknessThreshold, forKey: "kiosk.darknessThreshold")
     }
 }
 
 struct KioskClockView: View {
+    let isNight: Bool
     let load: Double
     let updatedAt: Date?
     let online: Bool
@@ -209,7 +232,7 @@ struct KioskClockView: View {
                         .monospacedDigit()
                         .accessibilityLabel(fresh ? "Home consumption \(Int(load.rounded())) watts" : "Home consumption unavailable")
                 }
-                .foregroundStyle(Color(red: 0.85, green: 0.04, blue: 0.02))
+                .foregroundStyle(isNight ? Color.red : Color.white)
                 .offset(x: CGFloat(minute % 3 - 1) * 12, y: CGFloat(minute / 3 % 3 - 1) * 12)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(30)
@@ -300,15 +323,9 @@ struct KioskSettingsSection: View {
                         Text("Shows the clock after 3 seconds of darkness. Move or tap to wake; the usual idle timeout then applies.")
                             .font(.caption).foregroundStyle(.secondary)
                     }
-                    Toggle("Brightness follows room light", isOn: $kiosk.adaptiveBrightness)
-                    if kiosk.adaptiveBrightness {
-                        VStack(alignment: .leading) {
-                            Text("Dashboard brightness adjustment")
-                            Slider(value: $kiosk.brightnessAdjustment, in: -0.25...0.25, step: 0.01)
-                                .accessibilityLabel("Dashboard brightness adjustment")
-                            Text("Darker ← → Brighter").font(.caption).foregroundStyle(.secondary)
-                        }
-                    }
+                    Toggle("Dashboard brightness follows room light", isOn: $kiosk.adaptiveBrightness)
+                    Text(kiosk.isNight ? "Room light: night" : "Room light: day")
+                        .font(.caption).foregroundStyle(.secondary)
                     VStack(alignment: .leading) {
                         Text("Motion sensitivity: \(Int(kiosk.motionSensitivity * 100))%")
                         Slider(value: $kiosk.motionSensitivity, in: 0...1, step: 0.05)
@@ -321,11 +338,12 @@ struct KioskSettingsSection: View {
                     Text("2 minutes").tag(120.0)
                     Text("5 minutes").tag(300.0)
                 }
-                VStack(alignment: .leading) {
-                    Text("Clock brightness: \(Int(kiosk.clockBrightness * 100))%")
-                    Slider(value: $kiosk.clockBrightness, in: 0.01...0.2, step: 0.01)
-                        .accessibilityLabel("Clock brightness")
+                brightnessSlider(kiosk.adaptiveBrightness && kiosk.cameraWakeEnabled ? "Day dashboard brightness" : "Dashboard brightness", value: $kiosk.dayDashboardBrightness, minimum: 0.05)
+                if kiosk.adaptiveBrightness && kiosk.cameraWakeEnabled {
+                    brightnessSlider("Night dashboard brightness", value: $kiosk.nightDashboardBrightness, minimum: 0.05)
                 }
+                brightnessSlider("Day clock brightness · white", value: $kiosk.dayClockBrightness, minimum: 0.01)
+                brightnessSlider("Night clock brightness · red", value: $kiosk.nightClockBrightness, minimum: 0.01)
                 Button("Show clock now", action: preview)
                 if kiosk.cameraWakeEnabled {
                     Text("Compares a tiny brightness grid about once a second. No face recognition, video recording or uploads. Movement wakes the dashboard; a still person may let it dim. The green camera indicator stays visible.")
@@ -340,7 +358,15 @@ struct KioskSettingsSection: View {
         } header: {
             Text("Clock & presence")
         } footer: {
-            Text("Idle mode shows only red time, date and home consumption on black. Consumption refreshes every 30 seconds; the clock updates once a minute. Tap wakes immediately. Clock mode pauses outside the dashboard; original brightness returns when leaving it.")
+            Text("Idle mode shows time, date and home consumption on black: white in daylight, red in darkness. Day and night brightness are set separately, up to 100%. Consumption refreshes every 30 seconds; the clock updates once a minute. Tap wakes immediately. Clock mode pauses outside the dashboard; original brightness returns when leaving it.")
+        }
+    }
+
+    private func brightnessSlider(_ title: String, value: Binding<Double>, minimum: Double) -> some View {
+        VStack(alignment: .leading) {
+            Text("\(title): \(Int((value.wrappedValue * 100).rounded()))%")
+            Slider(value: value, in: minimum...1, step: 0.01)
+                .accessibilityLabel(title)
         }
     }
 }
