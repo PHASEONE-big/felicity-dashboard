@@ -20,13 +20,19 @@ the iPad must already be paired with Xcode, or first connected by USB and truste
 
 ## Latest status — 2026-11-16
 
-Current source and confirmed installation are **0.4.21, build 25**, adding city
-weather to the dashboard and idle clock plus a full-screen hourly/seven-day
-forecast. The final signed build,
+Current source and confirmed installation are **0.4.22, build 26**. The idle
+clock replaces its city-name label with **Now → +6h** weather icons and temperatures from the shared hourly
+cache, without extra requests or timers. Its signed build and all **154 native
+simulator tests passed**; the new white clock layout was checked in the
+portrait simulator. Exact-device Wi-Fi installation reached 100% and exited
+with code 0; device lookup verified the installed version. Physical confirmation
+of the new clock layout is pending.
+
+The user confirmed that the preceding **0.4.21, build 25** works well on the
+physical iPad. Its signed build,
 all **151 native simulator tests**, simulator UI checks and a live public-city
 API check passed. Direct Wi-Fi installation on the exact requested iPad reached
-100%, and device lookup verified the installed version. The physical iPad's city
-is not yet selected; physical weather checks remain pending. See the
+100%, and device lookup verified the installed version. See the
 [weather handoff](../docs/IOS_WEATHER_HANDOFF.md).
 
 The preceding **0.4.20, build 24** release combined all Solar
@@ -49,13 +55,15 @@ reinstall succeeded on the exact requested iPad. The user confirmed the white
 daytime clock and sufficient dashboard brightness on wake. See the
 [Wi-Fi installation path](../docs/IOS_KIOSK_HANDOFF.md#verified-wi-fi-path).
 
-## Weather (0.4.21, build 25)
+## Weather (0.4.22, build 26)
 
 Choose your city in **Settings → Weather location**; there is no preset user
 city or GPS request. Search waits 500 ms after typing and offers up to five
 matches. A small dashboard weather button opens current conditions, today's
-hourly forecast and a seven-day forecast. The idle clock shows the same weather
-icon and temperature, retaining its white daytime/red nighttime appearance.
+hourly forecast and a seven-day forecast. The idle clock shows compact
+**Now → +6h** weather icons and temperatures, with no city-name label, retaining
+its white daytime/red nighttime appearance. The six-hour outlook reads the
+existing hourly cache and adds no network requests or timers.
 The weather page pauses the idle clock and presence camera; doorbell calls can
 still open over it.
 
@@ -65,8 +73,8 @@ data, with saved/stale indicators after one hour, a refresh failure or a change
 of local day. Failed automatic requests have a five-minute retry guard; manual
 refresh is available. Labels use the selected city's time zone and handle
 daylight-saving transitions. Weather adds no GPS or continuous animation.
-Choose the actual city on the iPad; physical weather acceptance remains
-pending. See the [weather handoff](../docs/IOS_WEATHER_HANDOFF.md) for validation.
+The user confirmed 0.4.21 works well; physical validation of the new 0.4.22 clock layout
+is pending. See the [weather handoff](../docs/IOS_WEATHER_HANDOFF.md) for evidence.
 
 ## Doorbell calls (0.4.19, build 23)
 

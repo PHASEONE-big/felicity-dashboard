@@ -6,18 +6,24 @@ APK, iOS app, or display firmware.
 
 | Client | Current source version | Build | Source | Git snapshot |
 |---|---|---|---|---|
-| iOS / iPadOS | 0.4.21 | 25 | `ios/` | baseline: `snapshots/ios/0.4.13-build17` |
+| iOS / iPadOS | 0.4.22 | 26 | `ios/` | baseline: `snapshots/ios/0.4.13-build17` |
 | Android / dragon | 0.7.25 | 32 | `android/app/` | `snapshots/android/0.7.25-build32` |
 | ESP32 + Nextion | 0.14.1 | — | `esp32/`, `nextion/`, `firmware/` | `snapshots/esp32-nextion/0.14.1` |
 
-These tags preserve development baselines. Current iOS **0.4.21/25** adds
-manually selected city weather to the dashboard header and idle clock, plus a
-full-screen hourly and seven-day forecast. Open-Meteo requests and cache are
-shared, with 30-minute foreground refresh and no GPS. The final signed build,
+These tags preserve development baselines. Current iOS **0.4.22/26** replaces
+the idle clock's city-name label with **Now → +6h** weather icons and
+temperatures from the same hourly cache, without extra requests or timers.
+Its signed build and all 154 native simulator tests passed, and the new clock
+layout was checked in the simulator. Direct Wi-Fi installation completed and
+device lookup verified **0.4.22/26**; physical confirmation of its new clock
+layout is pending. The user confirmed the preceding 0.4.21 works well on the iPad.
+
+iOS 0.4.21 added manually selected city weather to the dashboard header and idle
+clock, plus a full-screen hourly and seven-day forecast. Open-Meteo requests and
+cache are shared, with 30-minute foreground refresh and no GPS. Its signed build,
 all 151 native simulator tests, simulator UI checks and a live public-city API
 check passed. Direct Wi-Fi installation completed on the exact requested iPad,
-and device lookup verified **0.4.21/25**. Its weather city is not yet selected;
-physical weather acceptance remains pending. See the
+and device lookup verified **0.4.21/25**. See the
 [weather handoff](IOS_WEATHER_HANDOFF.md).
 
 iOS 0.4.20 puts all Solar

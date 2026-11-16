@@ -4,10 +4,12 @@ Requested device: iPad Pro, user-confirmed current LAN address `192.168.13.188`.
 Confirmed USB UDID: `86d36a369fdaeb458f5a65ba0136bec628ffd018`.
 USB detection now identifies this device as **iPad Pro (9.7-inch), J127AP**,
 running **iPadOS 16.7.16 (20H392)**.
-Source: iOS **0.4.21, build 25**; see [weather handoff](IOS_WEATHER_HANDOFF.md)
-for the new header/clock weather, passing build/tests and pending physical checks.
-Last confirmed installation: **0.4.21, build 25**, over direct Wi-Fi, with
-the installed version verified by device lookup.
+Source: iOS **0.4.22, build 26**; see [weather handoff](IOS_WEATHER_HANDOFF.md)
+for the new Now → +6h clock weather. Its signed build, 154 tests and simulator
+layout check passed; its new clock layout awaits physical confirmation.
+Last confirmed installation: **0.4.22, build 26**, over direct Wi-Fi, with
+the installed version verified by device lookup. The user confirmed 0.4.21
+works well on the physical iPad.
 Android and hardware versions are unchanged.
 The bundle identifier and configured signing team are preserved.
 

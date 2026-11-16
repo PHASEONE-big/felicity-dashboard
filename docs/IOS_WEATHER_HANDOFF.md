@@ -1,15 +1,20 @@
-# iOS weather — 0.4.21, build 25
+# iOS weather — 0.4.22, build 26
 
 ## Status — 2026-11-16
 
-Weather is implemented in source **0.4.21/25**. The final signed device build
-and all **151 native simulator tests passed**, including 26 weather tests.
-Simulator UI checks and the live public-city API check passed. Direct Wi-Fi
-installation of the final build reached 100% and exited with code 0 on the exact
-requested iPad; a subsequent device
-lookup verified **0.4.21/build 25**. The physical iPad has no selected weather
-city yet, and physical weather acceptance remains pending. No user location has
-been assumed or written as a default.
+Current source is **0.4.22/26**. The idle clock replaces the city name with a
+compact **Now → +6h** display: weather icon and temperature for each time.
+Both use the existing forecast cache, with no additional requests or timers.
+The signed device build and all **154 native simulator tests passed**.
+The new clock layout was checked in the simulator. Exact-device trusted Wi-Fi
+installation reached 100% and exited with code 0; a subsequent device lookup
+verified **0.4.22/build 26**.
+
+The preceding **0.4.21/25** was confirmed by the user to work well on the
+physical iPad. Its signed build, 151 simulator tests,
+UI/API checks and exact-device Wi-Fi installation passed; evidence is retained
+below. The new clock layout has not yet received physical confirmation.
+No user location is assigned as a source default.
 
 ## Behavior and setup
 
@@ -17,8 +22,9 @@ been assumed or written as a default.
   characters and a 500 ms pause, returning at most five matches. The selected
   city persists locally. There is no GPS request or automatic location access.
 - One shared forecast feeds the dashboard's small weather button, the idle
-  clock's weather icon/temperature/city, and the full-screen weather page.
-  The clock retains its white daytime/red nighttime appearance.
+  clock's **Now → +6h** icons and temperatures, and the full-screen weather page.
+  The clock has no city-name label and retains its white daytime/red nighttime
+  appearance. The six-hour outlook uses the same cached hourly forecast.
 - The weather page shows current conditions, the selected city's hourly entries
   for today and the seven-day forecast, with refresh and city controls. The
   hourly strip initially scrolls to the current hour. Weather pauses the idle
@@ -56,7 +62,25 @@ or a change of local day. Backgrounding cancels the refresh loop. Requests have
 a 12-second timeout, and weather adds no GPS, extra camera work or continuous
 animation. Physical energy use has not been measured.
 
-## Validation and remaining checks
+## Validation of 0.4.22/26
+
+- Signed device build passed: `ios/build/recovery-device-0.4.22.log`.
+- All 154 native simulator tests passed with no failures, including 15
+  weather model/service and 14 weather view-model tests. Evidence:
+  `ios/build/recovery-tests-0.4.22.log` and
+  `ios/build/recovery-tests-0.4.22.xcresult`.
+- In the portrait simulator, **Show clock now** displayed the white clock and
+  **Now** cloud/temperature → **In 6h** moon-cloud/temperature, with no city
+  name. The existing shared foreground color still supplies red night mode;
+  the new layout has not yet been physically confirmed.
+- Strict signature verification passed. The embedded profile includes the
+  exact requested iPad and expires on 2026-11-21 at 17:20:22 UTC, unchanged.
+- Verified package: `ios/build/ipad/Felicity-0.4.22-build26.ipa`.
+  Previous installed app: `ios/build/ipad/installed-0.4.21-build25.app`.
+  Successful exact-device Wi-Fi installation and version verification log:
+  `ios/build/recovery-install-0.4.22-wifi.log`.
+
+## Historical validation of 0.4.21/25
 
 - Swift model/service typechecking and source parse checks passed.
 - The production Swift service successfully searched and fetched the public
@@ -86,8 +110,8 @@ animation. Physical energy use has not been measured.
   `ios/build/ipad/Felicity-0.4.21-build25.ipa`. The previous app is retained at
   `ios/build/ipad/installed-0.4.20-build24.app`.
 
-Select the user's actual city and verify the dashboard
-weather button, full-screen hourly/week display and weather on the idle clock.
-Those physical checks are not yet confirmed. Earlier doorbell audio/ring checks
-remain deferred. See [kiosk recovery](IOS_KIOSK_HANDOFF.md) for the exact target
-iPad and signing/install path.
+The user subsequently confirmed that 0.4.21 works well on the physical iPad;
+this was an overall acceptance, not a report of separate checks for each view.
+Physical validation of the new 0.4.22 clock layout is pending. Earlier doorbell audio/ring
+checks remain deferred. See [kiosk recovery](IOS_KIOSK_HANDOFF.md) for the exact
+target iPad and signing/install path.

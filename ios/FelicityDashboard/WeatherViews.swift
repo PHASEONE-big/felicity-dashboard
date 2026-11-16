@@ -352,19 +352,34 @@ struct WeatherBadge: View {
 struct ClockWeatherView: View {
     @ObservedObject var weather: WeatherViewModel
     let isNight: Bool
+    let date: Date
 
     var body: some View {
         if let forecast = weather.forecast {
-            HStack(spacing: 10) {
-                Image(systemName: WeatherCondition(code: forecast.current.code, isDay: forecast.current.isDay).symbolName)
-                Text(temperature(forecast.current.temperature)).monospacedDigit()
-                if let location = weather.selectedLocation { Text(location.name).lineLimit(1) }
+            HStack(spacing: 20) {
+                condition("Now", code: forecast.current.code, isDay: forecast.current.isDay, value: forecast.current.temperature)
+                if let future = forecast.sixHoursAhead(from: date) {
+                    Image(systemName: "arrow.right").font(.system(size: 18, weight: .light)).opacity(0.6)
+                        .accessibilityHidden(true)
+                    condition("In 6h", code: future.code, isDay: future.isDay ?? true, value: future.temperature)
+                }
                 if weather.isStale { Image(systemName: "clock").font(.caption) }
             }
-            .font(.system(size: 22, weight: .light, design: .rounded))
             .foregroundStyle(isNight ? Color.red : Color.white)
             .accessibilityElement(children: .combine)
         }
+    }
+
+    private func condition(_ title: String, code: Int, isDay: Bool, value: Double) -> some View {
+        HStack(spacing: 8) {
+            Text(title).font(.system(size: 17, weight: .light, design: .rounded)).opacity(0.7)
+            Image(systemName: WeatherCondition(code: code, isDay: isDay).symbolName)
+                .font(.system(size: 25, weight: .light))
+                .accessibilityLabel(WeatherCondition(code: code, isDay: isDay).description)
+            Text(temperature(value)).font(.system(size: 26, weight: .light, design: .rounded)).monospacedDigit()
+        }
+        .lineLimit(1)
+        .accessibilityElement(children: .combine)
     }
 }
 

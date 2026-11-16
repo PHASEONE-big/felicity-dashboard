@@ -132,6 +132,45 @@ final class WeatherModelsTests: XCTestCase {
         XCTAssertEqual(Set(today.map(\.id)).count, 25)
     }
 
+    func testSixHoursAheadSelectsNearestHourOnTheNextLocalDay() throws {
+        let forecast = try fixture(start: "2026-11-16T22:00:00Z", count: 10)
+        let now = try date("2026-11-16T22:40:00Z")
+        let future = try XCTUnwrap(forecast.sixHoursAhead(from: now))
+        XCTAssertEqual(future.date, try date("2026-11-17T05:00:00Z"))
+        XCTAssertFalse(forecast.todayHours(at: now).contains(future))
+    }
+
+    func testSixHoursAheadUsesElapsedTimeAcrossBothDSTChanges() throws {
+        for (start, expected) in [
+            ("2026-03-28T23:00:00Z", "2026-03-29T05:00:00Z"),
+            ("2026-10-24T22:00:00Z", "2026-10-25T04:00:00Z")
+        ] {
+            let forecast = try fixture(start: start, count: 10)
+            let now = try date(start)
+            let future = try XCTUnwrap(forecast.sixHoursAhead(from: now))
+            XCTAssertEqual(future.date, try date(expected))
+            XCTAssertEqual(future.date.timeIntervalSince(now), 6 * 3_600)
+        }
+    }
+
+    func testSixHoursAheadRejectsAbsentDistantPastAndInvalidReadings() throws {
+        let now = try date("2026-11-16T12:00:00Z")
+        let current = WeatherCurrent(date: now, temperature: 12, code: 0, isDay: true)
+        let missing = WeatherForecast(timezoneID: "Europe/Madrid", current: current, hourly: [], daily: [])
+        XCTAssertNil(missing.sixHoursAhead(from: now))
+        let unusable = WeatherForecast(timezoneID: "Europe/Madrid", current: current, hourly: [
+            .init(date: now.addingTimeInterval(-3_600), temperature: 12, code: 0),
+            .init(date: now.addingTimeInterval(7 * 3_600 + 1), temperature: 12, code: 0),
+            .init(date: now.addingTimeInterval(6 * 3_600), temperature: .nan, code: 0)
+        ], daily: [])
+        XCTAssertNil(unusable.sixHoursAhead(from: now))
+        let boundary = WeatherForecast(timezoneID: "Europe/Madrid", current: current, hourly: [
+            .init(date: now.addingTimeInterval(5 * 3_600), temperature: 11, code: 0),
+            .init(date: now.addingTimeInterval(7 * 3_600), temperature: 13, code: 0)
+        ], daily: [])
+        XCTAssertEqual(boundary.sixHoursAhead(from: now)?.temperature, 13)
+    }
+
     func testConditionsDistinguishNightAndWeatherTypes() {
         XCTAssertEqual(WeatherCondition(code: 0, isDay: false).symbolName, "moon.stars.fill")
         XCTAssertEqual(WeatherCondition(code: 2, isDay: true).symbolName, "cloud.sun.fill")

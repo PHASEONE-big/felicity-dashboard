@@ -232,7 +232,7 @@ struct KioskClockView: View {
                         .font(.system(size: min(proxy.size.width * 0.08, 64), weight: .light, design: .rounded))
                         .monospacedDigit()
                         .accessibilityLabel(fresh ? "Home consumption \(Int(load.rounded())) watts" : "Home consumption unavailable")
-                    ClockWeatherView(weather: weather, isNight: isNight)
+                    ClockWeatherView(weather: weather, isNight: isNight, date: context.date)
                 }
                 .foregroundStyle(isNight ? Color.red : Color.white)
                 .offset(x: CGFloat(minute % 3 - 1) * 12, y: CGFloat(minute / 3 % 3 - 1) * 12)

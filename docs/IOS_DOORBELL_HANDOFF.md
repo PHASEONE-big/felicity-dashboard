@@ -1,8 +1,11 @@
 # iOS doorbell and Today PV details — 0.4.19, build 23
 
-Current source and confirmed installation are **0.4.21/25**; see
-[weather handoff](IOS_WEATHER_HANDOFF.md) for its passing checks and verified
-Wi-Fi installation. The preceding **0.4.20/24** combined all Solar
+Current source and confirmed installation are **0.4.22/26**. Its signed build,
+154 tests and simulator clock check passed; exact-device Wi-Fi installation
+and version lookup succeeded. The new clock layout awaits physical confirmation;
+the preceding 0.4.21 received positive overall user feedback.
+See [weather handoff](IOS_WEATHER_HANDOFF.md) for evidence and the new clock
+layout. The preceding **0.4.20/24** combined all Solar
 series in one chart and all Today series in one chart. The signed native build
 and all 125 tests passed. Wi-Fi installation on the exact iPad exited with code
 0, and a subsequent lookup verified 0.4.20/build 24. Physical feedback on the

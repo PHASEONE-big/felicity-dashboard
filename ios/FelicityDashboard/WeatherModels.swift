@@ -62,6 +62,27 @@ struct WeatherForecast: Codable, Equatable, Sendable {
         guard let day = calendar.dateInterval(of: .day, for: now) else { return [] }
         return hourly.filter { $0.date >= day.start && $0.date < day.end }
     }
+
+    /// Use elapsed time across midnight/DST, allowing only a nearby cached hour.
+    /// Missing coverage stays unavailable rather than reusing a distant reading.
+    func sixHoursAhead(from now: Date) -> WeatherHour? {
+        guard now.timeIntervalSince1970.isFinite else { return nil }
+        let target = now.addingTimeInterval(6 * 3_600)
+        guard target.timeIntervalSince1970.isFinite else { return nil }
+        var nearest: WeatherHour?
+        var nearestDistance = TimeInterval.infinity
+        for hour in hourly {
+            guard hour.date.timeIntervalSince1970.isFinite, hour.date > now,
+                  hour.temperature.isFinite else { continue }
+            let distance = abs(hour.date.timeIntervalSince(target))
+            guard distance <= 3_600 else { continue }
+            if distance < nearestDistance || (distance == nearestDistance && hour.date > nearest!.date) {
+                nearest = hour
+                nearestDistance = distance
+            }
+        }
+        return nearest
+    }
 }
 
 struct WeatherCondition: Equatable, Sendable {
