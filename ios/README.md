@@ -20,9 +20,17 @@ the iPad must already be paired with Xcode, or first connected by USB and truste
 
 ## Latest status — 2026-11-16
 
-Current source and confirmed installation are **0.4.22, build 26**. The idle
-clock replaces its city-name label with **Now → +6h** weather icons and temperatures from the shared hourly
-cache, without extra requests or timers. Its signed build and all **154 native
+Current source and confirmed installation are **0.4.23, build 27**. The idle clock's six-hour weather outlook
+now shows its actual forecast hour in the selected city's time zone. This
+release also addresses stalled doorbell event authentication after a missed
+ring on 0.4.22. Its signed build and all **154 native simulator tests passed**;
+the portrait simulator showed the forecast's actual hour. Exact-device Wi-Fi
+installation reached 100% and exited with code 0; device lookup verified the
+installed version. Subscription status and real-ring verification are pending.
+
+The preceding **0.4.22, build 26** introduced compact current
+and six-hour weather icons/temperatures from the shared hourly cache and no
+city label. Its signed build and all **154 native
 simulator tests passed**; the new white clock layout was checked in the
 portrait simulator. Exact-device Wi-Fi installation reached 100% and exited
 with code 0; device lookup verified the installed version. Physical confirmation
@@ -40,8 +48,9 @@ series in one chart and all Today series in one chart. Its signed
 native build and all **125 simulator tests passed**. Wi-Fi installation on the
 exact requested iPad succeeded, with its installed version verified afterward.
 Physical feedback on the combined charts has not yet been collected.
-The user chose to check the real ring/snapshot and two-way audio later; those
-physical behaviors remain unverified.
+The user initially deferred real ring/snapshot and two-way audio checks.
+A real ring on 0.4.22 then failed to open the call while the idle clock was
+visible. Successful call/snapshot behavior and two-way audio remain unverified.
 See the [doorbell handoff](../docs/IOS_DOORBELL_HANDOFF.md).
 
 Version 0.4.18 passed its signed build and 81 simulator tests, was installed and
@@ -55,15 +64,16 @@ reinstall succeeded on the exact requested iPad. The user confirmed the white
 daytime clock and sufficient dashboard brightness on wake. See the
 [Wi-Fi installation path](../docs/IOS_KIOSK_HANDOFF.md#verified-wi-fi-path).
 
-## Weather (0.4.22, build 26)
+## Weather (0.4.23, build 27)
 
 Choose your city in **Settings → Weather location**; there is no preset user
 city or GPS request. Search waits 500 ms after typing and offers up to five
 matches. A small dashboard weather button opens current conditions, today's
 hourly forecast and a seven-day forecast. The idle clock shows compact
-**Now → +6h** weather icons and temperatures, with no city-name label, retaining
+**Now → forecast hour** weather icons and temperatures, with no city-name label, retaining
 its white daytime/red nighttime appearance. The six-hour outlook reads the
-existing hourly cache and adds no network requests or timers.
+existing hourly cache and adds no network requests or timers. Its hour label
+uses the forecast city's time zone, replacing **In 6h** from 0.4.22.
 The weather page pauses the idle clock and presence camera; doorbell calls can
 still open over it.
 
@@ -73,10 +83,18 @@ data, with saved/stale indicators after one hour, a refresh failure or a change
 of local day. Failed automatic requests have a five-minute retry guard; manual
 refresh is available. Labels use the selected city's time zone and handle
 daylight-saving transitions. Weather adds no GPS or continuous animation.
-The user confirmed 0.4.21 works well; physical validation of the new 0.4.22 clock layout
+The user confirmed 0.4.21 works well; physical validation of the new forecast-hour label
 is pending. See the [weather handoff](../docs/IOS_WEATHER_HANDOFF.md) for evidence.
 
 ## Doorbell calls (0.4.19, build 23)
+
+On 0.4.22, a real ring failed while the idle clock was visible. A recorder probe
+found that its HTTP 401 response lacked a body-length delimiter while keeping
+the connection open. Version 0.4.23 sets `Connection: close` on event SOAP
+requests, matching the working discovery transport. Its signed build and 154
+tests passed, and the release is installed and version-verified. Subscription
+status and real-ring verification remain pending. See the
+[doorbell handoff](../docs/IOS_DOORBELL_HANDOFF.md).
 
 While Felicity is in the foreground, the recorder's ONVIF PullPoint events can
 open the matching doorbell over the current screen. Initial subscription state

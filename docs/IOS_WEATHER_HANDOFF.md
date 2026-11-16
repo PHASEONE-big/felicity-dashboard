@@ -1,19 +1,26 @@
-# iOS weather — 0.4.22, build 26
+# iOS weather — 0.4.23, build 27
 
 ## Status — 2026-11-16
 
-Current source is **0.4.22/26**. The idle clock replaces the city name with a
-compact **Now → +6h** display: weather icon and temperature for each time.
-Both use the existing forecast cache, with no additional requests or timers.
-The signed device build and all **154 native simulator tests passed**.
-The new clock layout was checked in the simulator. Exact-device trusted Wi-Fi
-installation reached 100% and exited with code 0; a subsequent device lookup
-verified **0.4.22/build 26**.
+Current source and confirmed installation are **0.4.23/27**. The idle clock labels its six-hour outlook with
+the forecast's actual local hour, replacing **In 6h**. It uses the forecast
+city's time zone and the same hourly cache, with no additional requests or
+timers. Its signed build and all 154 native simulator tests passed. Exact-device
+Wi-Fi installation reached 100%, exited with code 0 and was version-verified.
+The portrait simulator displayed **Now** cloud/temperature →
+**23:00** moon-cloud/temperature, with no **In 6h** or city-name label.
+See [release evidence](IOS_DOORBELL_HANDOFF.md#release-checks-for-042327) for
+the current build, tests, signature and package.
+
+The preceding **0.4.22/26** passed its signed build and 154 tests, and its
+exact-device Wi-Fi installation was version-verified.
+The user reported a missed doorbell ring while its idle clock was visible;
+the separate transport fix is tracked in [doorbell handoff](IOS_DOORBELL_HANDOFF.md).
 
 The preceding **0.4.21/25** was confirmed by the user to work well on the
 physical iPad. Its signed build, 151 simulator tests,
 UI/API checks and exact-device Wi-Fi installation passed; evidence is retained
-below. The new clock layout has not yet received physical confirmation.
+below. The new actual-hour label has not yet received physical confirmation.
 No user location is assigned as a source default.
 
 ## Behavior and setup
@@ -22,9 +29,10 @@ No user location is assigned as a source default.
   characters and a 500 ms pause, returning at most five matches. The selected
   city persists locally. There is no GPS request or automatic location access.
 - One shared forecast feeds the dashboard's small weather button, the idle
-  clock's **Now → +6h** icons and temperatures, and the full-screen weather page.
+  clock's **Now → forecast hour** icons and temperatures, and the full-screen weather page.
   The clock has no city-name label and retains its white daytime/red nighttime
-  appearance. The six-hour outlook uses the same cached hourly forecast.
+  appearance. The six-hour outlook uses the same cached hourly forecast, and
+  its displayed hour uses the forecast city's time zone.
 - The weather page shows current conditions, the selected city's hourly entries
   for today and the seven-day forecast, with refresh and city controls. The
   hourly strip initially scrolls to the current hour. Weather pauses the idle
@@ -62,7 +70,7 @@ or a change of local day. Backgrounding cancels the refresh loop. Requests have
 a 12-second timeout, and weather adds no GPS, extra camera work or continuous
 animation. Physical energy use has not been measured.
 
-## Validation of 0.4.22/26
+## Historical validation of 0.4.22/26
 
 - Signed device build passed: `ios/build/recovery-device-0.4.22.log`.
 - All 154 native simulator tests passed with no failures, including 15
@@ -112,6 +120,7 @@ animation. Physical energy use has not been measured.
 
 The user subsequently confirmed that 0.4.21 works well on the physical iPad;
 this was an overall acceptance, not a report of separate checks for each view.
-Physical validation of the new 0.4.22 clock layout is pending. Earlier doorbell audio/ring
-checks remain deferred. See [kiosk recovery](IOS_KIOSK_HANDOFF.md) for the exact
+Physical validation of the new 0.4.23 forecast-hour label is pending. The missed
+ring on 0.4.22 is under repair; two-way audio remains unverified. See
+[kiosk recovery](IOS_KIOSK_HANDOFF.md) for the exact
 target iPad and signing/install path.

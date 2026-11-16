@@ -2,8 +2,8 @@
   "schema_version": 1,
   "clients": {
     "ios": {
-      "version": "0.4.22",
-      "build": 26,
+      "version": "0.4.23",
+      "build": 27,
       "source": "ios/FelicityDashboard.xcodeproj/project.pbxproj",
       "snapshot_tag": "snapshots/ios/0.4.13-build17"
     },

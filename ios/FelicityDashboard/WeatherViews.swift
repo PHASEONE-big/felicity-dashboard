@@ -361,7 +361,7 @@ struct ClockWeatherView: View {
                 if let future = forecast.sixHoursAhead(from: date) {
                     Image(systemName: "arrow.right").font(.system(size: 18, weight: .light)).opacity(0.6)
                         .accessibilityHidden(true)
-                    condition("In 6h", code: future.code, isDay: future.isDay ?? true, value: future.temperature)
+                    condition(localTime(future.date, timezone: forecast.timezoneID), code: future.code, isDay: future.isDay ?? true, value: future.temperature)
                 }
                 if weather.isStale { Image(systemName: "clock").font(.caption) }
             }

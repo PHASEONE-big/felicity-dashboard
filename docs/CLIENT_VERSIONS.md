@@ -6,11 +6,21 @@ APK, iOS app, or display firmware.
 
 | Client | Current source version | Build | Source | Git snapshot |
 |---|---|---|---|---|
-| iOS / iPadOS | 0.4.22 | 26 | `ios/` | baseline: `snapshots/ios/0.4.13-build17` |
+| iOS / iPadOS | 0.4.23 | 27 | `ios/` | baseline: `snapshots/ios/0.4.13-build17` |
 | Android / dragon | 0.7.25 | 32 | `android/app/` | `snapshots/android/0.7.25-build32` |
 | ESP32 + Nextion | 0.14.1 | — | `esp32/`, `nextion/`, `firmware/` | `snapshots/esp32-nextion/0.14.1` |
 
-These tags preserve development baselines. Current iOS **0.4.22/26** replaces
+These tags preserve development baselines. Current iOS **0.4.23/27** labels the
+idle clock's six-hour weather outlook with its actual local forecast hour and
+addresses a recorder HTTP authentication response that stalls doorbell event
+subscription. The user reported a missed ring on the idle clock in 0.4.22.
+The signed build and all 154 native simulator tests passed; the actual-hour
+clock label was checked in the simulator. Direct Wi-Fi installation completed
+and device lookup verified **0.4.23/27**. Subscription status and real-ring
+verification of the fix remain pending. See the
+[doorbell handoff](IOS_DOORBELL_HANDOFF.md).
+
+iOS 0.4.22 replaces
 the idle clock's city-name label with **Now → +6h** weather icons and
 temperatures from the same hourly cache, without extra requests or timers.
 Its signed build and all 154 native simulator tests passed, and the new clock
@@ -40,8 +50,9 @@ and a static last-ring preview, and introduced Today PV1/PV2 power data from
 the existing chart endpoints. The final
 signed release build and all 125 simulator tests passed. Version 0.4.19/23 was
 installed over Wi-Fi on the exact requested iPad and verified by device lookup.
-The user deferred real ring/snapshot and two-way audio checks; both remain
-physically unverified. See the
+The user initially deferred real ring/snapshot and two-way audio checks;
+0.4.22 later exposed the missed-ring failure above. Successful call/snapshot
+behavior and two-way audio remain physically unverified. See the
 [iOS doorbell handoff](IOS_DOORBELL_HANDOFF.md).
 
 iOS 0.4.18 rebuilt the energy

@@ -4,10 +4,11 @@ Requested device: iPad Pro, user-confirmed current LAN address `192.168.13.188`.
 Confirmed USB UDID: `86d36a369fdaeb458f5a65ba0136bec628ffd018`.
 USB detection now identifies this device as **iPad Pro (9.7-inch), J127AP**,
 running **iPadOS 16.7.16 (20H392)**.
-Source: iOS **0.4.22, build 26**; see [weather handoff](IOS_WEATHER_HANDOFF.md)
-for the new Now → +6h clock weather. Its signed build, 154 tests and simulator
-layout check passed; its new clock layout awaits physical confirmation.
-Last confirmed installation: **0.4.22, build 26**, over direct Wi-Fi, with
+Source: iOS **0.4.23, build 27**; its signed build, 154 tests and simulator clock
+check passed, and Wi-Fi installation was version-verified. See
+[weather handoff](IOS_WEATHER_HANDOFF.md) for the actual-hour forecast label and
+[doorbell handoff](IOS_DOORBELL_HANDOFF.md) for the missed ring on 0.4.22's idle clock.
+Last confirmed installation: **0.4.23, build 27**, over direct Wi-Fi, with
 the installed version verified by device lookup. The user confirmed 0.4.21
 works well on the physical iPad.
 Android and hardware versions are unchanged.
@@ -20,8 +21,8 @@ its signed build and 125 tests passed, followed by a successful, version-verifie
 Wi-Fi installation. Physical feedback on these combined charts has not yet been
 collected. The earlier 0.4.19/23 added doorbell calls and Today PV1/PV2 data; its final signed
 release build and 125 tests passed, followed by a successful, version-verified
-Wi-Fi installation. The user deferred physical ring/snapshot and two-way audio
-checks; both remain unverified. See the
+Wi-Fi installation. The user initially deferred physical ring/snapshot and
+two-way audio checks; the later missed-ring failure on 0.4.22 is tracked in the
 [doorbell handoff](IOS_DOORBELL_HANDOFF.md); kiosk history below is retained.
 
 The subsequent **0.4.18/22** chart release passed its signed build and all

@@ -262,6 +262,9 @@ private final class DoorbellSOAPTransport: NSObject, URLSessionTaskDelegate, @un
         guard Self.sameOrigin(url, origin) else { throw DoorbellEventError.invalidResponse }
         var request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: timeout)
         request.httpMethod = "POST"
+        // This recorder's empty Digest 401 has no Content-Length/chunk framing.
+        // Closing supplies EOF so URLSession can finish the challenge promptly.
+        request.setValue("close", forHTTPHeaderField: "Connection")
         request.setValue("application/soap+xml; charset=utf-8; action=\"\(action)\"", forHTTPHeaderField: "Content-Type")
         request.httpBody = Data(body.utf8)
         let (data, response) = try await session.data(for: request)
