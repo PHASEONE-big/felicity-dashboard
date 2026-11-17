@@ -4,18 +4,56 @@ Requested device: iPad Pro, user-confirmed current LAN address `192.168.13.188`.
 Confirmed USB UDID: `86d36a369fdaeb458f5a65ba0136bec628ffd018`.
 USB detection now identifies this device as **iPad Pro (9.7-inch), J127AP**,
 running **iPadOS 16.7.16 (20H392)**.
-Source: iOS **0.4.24, build 28**; its signed build, 159 tests and simulator
-thumbnail-control checks passed; Wi-Fi installation was version-verified. See
+Source: iOS **0.4.25, build 29**; its signed build, 159 tests and simulator
+readout check passed. Wi-Fi installation did not complete; the signed IPA is
+ready, and the installed version remains 0.4.24/28. See
 [weather handoff](IOS_WEATHER_HANDOFF.md) for the actual-hour forecast label and
 [doorbell handoff](IOS_DOORBELL_HANDOFF.md) for confirmed ring/thumbnail delivery
-on 0.4.23 and the current thumbnail-control repair.
+on 0.4.23 and the physically confirmed thumbnail controls on 0.4.24.
 Last confirmed installation: **0.4.24, build 28**, over direct Wi-Fi, with
 the installed version verified by device lookup. The user confirmed 0.4.21
 works well on the physical iPad.
 Android and hardware versions are unchanged.
 The bundle identifier and configured signing team are preserved.
 
-## Latest status — 2026-11-16
+## Latest status — 2026-11-17
+
+Version 0.4.25 displays **household consumption / solar generation**, in watts,
+on the idle clock. Both values use the existing current snapshot and freshness
+state; no polling requests or clock timers are added. The signed device build
+and all 159 native simulator tests passed, with no new tests for this UI-only
+change. The portrait simulator clock showed **1350 / 580 W**, matching Home
+1350 W and Solar 580 W on the preceding dashboard. Both readings fit on one
+line, weather remained below them, and the existing white/day and red/night
+foreground handling is unchanged. Physical readout confirmation is pending.
+
+Current release evidence:
+
+- Signed build: `ios/build/recovery-device-0.4.25.log`.
+- Tests/result: `ios/build/recovery-tests-0.4.25.log` and
+  `ios/build/recovery-tests-0.4.25.xcresult`.
+- Strict signature verification passed; the embedded profile includes the
+  exact requested iPad and expires on 2026-11-21 at 17:20:22 UTC, unchanged.
+- Verified IPA: `ios/build/ipad/Felicity-0.4.25-build29.ipa`.
+  Previous app: `ios/build/ipad/installed-0.4.24-build28.app`.
+- Wi-Fi installation did not complete. Logs:
+  `ios/build/recovery-install-0.4.25-wifi.log`,
+  `ios/build/recovery-install-0.4.25-wifi-retry.log`,
+  `ios/build/recovery-install-0.4.25-wifi-unlocked.log` and
+  `ios/build/recovery-install-0.4.25-wifi-final.log`.
+
+Three standard attempts and a final attempt supplying the existing pairing
+escrow to `StartService` failed after authenticating the exact trusted iPad.
+AFC/installation service channels disconnected with `ConnectionTerminatedError`.
+The final attempt exited with code 1 during the pre-install lookup, before any
+package upload. This is a service-channel failure after a successful trusted
+connection, not evidence that the device is offline or that the new readout or
+IPA is defective. No further device attempts were made after the final try.
+The installed app remains **0.4.24/28**; 0.4.25 has no physical acceptance.
+
+The installed 0.4.24 passed its signed build and 159 tests. On 2026-11-17, the
+user confirmed tapping its caller thumbnail reopens the full camera view with
+Talk available, and X dismisses the card. Two-way audio remains unverified.
 
 The preceding 0.4.20/24 combined Solar and Today series into one chart per screen;
 its signed build and 125 tests passed, followed by a successful, version-verified

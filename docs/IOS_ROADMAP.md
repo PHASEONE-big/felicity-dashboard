@@ -1,5 +1,16 @@
 # iOS follow-up work
 
+## Clock consumption / solar — 0.4.25/29
+
+Current source **0.4.25/29** displays household consumption / solar generation
+in watts on the idle clock. Both values come from the same current snapshot and
+share freshness handling, without new polling requests or clock timers. Its
+signed build, 159 native simulator tests and portrait clock readout check
+passed, and the signed IPA is ready. Wi-Fi installation failed when device
+service channels disconnected after trusted authentication; **0.4.24/28**
+remains installed. No physical 0.4.25 acceptance is claimed. See
+[kiosk handoff](IOS_KIOSK_HANDOFF.md).
+
 ## Weather — implemented in 0.4.21/25
 
 Authorized on 2026-11-16 and now implemented: manual city search, a dashboard
@@ -25,7 +36,7 @@ check passed. Direct Wi-Fi installation completed and device lookup verified
 See [weather handoff](IOS_WEATHER_HANDOFF.md)
 for the implementation and current validation status.
 
-## Doorbell — thumbnail controls under repair
+## Doorbell — thumbnail controls confirmed
 
 The user reported that a real ring did not open the doorbell while 0.4.22's idle
 clock was visible in the foreground. Recorder probes identified an unterminated
@@ -36,10 +47,11 @@ opened it on 2026-11-17, a fresh exact-device probe confirmed **Listening for
 doorbell**. The user then confirmed that a real ring opened the call and its
 thumbnail appeared after the call ended, but the close button did not respond.
 
-Current source **0.4.24/28** repairs the overlay hit region and close button,
+Version **0.4.24/28** repairs the overlay hit region and close button,
 retains tapping the image to reopen live video and explicitly stops audio before
 reopening. Its signed build, 159 native simulator tests and simulator control
 checks passed. Direct Wi-Fi installation completed and device lookup verified
-**0.4.24/28**. Physical control checks are pending; two-way audio remains
-unverified. See
+**0.4.24/28**. On 2026-11-17 the user confirmed both physical actions: tapping
+the thumbnail reopens the full camera view with the Talk button, and X dismisses
+the card. Two-way audio remains unverified. See
 [doorbell handoff](IOS_DOORBELL_HANDOFF.md).

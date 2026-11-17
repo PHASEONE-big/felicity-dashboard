@@ -1,13 +1,20 @@
-# iOS doorbell and Today PV details — 0.4.24, build 28
+# iOS doorbell and Today PV details — 0.4.25, build 29
 
-Current source and confirmed installation are **0.4.24/28**. Its signed build,
+Current source is **0.4.25/29**; its clock consumption / solar readout is
+described in [kiosk handoff](IOS_KIOSK_HANDOFF.md). Its signed build, 159 tests
+and simulator clock readout check passed, and the IPA is ready. Wi-Fi
+installation failed in device service channels after trusted authentication;
+0.4.25 is not installed or physically validated.
+Doorbell behavior is unchanged from the last confirmed
+installation, **0.4.24/28**. Its signed build,
 all 159 native simulator tests and simulator control checks passed. Exact-device
 trusted Wi-Fi installation reached 100%, exited with code 0 and was version-verified.
 On 2026-11-17, using the preceding **0.4.23/27**, the user
 confirmed that a real ring opened the call and that the caller thumbnail
 appeared after the call ended. The thumbnail's close button did not respond.
-Version 0.4.24 repairs thumbnail touch handling and preserves the intended
-tap-to-reopen behavior; physical control checks remain pending. Two-way audio
+Version 0.4.24 repairs thumbnail touch handling. On 2026-11-17, the user
+confirmed both actions on the physical iPad: tapping the thumbnail reopens the
+full camera view with the Talk button, and X dismisses the card. Two-way audio
 has not been verified.
 
 ## Thumbnail control repair — 2026-11-17
@@ -18,7 +25,8 @@ position at input time, so the card's hit region follows its actual layout.
 The close button has a 44-point target and plain button styling. Tapping the
 image should reopen live video with audio off; reopening also explicitly stops
 any prior audio/pending microphone work. Build, tests and simulator control
-checks passed; physical verification of the controls is pending.
+checks passed; the user confirmed thumbnail reopening and dismissal on the
+physical iPad on 2026-11-17.
 
 ## Release checks for 0.4.24/28
 
@@ -32,7 +40,11 @@ checks passed; physical verification of the controls is pending.
   the call returns the original thumbnail, and its X button dismisses it.
   This used a synthetic image and a localhost test stream, without accessing
   an actual camera or microphone. The fixture was cleared and the original
-  simulator state restored. Physical control acceptance is still pending.
+  simulator state restored.
+- On 2026-11-17, the user repeated the physical 0.4.24 check and confirmed that
+  tapping the image opens the full camera view with Talk available, and tapping
+  X dismisses the thumbnail. This confirms those controls, not microphone
+  capture or two-way speech.
 - Strict signature verification passed. The embedded profile includes the
   exact requested iPad and expires on 2026-11-21 at 17:20:22 UTC, unchanged.
 - Verified package: `ios/build/ipad/Felicity-0.4.24-build28.ipa`.
@@ -54,7 +66,8 @@ the doorbell event transport did not. Version 0.4.23 adds that header to event
 SOAP requests. After the user opened 0.4.23 on 2026-11-17, a fresh exact-device
 probe confirmed **Listening for doorbell**, replacing the earlier connecting
 state. The user then confirmed real-ring delivery and a visible caller
-thumbnail. The remaining thumbnail-control failure is described above.
+thumbnail. The subsequent thumbnail-control repair and its physical
+confirmation are described above.
 No diagnostic action triggered a ring or enabled the microphone. Two-way audio
 remains physically unverified.
 
@@ -84,8 +97,9 @@ pre-update **Connecting** value; the new probe supersedes that status.
 
 Later on 2026-11-17, the user confirmed that a real ring opened the call and the
 caller thumbnail was visible after it ended. This verifies delivery and image
-appearance, but the close button failed. Dismiss/reopen controls require the
-0.4.24 repair and physical retesting; two-way audio remains unverified.
+appearance, but the close button failed. The 0.4.24 repair restored dismiss and
+reopen controls, confirmed by the user on 2026-11-17; two-way audio remains
+unverified.
 
 ## Historical release evidence
 
@@ -182,8 +196,8 @@ audio work. Local evidence:
 The existing profile expires on 2026-11-21 at 17:20:22 UTC (18:20:22 Madrid);
 this release does not extend that expiry.
 
-After the 0.4.24 repair, physically check thumbnail dismissal, tapping the image
-to reopen muted video and touch pass-through outside the card. Separate audio,
+Thumbnail dismissal and reopening were physically confirmed on 0.4.24.
+Touch pass-through outside the card and separate audio,
 microphone permission, safety-deadline and background-privacy checks remain
 unverified; the user's ring/image confirmation does not establish those results.
 Check Today PV1/PV2 against the corresponding Solar readings. Actual energy

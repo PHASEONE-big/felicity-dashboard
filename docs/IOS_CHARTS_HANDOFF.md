@@ -1,10 +1,16 @@
 # iOS energy charts — 0.4.18, build 22
 
-Current source and confirmed installation are **0.4.24/28**; its signed build,
+Current source is **0.4.25/29**, adding consumption / solar generation to the
+idle clock. Its signed build, 159 tests and simulator readout check passed,
+with clock values matching the dashboard. The signed IPA is ready; Wi-Fi
+installation failed in device service channels after trusted authentication.
+The last confirmed
+installation is **0.4.24/28**; its signed build,
 159 tests and simulator thumbnail-control checks passed, and Wi-Fi installation
 was version-verified. On 0.4.23, the user confirmed real-ring delivery
 and a visible thumbnail but reported a failed close button; 0.4.24 repairs
-thumbnail controls. Chart behavior is unchanged.
+thumbnail controls. On 2026-11-17 the user confirmed thumbnail reopening and X
+dismissal both work on the physical iPad. Chart behavior is unchanged.
 See [weather handoff](IOS_WEATHER_HANDOFF.md) for evidence and the new clock
 layout. Chart behavior is unchanged from 0.4.20/24:
 Solar has Total/PV1/PV2 together in one chart and

@@ -72,7 +72,7 @@ struct AppRootView: View {
         .background(DoorbellOverlayHost(controller: doorbell, repository: cameras, preferences: cameraPreferences).allowsHitTesting(false))
         .overlay {
             if kiosk.isSleeping {
-                KioskClockView(weather: weather, isNight: kiosk.isNight, load: model.snapshot.load, updatedAt: model.snapshot.updatedAt, online: model.status.online) { kiosk.recordActivity() }
+                KioskClockView(weather: weather, isNight: kiosk.isNight, load: model.snapshot.load, solar: model.snapshot.solar, updatedAt: model.snapshot.updatedAt, online: model.status.online) { kiosk.recordActivity() }
             }
         }
         .statusBarHidden(kiosk.isSleeping)

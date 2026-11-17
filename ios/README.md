@@ -20,17 +20,27 @@ the iPad must already be paired with Xcode, or first connected by USB and truste
 
 ## Latest status — 2026-11-17
 
-Current source and confirmed installation are **0.4.24, build 28**, repairing
-doorbell-thumbnail touch handling and ensuring reopening starts with audio off.
-Its signed build and all
-**159 native simulator tests passed**. Simulator coordinate clicks verified
+Current source is **0.4.25, build 29**. The idle clock shows household
+consumption / solar generation in watts from the same current snapshot and
+freshness state, without additional polling requests or clock timers. Its signed
+build and all **159 native simulator tests passed**. The portrait simulator
+showed **1350 / 580 W**, matching the dashboard's Home and Solar readings, with
+weather still below. The signed IPA is ready, but Wi-Fi installation failed
+when device service channels disconnected after trusted authentication. The
+last confirmed installation remains **0.4.24, build 28**; the new readout has
+not been physically validated. See [installation evidence](../docs/IOS_KIOSK_HANDOFF.md).
+
+Version 0.4.24 repaired doorbell-thumbnail touch handling and ensured reopening
+starts with audio off. Its signed build and all **159 native simulator tests
+passed**. Simulator coordinate clicks verified
 thumbnail reopening, returning to the thumbnail and dismissal, using a test
 image without an actual camera or microphone. Exact-device Wi-Fi installation
 reached 100% and exited with code 0; device lookup verified the installed version.
 The user confirmed on 2026-11-17 that 0.4.23 opened
 a real ring and showed its thumbnail afterward, but the close button did not
-respond. The new control repair is not yet physically verified; audio remains
-unverified.
+respond. After updating to 0.4.24, the user confirmed both actions on the
+physical iPad on 2026-11-17: tapping the thumbnail opens the full camera view
+with the Talk button, and X dismisses the card. Two-way audio remains unverified.
 
 The preceding **0.4.23, build 27** remains the weather-label baseline. The idle
 clock's six-hour weather outlook
@@ -115,8 +125,8 @@ and its thumbnail appeared after the call ended, but the close button failed.
 Version 0.4.24 replaces cached overlay coordinates with a native hit region,
 adds a 44-point close target and keeps tap-to-reopen muted. Its signed build,
 159 tests and simulator control checks passed, and the release is installed
-and version-verified. Physical control checks are pending; two-way audio
-remains unverified. See the
+and version-verified. On 2026-11-17 the user confirmed physical thumbnail
+reopening and dismissal. Two-way audio remains unverified. See the
 [doorbell handoff](../docs/IOS_DOORBELL_HANDOFF.md).
 
 While Felicity is in the foreground, the recorder's ONVIF PullPoint events can
@@ -173,10 +183,13 @@ have not been measured on the physical iPad.
 ## Dim clock and motion wake (0.4.17, build 21)
 
 On the energy dashboard, one minute without detected activity shows large
-time, date and household power consumption on black, plus weather when a city
+time, date and household consumption / solar generation in watts on black,
+plus weather when a city
 is configured: **white in daylight, red at night**. The clock updates and shifts
 position once per minute; household
-power refreshes every 30 seconds. A tap or camera movement wakes the dashboard.
+power refreshes every 30 seconds. Both readings share the same snapshot and
+freshness handling; the 0.4.25 readout adds no polling requests. A tap or camera
+movement wakes the dashboard.
 
 Day and night brightness are set independently and apply directly, up to 100%:
 

@@ -211,6 +211,7 @@ struct KioskClockView: View {
     @ObservedObject var weather: WeatherViewModel
     let isNight: Bool
     let load: Double
+    let solar: Double
     let updatedAt: Date?
     let online: Bool
     let wake: () -> Void
@@ -220,6 +221,8 @@ struct KioskClockView: View {
             TimelineView(.everyMinute) { context in
                 let minute = Calendar.current.component(.minute, from: context.date)
                 let fresh = online && updatedAt.map { context.date.timeIntervalSince($0) < 90 } == true
+                let loadText = fresh && load.isFinite ? load.formatted(.number.precision(.fractionLength(0))) : "—"
+                let solarText = fresh && solar.isFinite ? solar.formatted(.number.precision(.fractionLength(0))) : "—"
                 VStack(spacing: 22) {
                     Text(context.date, format: .dateTime.hour().minute())
                         .font(.system(size: min(proxy.size.width * 0.26, 260), weight: .light, design: .rounded))
@@ -228,10 +231,12 @@ struct KioskClockView: View {
                         .lineLimit(1)
                     Text(context.date, format: .dateTime.weekday(.wide).day().month(.wide))
                         .font(.system(size: min(proxy.size.width * 0.045, 36), weight: .light))
-                    Text(fresh ? "\(Int(load.rounded())) W" : "— W")
+                    Text("\(loadText) / \(solarText) W")
                         .font(.system(size: min(proxy.size.width * 0.08, 64), weight: .light, design: .rounded))
                         .monospacedDigit()
-                        .accessibilityLabel(fresh ? "Home consumption \(Int(load.rounded())) watts" : "Home consumption unavailable")
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
+                        .accessibilityLabel("Home consumption \(loadText) watts. Solar generation \(solarText) watts")
                     ClockWeatherView(weather: weather, isNight: isNight, date: context.date)
                 }
                 .foregroundStyle(isNight ? Color.red : Color.white)

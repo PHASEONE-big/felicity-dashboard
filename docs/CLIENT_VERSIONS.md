@@ -6,18 +6,27 @@ APK, iOS app, or display firmware.
 
 | Client | Current source version | Build | Source | Git snapshot |
 |---|---|---|---|---|
-| iOS / iPadOS | 0.4.24 | 28 | `ios/` | baseline: `snapshots/ios/0.4.13-build17` |
+| iOS / iPadOS | 0.4.25 | 29 | `ios/` | baseline: `snapshots/ios/0.4.13-build17` |
 | Android / dragon | 0.7.25 | 32 | `android/app/` | `snapshots/android/0.7.25-build32` |
 | ESP32 + Nextion | 0.14.1 | — | `esp32/`, `nextion/`, `firmware/` | `snapshots/esp32-nextion/0.14.1` |
 
-These tags preserve development baselines. Current iOS **0.4.24/28** repairs
+These tags preserve development baselines. Current iOS **0.4.25/29** displays
+household consumption / solar generation in watts on the idle clock. Both
+readings use the same current snapshot and freshness state, with no additional
+polling requests. Its signed build, all 159 native simulator tests and the
+portrait clock readout check passed; the signed IPA is ready. Wi-Fi installation
+failed when device service channels disconnected after trusted authentication.
+The last confirmed installation remains **0.4.24/28**; 0.4.25 has not been
+physically validated. See [installation evidence](IOS_KIOSK_HANDOFF.md).
+
+iOS 0.4.24 repairs
 doorbell-thumbnail touch handling and ensures reopening starts with audio off.
 Its signed build, all 159 native simulator tests and simulator thumbnail
 controls passed. Direct Wi-Fi installation completed and device lookup verified
-**0.4.24/28**; physical confirmation of the repaired controls is pending.
-On 2026-11-17 the user confirmed a real ring opened the call and its thumbnail
-appeared afterward, but the thumbnail close button did not respond. The new
-control repair is not yet physically verified; audio remains unverified.
+**0.4.24/28**. On 2026-11-17 the user confirmed both repaired actions on the
+physical iPad: tapping the thumbnail reopens the full camera view with the Talk
+button, and X dismisses the card. Ring delivery and thumbnail appearance were
+already confirmed on 0.4.23; two-way audio remains unverified.
 
 iOS 0.4.23 labels the
 idle clock's six-hour weather outlook with its actual local forecast hour and
