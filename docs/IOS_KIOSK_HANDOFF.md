@@ -4,19 +4,48 @@ Requested device: iPad Pro, user-confirmed current LAN address `192.168.13.188`.
 Confirmed USB UDID: `86d36a369fdaeb458f5a65ba0136bec628ffd018`.
 USB detection now identifies this device as **iPad Pro (9.7-inch), J127AP**,
 running **iPadOS 16.7.16 (20H392)**.
-Source: iOS **0.4.25, build 29**; its signed build, 159 tests and simulator
-readout check passed. Wi-Fi installation did not complete; the signed IPA is
-ready, and the installed version remains 0.4.24/28. See
+Source and confirmed installation: iOS **0.4.26, build 30**. Its final signed
+build, 159 tests and simulator icon/Spanish-date checks passed; USB installation
+completed and a separate exact-device USB lookup verified the installed version.
+The preceding 0.4.25 passed its signed build, 159 tests and simulator
+readout check. USB installation completed and a separate exact-device lookup
+verified that version. See
 [weather handoff](IOS_WEATHER_HANDOFF.md) for the actual-hour forecast label and
 [doorbell handoff](IOS_DOORBELL_HANDOFF.md) for confirmed ring/thumbnail delivery
 on 0.4.23 and the physically confirmed thumbnail controls on 0.4.24.
-Last confirmed installation: **0.4.24, build 28**, over direct Wi-Fi, with
+Last confirmed installation: **0.4.26, build 30**, over USB, with
 the installed version verified by device lookup. The user confirmed 0.4.21
 works well on the physical iPad.
 Android and hardware versions are unchanged.
 The bundle identifier and configured signing team are preserved.
 
 ## Latest status — 2026-11-17
+
+Version 0.4.26 adds a **sun icon beside solar generation** in the clock's
+consumption / generation line. The idle clock date uses Spanish weekday and
+month names (`es_ES`), such as **martes, 17 de noviembre**. It keeps the same
+current snapshot, freshness state, font and white/day versus red/night colors,
+with no extra polling or clock timers. The final signed build and all 159
+native simulator tests passed. In the portrait simulator with a Russian locale,
+the clock actually displayed **martes, 17 de noviembre** and
+**1400 / ☀ 620 W**, with weather still below. The date uses preformatted Spanish
+text so the surrounding SwiftUI locale cannot override it. USB installation
+completed and a separate lookup verified 0.4.26/build 30. Physical icon/date
+confirmation is pending.
+
+0.4.26 release evidence:
+
+- Final signed build: `ios/build/recovery-device-0.4.26-final2.log`.
+- Tests/result: `ios/build/recovery-tests-0.4.26-final2.log` and
+  `ios/build/recovery-tests-0.4.26-final2.xcresult` (159 passed, no failures).
+- Strict signature verification passed; the profile includes the exact iPad
+  and expires on 2026-11-21 at 17:20:22 UTC, unchanged.
+- Verified IPA: `ios/build/ipad/Felicity-0.4.26-build30.ipa`.
+  Previous installed app: `ios/build/ipad/installed-0.4.25-build29.app`.
+- Exact-device USB installation reached 100% and `InstallComplete`, exiting
+  with code 0: `ios/build/recovery-install-0.4.26-usb.log`.
+  A separate fresh USB lookup verified 0.4.26/build 30 with exit code 0;
+  safe evidence: `ios/build/recovery-install-0.4.26-usb-verified.json`.
 
 Version 0.4.25 displays **household consumption / solar generation**, in watts,
 on the idle clock. Both values use the existing current snapshot and freshness
@@ -25,9 +54,10 @@ and all 159 native simulator tests passed, with no new tests for this UI-only
 change. The portrait simulator clock showed **1350 / 580 W**, matching Home
 1350 W and Solar 580 W on the preceding dashboard. Both readings fit on one
 line, weather remained below them, and the existing white/day and red/night
-foreground handling is unchanged. Physical readout confirmation is pending.
+foreground handling is unchanged. The user acknowledged the installed 0.4.25
+on 2026-11-17 and requested the added sun icon.
 
-Current release evidence:
+0.4.25 release evidence:
 
 - Signed build: `ios/build/recovery-device-0.4.25.log`.
 - Tests/result: `ios/build/recovery-tests-0.4.25.log` and
@@ -36,7 +66,7 @@ Current release evidence:
   exact requested iPad and expires on 2026-11-21 at 17:20:22 UTC, unchanged.
 - Verified IPA: `ios/build/ipad/Felicity-0.4.25-build29.ipa`.
   Previous app: `ios/build/ipad/installed-0.4.24-build28.app`.
-- Wi-Fi installation did not complete. Logs:
+- Earlier Wi-Fi attempts, before the successful USB installation, failed. Logs:
   `ios/build/recovery-install-0.4.25-wifi.log`,
   `ios/build/recovery-install-0.4.25-wifi-retry.log`,
   `ios/build/recovery-install-0.4.25-wifi-unlocked.log` and
@@ -48,10 +78,29 @@ AFC/installation service channels disconnected with `ConnectionTerminatedError`.
 The final attempt exited with code 1 during the pre-install lookup, before any
 package upload. This is a service-channel failure after a successful trusted
 connection, not evidence that the device is offline or that the new readout or
-IPA is defective. No further device attempts were made after the final try.
-The installed app remains **0.4.24/28**; 0.4.25 has no physical acceptance.
+IPA is defective. The cause of the service-channel EOF is not yet established.
+No further Wi-Fi installation attempts were made after the final try.
 
-The installed 0.4.24 passed its signed build and 159 tests. On 2026-11-17, the
+After the user connected USB, fresh device discovery found the exact target
+over USB as well as network. Installation through `ios-deploy --no-wifi`
+reached 100% and `InstallComplete`, exiting with code 0. A separate fresh USB
+connection using the existing pairing (`autopair=False`) and InstallationProxy
+lookup verified **0.4.25/build 29** on that exact iPad, also with exit code 0.
+Evidence: `ios/build/recovery-install-0.4.25-usb.log` and the safe verification
+record `ios/build/recovery-install-0.4.25-usb-verified.json`.
+The user subsequently acknowledged seeing the installed version, without a
+separate detailed power-reading check. The new 0.4.26 sun icon and Spanish date
+are not yet physically verified.
+
+Later read-only checks, after USB connection/unlocking, found the exact target
+on both USB and network. Version lookup succeeded over direct TCP with TLS,
+usbmux Network and USB, each reporting **0.4.25/build 29**. Thus the service
+channels were reachable again at that check; this does not establish the cause
+of the earlier EOF or prove a new Wi-Fi installation. The probe made no
+installation or settings changes. The subsequent 0.4.26 installation used USB;
+no new Wi-Fi installation was attempted.
+
+The preceding 0.4.24 passed its signed build and 159 tests. On 2026-11-17, the
 user confirmed tapping its caller thumbnail reopens the full camera view with
 Talk available, and X dismisses the card. Two-way audio remains unverified.
 

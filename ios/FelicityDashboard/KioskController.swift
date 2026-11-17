@@ -229,13 +229,21 @@ struct KioskClockView: View {
                         .monospacedDigit()
                         .minimumScaleFactor(0.5)
                         .lineLimit(1)
-                    Text(context.date, format: .dateTime.weekday(.wide).day().month(.wide))
+                    Text(verbatim: context.date.formatted(.dateTime.weekday(.wide).day().month(.wide).locale(Locale(identifier: "es_ES"))))
                         .font(.system(size: min(proxy.size.width * 0.045, 36), weight: .light))
-                    Text("\(loadText) / \(solarText) W")
+                    HStack(spacing: 10) {
+                        Text("\(loadText) /")
+                        Image(systemName: "sun.max.fill")
+                            .symbolRenderingMode(.monochrome)
+                            .font(.system(size: min(proxy.size.width * 0.045, 36), weight: .light))
+                            .accessibilityHidden(true)
+                        Text("\(solarText) W")
+                    }
                         .font(.system(size: min(proxy.size.width * 0.08, 64), weight: .light, design: .rounded))
                         .monospacedDigit()
                         .lineLimit(1)
                         .minimumScaleFactor(0.6)
+                        .accessibilityElement(children: .ignore)
                         .accessibilityLabel("Home consumption \(loadText) watts. Solar generation \(solarText) watts")
                     ClockWeatherView(weather: weather, isNight: isNight, date: context.date)
                 }

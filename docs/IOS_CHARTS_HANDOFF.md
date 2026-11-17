@@ -1,12 +1,17 @@
 # iOS energy charts — 0.4.18, build 22
 
-Current source is **0.4.25/29**, adding consumption / solar generation to the
-idle clock. Its signed build, 159 tests and simulator readout check passed,
-with clock values matching the dashboard. The signed IPA is ready; Wi-Fi
-installation failed in device service channels after trusted authentication.
-The last confirmed
-installation is **0.4.24/28**; its signed build,
-159 tests and simulator thumbnail-control checks passed, and Wi-Fi installation
+Current source and confirmed installation are **0.4.26/30**, adding a sun icon
+beside clock generation and
+a Spanish idle-clock date. Its final signed build, 159 tests and simulator
+icon/date checks passed. USB installation completed and a separate exact-device
+USB lookup verified 0.4.26/build 30; physical icon/date checks are pending.
+The preceding **0.4.25/29** added consumption / solar generation to the idle clock.
+Its signed build, 159 tests and simulator readout check passed,
+with clock values matching the dashboard. After earlier Wi-Fi failures, USB
+installation completed and a separate exact-device USB lookup verified 0.4.25/29.
+The user acknowledged that version and requested the sun icon. The preceding
+**0.4.24/28** passed its signed build,
+159 tests and simulator thumbnail-control checks, and Wi-Fi installation
 was version-verified. On 0.4.23, the user confirmed real-ring delivery
 and a visible thumbnail but reported a failed close button; 0.4.24 repairs
 thumbnail controls. On 2026-11-17 the user confirmed thumbnail reopening and X

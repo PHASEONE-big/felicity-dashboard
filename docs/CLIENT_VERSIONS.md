@@ -6,18 +6,27 @@ APK, iOS app, or display firmware.
 
 | Client | Current source version | Build | Source | Git snapshot |
 |---|---|---|---|---|
-| iOS / iPadOS | 0.4.25 | 29 | `ios/` | baseline: `snapshots/ios/0.4.13-build17` |
+| iOS / iPadOS | 0.4.26 | 30 | `ios/` | baseline: `snapshots/ios/0.4.13-build17` |
 | Android / dragon | 0.7.25 | 32 | `android/app/` | `snapshots/android/0.7.25-build32` |
 | ESP32 + Nextion | 0.14.1 | — | `esp32/`, `nextion/`, `firmware/` | `snapshots/esp32-nextion/0.14.1` |
 
-These tags preserve development baselines. Current iOS **0.4.25/29** displays
+These tags preserve development baselines. Current iOS **0.4.26/30** adds a sun
+icon beside solar generation on the idle clock and displays its weekday/month
+in Spanish. Data, font and white/day versus red/night colors are unchanged.
+The final signed build, all 159 native simulator tests and portrait UI checks
+passed, including Spanish date text under a Russian simulator locale.
+USB installation completed and a separate exact-device USB lookup verified
+**0.4.26/30**. Physical confirmation of the sun icon and Spanish date is pending.
+
+iOS 0.4.25 displays
 household consumption / solar generation in watts on the idle clock. Both
 readings use the same current snapshot and freshness state, with no additional
 polling requests. Its signed build, all 159 native simulator tests and the
-portrait clock readout check passed; the signed IPA is ready. Wi-Fi installation
-failed when device service channels disconnected after trusted authentication.
-The last confirmed installation remains **0.4.24/28**; 0.4.25 has not been
-physically validated. See [installation evidence](IOS_KIOSK_HANDOFF.md).
+portrait clock readout check passed. Earlier Wi-Fi attempts failed in device
+service channels; after the user connected USB, installation completed and a
+separate exact-device USB lookup verified **0.4.25/29**. The user acknowledged
+the installed version on 2026-11-17 and requested the solar icon now in 0.4.26.
+See [installation evidence](IOS_KIOSK_HANDOFF.md).
 
 iOS 0.4.24 repairs
 doorbell-thumbnail touch handling and ensures reopening starts with audio off.

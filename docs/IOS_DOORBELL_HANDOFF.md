@@ -1,12 +1,16 @@
-# iOS doorbell and Today PV details — 0.4.25, build 29
+# iOS doorbell and Today PV details — 0.4.26, build 30
 
-Current source is **0.4.25/29**; its clock consumption / solar readout is
-described in [kiosk handoff](IOS_KIOSK_HANDOFF.md). Its signed build, 159 tests
-and simulator clock readout check passed, and the IPA is ready. Wi-Fi
-installation failed in device service channels after trusted authentication;
-0.4.25 is not installed or physically validated.
-Doorbell behavior is unchanged from the last confirmed
-installation, **0.4.24/28**. Its signed build,
+Current source and confirmed installation are **0.4.26/30**, adding a sun icon
+beside clock generation and
+a Spanish idle-clock date. Its final signed build, 159 tests and simulator
+icon/date checks passed. USB installation completed and a separate exact-device
+USB lookup verified 0.4.26/build 30. Physical icon/date checks are pending.
+The preceding **0.4.25/29** clock consumption / solar readout is described in
+[kiosk handoff](IOS_KIOSK_HANDOFF.md). Its signed build, 159 tests
+and simulator clock readout check passed. After earlier Wi-Fi failures, USB
+installation completed and a separate exact-device USB lookup verified 0.4.25/29.
+The user acknowledged the installed 0.4.25 and requested the new sun icon.
+Doorbell behavior is unchanged from the preceding **0.4.24/28**. Its signed build,
 all 159 native simulator tests and simulator control checks passed. Exact-device
 trusted Wi-Fi installation reached 100%, exited with code 0 and was version-verified.
 On 2026-11-17, using the preceding **0.4.23/27**, the user

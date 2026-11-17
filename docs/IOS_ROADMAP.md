@@ -1,14 +1,23 @@
 # iOS follow-up work
 
-## Clock consumption / solar — 0.4.25/29
+## Clock consumption / solar — 0.4.26/30
 
-Current source **0.4.25/29** displays household consumption / solar generation
-in watts on the idle clock. Both values come from the same current snapshot and
+Current source and confirmed installation are **0.4.26/30**, adding a sun icon
+beside solar generation and a
+Spanish weekday/month on the idle clock, retaining the same data, font and
+white/day versus red/night colors. Its final signed build, 159 native simulator
+tests and portrait UI check passed: the date remained Spanish under a Russian
+simulator locale. USB installation completed and a separate exact-device USB
+lookup verified **0.4.26/30**. Physical icon/date confirmation is pending.
+
+Version 0.4.25 displays household consumption / solar generation in watts on
+the idle clock. Both values come from the same current snapshot and
 share freshness handling, without new polling requests or clock timers. Its
 signed build, 159 native simulator tests and portrait clock readout check
-passed, and the signed IPA is ready. Wi-Fi installation failed when device
-service channels disconnected after trusted authentication; **0.4.24/28**
-remains installed. No physical 0.4.25 acceptance is claimed. See
+passed. Earlier Wi-Fi attempts failed in device service channels; after the
+user connected USB, installation completed and a separate exact-device USB
+lookup verified **0.4.25/29**. The user acknowledged that installed version on
+2026-11-17 and requested the sun icon. See
 [kiosk handoff](IOS_KIOSK_HANDOFF.md).
 
 ## Weather — implemented in 0.4.21/25

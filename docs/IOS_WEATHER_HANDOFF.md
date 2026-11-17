@@ -1,14 +1,21 @@
-# iOS weather — 0.4.25, build 29
+# iOS weather — 0.4.26, build 30
 
 ## Status — 2026-11-17
 
-Current source is **0.4.25/29**, adding the idle clock's consumption / solar
-readout; see [kiosk handoff](IOS_KIOSK_HANDOFF.md). Its signed build, 159 tests
+Current source and confirmed installation are **0.4.26/30**, adding a sun icon
+beside the clock's solar
+generation and a Spanish idle-clock date. Its final signed build, 159 tests and
+portrait icon/date checks passed, with weather still below. USB installation
+completed and a separate exact-device USB lookup verified 0.4.26/build 30;
+physical icon/date checks are pending. Weather behavior is unchanged.
+The preceding **0.4.25/29** added the idle
+clock's consumption / solar readout; see [kiosk handoff](IOS_KIOSK_HANDOFF.md).
+Its signed build, 159 tests
 and simulator clock check passed, including unchanged weather below the power
-readings. The signed IPA is ready, but Wi-Fi installation failed in device
-service channels after trusted authentication. The last confirmed installation is
-**0.4.24/28**. Its signed build,
-159 native simulator tests and simulator control checks passed; exact-device
+readings. After earlier Wi-Fi failures, USB installation completed and a
+separate exact-device USB lookup verified 0.4.25/29. The user acknowledged that
+version and requested the sun icon. The preceding **0.4.24/28** passed its signed
+build, 159 native simulator tests and simulator control checks; exact-device
 Wi-Fi installation was version-verified. Its change is the
 [doorbell thumbnail control repair](IOS_DOORBELL_HANDOFF.md); weather is
 unchanged from **0.4.23/27**. The idle clock

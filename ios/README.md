@@ -20,15 +20,26 @@ the iPad must already be paired with Xcode, or first connected by USB and truste
 
 ## Latest status — 2026-11-17
 
-Current source is **0.4.25, build 29**. The idle clock shows household
-consumption / solar generation in watts from the same current snapshot and
+Current source and confirmed installation are **0.4.26, build 30**, adding a
+sun icon beside solar generation
+and a Spanish weekday/month on the idle clock, such as **martes, 17 de noviembre**.
+It retains the same data, font and white/day versus red/night colors. Its final
+signed build and all **159 native simulator tests passed**. Portrait simulator
+checks under a Russian locale showed the Spanish date and **1400 / ☀ 620 W**,
+with weather still below. USB installation reached 100% and `InstallComplete`
+with exit code 0; a separate exact-device USB lookup verified 0.4.26/build 30.
+Physical confirmation of the sun icon and Spanish date is pending.
+
+Version 0.4.25 shows household consumption / solar generation in watts from the same current snapshot and
 freshness state, without additional polling requests or clock timers. Its signed
 build and all **159 native simulator tests passed**. The portrait simulator
 showed **1350 / 580 W**, matching the dashboard's Home and Solar readings, with
-weather still below. The signed IPA is ready, but Wi-Fi installation failed
-when device service channels disconnected after trusted authentication. The
-last confirmed installation remains **0.4.24, build 28**; the new readout has
-not been physically validated. See [installation evidence](../docs/IOS_KIOSK_HANDOFF.md).
+weather still below. Earlier Wi-Fi attempts failed in device service channels.
+After the user connected USB, installation reached `InstallComplete` and exited
+with code 0; a separate exact-device USB lookup verified **0.4.25/build 29**.
+The user acknowledged the installed version on 2026-11-17 and requested the
+sun icon now added in 0.4.26. See
+[installation evidence](../docs/IOS_KIOSK_HANDOFF.md).
 
 Version 0.4.24 repaired doorbell-thumbnail touch handling and ensured reopening
 starts with audio off. Its signed build and all **159 native simulator tests
@@ -184,10 +195,10 @@ have not been measured on the physical iPad.
 
 On the energy dashboard, one minute without detected activity shows large
 time, date and household consumption / solar generation in watts on black,
-plus weather when a city
-is configured: **white in daylight, red at night**. The clock updates and shifts
-position once per minute; household
-power refreshes every 30 seconds. Both readings share the same snapshot and
+plus weather when a city is configured: **white in daylight, red at night**.
+From 0.4.26, the idle date uses Spanish weekday/month names and a sun icon
+appears beside generation. The clock updates and shifts position once per minute;
+household power refreshes every 30 seconds. Both readings share the same snapshot and
 freshness handling; the 0.4.25 readout adds no polling requests. A tap or camera
 movement wakes the dashboard.
 
