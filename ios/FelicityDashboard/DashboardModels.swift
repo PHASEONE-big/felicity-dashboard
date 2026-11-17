@@ -32,15 +32,213 @@ enum DashboardMetric: String, CaseIterable, Identifiable, Sendable {
         case .system: return "SYSTEM · % / °C"
         }
     }
+
+    var chartPanels: [EnergyChartPanel] {
+        switch self {
+        case .solar:
+            return [
+                .init(id: "solar-power", title: "Solar power", unit: "W", series: [
+                    .init(id: 0, name: "Total"), .init(id: 1, name: "PV1"), .init(id: 2, name: "PV2")
+                ])
+            ]
+        case .load:
+            return [.init(id: "load-power", title: "Home load", unit: "W", series: [
+                .init(id: 0, name: "Total"), .init(id: 1, name: "L1"), .init(id: 2, name: "L2"), .init(id: 3, name: "L3")
+            ])]
+        case .battery:
+            return [
+                .init(id: "battery-soc", title: "State of charge", unit: "%", series: [.init(id: 0, name: "Battery")]),
+                .init(id: "battery-power", title: "Battery power", unit: "W", series: [.init(id: 1, name: "Battery")])
+            ]
+        case .grid:
+            return [
+                .init(id: "grid-voltage", title: "Grid voltage", unit: "V", series: [
+                    .init(id: 0, name: "L1"), .init(id: 1, name: "L2"), .init(id: 2, name: "L3")
+                ]),
+                .init(id: "grid-power", title: "Grid power", unit: "W", series: [.init(id: 3, name: "Grid")])
+            ]
+        case .system:
+            return [
+                .init(id: "system-usage", title: "Resource usage", unit: "%", series: [
+                    .init(id: 0, name: "CPU"), .init(id: 1, name: "RAM"), .init(id: 3, name: "Disk")
+                ]),
+                .init(id: "system-temperature", title: "CPU temperature", unit: "°C", series: [.init(id: 2, name: "Temperature")])
+            ]
+        case .today:
+            return [
+                .init(id: "today-power", title: "Today's power", unit: "W", series: [
+                    .init(id: 0, name: "Solar"), .init(id: 1, name: "Load"),
+                    .init(id: 2, name: "PV1"), .init(id: 3, name: "PV2")
+                ])
+            ]
+        }
+    }
+}
+
+struct EnergyChartSeries: Identifiable, Equatable, Sendable {
+    let id: Int
+    let name: String
+}
+
+struct EnergyChartPanel: Identifiable, Equatable, Sendable {
+    let id: String
+    let title: String
+    let unit: String
+    let series: [EnergyChartSeries]
+}
+
+struct EnergyChartPoint: Identifiable, Equatable, Sendable {
+    let id: Int
+    let value: Double
+    var x: Double { Double(id) }
 }
 
 struct DashboardChart: Equatable, Sendable {
     var samples: [[Double]?] = []
     var channels = 0
+    var start: Date?
+    var end: Date?
+    var intervalMinutes: Double?
+    var intervalSeconds: Double?
+    var metric: DashboardMetric?
 
     static func decode(_ data: Data) throws -> Self {
         let response = try JSONDecoder().decode(ChartResponse.self, from: data)
-        return .init(samples: response.samples, channels: max(0, response.channels))
+        return .init(samples: response.samples, channels: max(0, response.channels),
+                     start: parseDate(response.start), end: parseDate(response.end),
+                     intervalMinutes: positiveInterval(response.intervalMinutes),
+                     intervalSeconds: positiveInterval(response.intervalSeconds),
+                     metric: response.metric.flatMap(DashboardMetric.init(rawValue:)))
+    }
+
+    /// Both endpoints aggregate the same [start, end) buckets. Refuse to join
+    /// different days or resolutions, including requests crossing midnight.
+    func addingSolarStrings(from solar: DashboardChart) -> Self {
+        guard metric == nil || metric == .today,
+              solar.metric == nil || solar.metric == .solar,
+              let start, let end, start.timeIntervalSince1970.isFinite,
+              end.timeIntervalSince1970.isFinite, end > start,
+              solar.start == start, solar.end == end,
+              !samples.isEmpty, samples.count == solar.samples.count else { return self }
+        var merged = self
+        merged.channels = 4
+        merged.samples = samples.indices.map { index in
+            let todayRow = samples[index]
+            let solarRow = solar.samples[index]
+            let pv1 = Self.reading(solarRow, channel: 1, channels: solar.channels)
+            let pv2 = Self.reading(solarRow, channel: 2, channels: solar.channels)
+            if todayRow == nil, !pv1.isFinite, !pv2.isFinite { return nil }
+            // NaN exists only in this in-memory merge, never in the JSON. Each
+            // missing channel stays a gap while other real readings survive.
+            return [Self.reading(todayRow, channel: 0, channels: channels),
+                    Self.reading(todayRow, channel: 1, channels: channels), pv1, pv2]
+        }
+        return merged
+    }
+
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        guard lhs.channels == rhs.channels, lhs.start == rhs.start, lhs.end == rhs.end,
+              lhs.intervalMinutes == rhs.intervalMinutes, lhs.intervalSeconds == rhs.intervalSeconds,
+              lhs.metric == rhs.metric, lhs.samples.count == rhs.samples.count else { return false }
+        return zip(lhs.samples, rhs.samples).allSatisfy { left, right in
+            switch (left, right) {
+            case (nil, nil): return true
+            case let (left?, right?):
+                return left.count == right.count && zip(left, right).allSatisfy {
+                    $0 == $1 || ($0.isNaN && $1.isNaN)
+                }
+            default: return false
+            }
+        }
+    }
+
+    private static func reading(_ row: [Double]?, channel: Int, channels: Int) -> Double {
+        guard channel < channels, let row, row.indices.contains(channel), row[channel].isFinite else { return .nan }
+        return row[channel]
+    }
+
+    /// Keep original bucket indices and gaps; never join across missing readings.
+    func segments(channel: Int) -> [[EnergyChartPoint]] {
+        guard channel >= 0, channel < channels else { return [] }
+        var result: [[EnergyChartPoint]] = []
+        var segment: [EnergyChartPoint] = []
+        for (index, row) in samples.enumerated() {
+            if let row, channel < row.count, row[channel].isFinite {
+                segment.append(.init(id: index, value: row[channel]))
+            } else if !segment.isEmpty {
+                result.append(segment)
+                segment = []
+            }
+        }
+        if !segment.isEmpty { result.append(segment) }
+        return result
+    }
+
+    /// Scale only visible channels. Preserve sign and keep a useful finite range
+    /// for empty/flat data, without letting another unit dominate this panel.
+    func domain(channels selected: [Int], includeZero: Bool = true) -> ClosedRange<Double> {
+        let selected = Set(selected.filter { $0 >= 0 && $0 < channels })
+        var lower = Double.infinity
+        var upper = -Double.infinity
+        for row in samples.compactMap({ $0 }) {
+            for channel in selected where channel < row.count && row[channel].isFinite {
+                lower = min(lower, row[channel])
+                upper = max(upper, row[channel])
+            }
+        }
+        guard lower.isFinite, upper.isFinite else { return 0...1 }
+        if includeZero {
+            lower = min(lower, 0)
+            upper = max(upper, 0)
+        }
+        if lower == upper {
+            if includeZero { return 0...1 } // All observed values are zero.
+            let padding = max(1, abs(lower) * 0.05)
+            let paddedLower = lower - padding
+            let paddedUpper = upper + padding
+            return (paddedLower.isFinite ? paddedLower : lower)...(paddedUpper.isFinite ? paddedUpper : upper)
+        }
+        // Compute the span in halves to avoid overflow for extreme finite values.
+        let padding = (upper * 0.5 - lower * 0.5) * 0.1
+        let paddedLower = includeZero && lower == 0 ? lower : lower - padding
+        let paddedUpper = includeZero && upper == 0 ? upper : upper + padding
+        return (paddedLower.isFinite ? paddedLower : lower)...(paddedUpper.isFinite ? paddedUpper : upper)
+    }
+
+    /// Server bins cover [start, end), so the final bucket begins before end.
+    /// Missing metadata yields nil: the view should show bucket indices instead
+    /// of inventing a day-long range for the ten-minute System chart.
+    func date(at index: Int, metric: DashboardMetric) -> Date? {
+        guard samples.indices.contains(index), let start, start.timeIntervalSince1970.isFinite else { return nil }
+        let interval: TimeInterval
+        if let end, end.timeIntervalSince1970.isFinite, end > start {
+            interval = end.timeIntervalSince(start) / Double(samples.count)
+        } else if let seconds = Self.positiveInterval(intervalSeconds) {
+            interval = seconds
+        } else if let minutes = Self.positiveInterval(intervalMinutes) {
+            interval = minutes * 60
+        } else { return nil }
+        let offset = Double(index) * interval
+        guard interval.isFinite, offset.isFinite else { return nil }
+        let date = start.addingTimeInterval(offset)
+        return date.timeIntervalSince1970.isFinite ? date : nil
+    }
+
+    private static func positiveInterval(_ value: Double?) -> Double? {
+        value.flatMap { $0.isFinite && $0 > 0 ? $0 : nil }
+    }
+
+    private static func parseDate(_ text: String?) -> Date? {
+        guard let text = text?.trimmingCharacters(in: .whitespacesAndNewlines), !text.isEmpty else { return nil }
+        // Python's isoformat emits offsets and optional fractional seconds.
+        // Older offset-free payloads are interpreted as UTC deterministically.
+        let hasZone = text.range(of: "(?:[zZ]|[+-][0-9]{2}:?[0-9]{2})$", options: .regularExpression) != nil
+        let normalized = hasZone ? text : text + "Z"
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        if let date = formatter.date(from: normalized) { return date }
+        formatter.formatOptions = [.withInternetDateTime]
+        return formatter.date(from: normalized)
     }
 }
 
@@ -205,4 +403,15 @@ private struct TodayValues: Decodable {
 private struct ChartResponse: Decodable {
     let samples: [[Double]?]
     let channels: Int
+    let start: String?
+    let end: String?
+    let intervalMinutes: Double?
+    let intervalSeconds: Double?
+    let metric: String?
+
+    enum CodingKeys: String, CodingKey {
+        case samples, channels, start, end, metric
+        case intervalMinutes = "interval_minutes"
+        case intervalSeconds = "interval_seconds"
+    }
 }

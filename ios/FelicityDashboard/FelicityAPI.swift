@@ -26,7 +26,26 @@ actor FelicityAPI: DashboardProviding {
     }
 
     func chart(baseURL: URL, metric: DashboardMetric) async throws -> DashboardChart {
+        guard metric == .today else { return try await chartPayload(baseURL: baseURL, metric: metric) }
+        async let today = chartPayload(baseURL: baseURL, metric: .today)
+        async let solar = optionalSolarChart(baseURL: baseURL)
+        let overview = try await today
+        let strings = try await solar
+        try Task.checkCancellation()
+        return strings.map { overview.addingSolarStrings(from: $0) } ?? overview
+    }
+
+    private func chartPayload(baseURL: URL, metric: DashboardMetric) async throws -> DashboardChart {
         try DashboardChart.decode(await data(baseURL: baseURL, path: "/api/device/chart?metric=\(metric.rawValue)"))
+    }
+
+    private func optionalSolarChart(baseURL: URL) async throws -> DashboardChart? {
+        do { return try await chartPayload(baseURL: baseURL, metric: .solar) }
+        catch {
+            try Task.checkCancellation()
+            if error is CancellationError { throw error }
+            return nil
+        }
     }
 
     private func data(baseURL: URL, path: String) async throws -> Data {
@@ -44,9 +63,13 @@ actor FelicityAPI: DashboardProviding {
         let candidates = ipv4PreferredCandidates(for: originalURL)
         var lastError: Error?
         for candidate in candidates {
+            try Task.checkCancellation()
             do {
                 return try await data(url: candidate.url, hostHeader: candidate.hostHeader)
             } catch {
+                if Task.isCancelled || error is CancellationError || (error as? URLError)?.code == .cancelled {
+                    throw error
+                }
                 lastError = error
             }
         }

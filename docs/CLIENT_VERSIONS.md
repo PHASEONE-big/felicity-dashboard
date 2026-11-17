@@ -6,19 +6,121 @@ APK, iOS app, or display firmware.
 
 | Client | Current source version | Build | Source | Git snapshot |
 |---|---|---|---|---|
-| iOS / iPadOS | 0.4.13 | 17 | `ios/` | `snapshots/ios/0.4.13-build17` |
+| iOS / iPadOS | 0.4.27 | 31 | `ios/` | baseline: `snapshots/ios/0.4.13-build17` |
 | Android / dragon | 0.7.25 | 32 | `android/app/` | `snapshots/android/0.7.25-build32` |
 | ESP32 + Nextion | 0.14.1 | — | `esp32/`, `nextion/`, `firmware/` | `snapshots/esp32-nextion/0.14.1` |
 
-These tags preserve development baselines. iOS includes the recovered 0.4.13
-changes. Android 0.7.25 preserves short ONVIF activity boundaries discovered
+These tags preserve development baselines. Current iOS **0.4.27/31** fixes a
+darkness-transition bug found during PR review: the controller could discard a
+small light change across the configured threshold, preventing the three-second
+clock shortcut. The signed device build and all 160 native simulator tests
+passed, including the controller-to-policy regression check. This revision has not been installed or
+physically checked; the last confirmed installation remains **0.4.26/30**.
+
+iOS 0.4.26 adds a sun
+icon beside solar generation on the idle clock and displays its weekday/month
+in Spanish. Data, font and white/day versus red/night colors are unchanged.
+The final signed build, all 159 native simulator tests and portrait UI checks
+passed, including Spanish date text under a Russian simulator locale.
+USB installation completed and a separate exact-device USB lookup verified
+**0.4.26/30**. Physical confirmation of the sun icon and Spanish date is pending.
+
+iOS 0.4.25 displays
+household consumption / solar generation in watts on the idle clock. Both
+readings use the same current snapshot and freshness state, with no additional
+polling requests. Its signed build, all 159 native simulator tests and the
+portrait clock readout check passed. Earlier Wi-Fi attempts failed in device
+service channels; after the user connected USB, installation completed and a
+separate exact-device USB lookup verified **0.4.25/29**. The user acknowledged
+the installed version on 2026-11-17 and requested the solar icon now in 0.4.26.
+See [installation evidence](IOS_KIOSK_HANDOFF.md).
+
+iOS 0.4.24 repairs
+doorbell-thumbnail touch handling and ensures reopening starts with audio off.
+Its signed build, all 159 native simulator tests and simulator thumbnail
+controls passed. Direct Wi-Fi installation completed and device lookup verified
+**0.4.24/28**. On 2026-11-17 the user confirmed both repaired actions on the
+physical iPad: tapping the thumbnail reopens the full camera view with the Talk
+button, and X dismisses the card. Ring delivery and thumbnail appearance were
+already confirmed on 0.4.23; two-way audio remains unverified.
+
+iOS 0.4.23 labels the
+idle clock's six-hour weather outlook with its actual local forecast hour and
+addresses a recorder HTTP authentication response that stalls doorbell event
+subscription. The user reported a missed ring on the idle clock in 0.4.22.
+The signed build and all 154 native simulator tests passed; the actual-hour
+clock label was checked in the simulator. Direct Wi-Fi installation completed
+and device lookup verified **0.4.23/27**. After the user opened the app on
+2026-11-17, a fresh exact-device probe confirmed **Listening for doorbell**.
+The user then confirmed real-ring delivery and thumbnail appearance, exposing
+the control failure addressed by 0.4.24. See the
+[doorbell handoff](IOS_DOORBELL_HANDOFF.md).
+
+iOS 0.4.22 replaces
+the idle clock's city-name label with **Now → +6h** weather icons and
+temperatures from the same hourly cache, without extra requests or timers.
+Its signed build and all 154 native simulator tests passed, and the new clock
+layout was checked in the simulator. Direct Wi-Fi installation completed and
+device lookup verified **0.4.22/26**; physical confirmation of its new clock
+layout is pending. The user confirmed the preceding 0.4.21 works well on the iPad.
+
+iOS 0.4.21 added manually selected city weather to the dashboard header and idle
+clock, plus a full-screen hourly and seven-day forecast. Open-Meteo requests and
+cache are shared, with 30-minute foreground refresh and no GPS. Its signed build,
+all 151 native simulator tests, simulator UI checks and a live public-city API
+check passed. Direct Wi-Fi installation completed on the exact requested iPad,
+and device lookup verified **0.4.21/25**. See the
+[weather handoff](IOS_WEATHER_HANDOFF.md).
+
+iOS 0.4.20 puts all Solar
+series in one chart and all Today series in one chart, so PV1/PV2 no longer
+require scrolling to additional panels. Legend toggles and point inspection
+remain available, with PV1 blue and PV2 purple on both screens. The signed
+native build and all 125 tests passed; 0.4.20/24 was installed over Wi-Fi on
+the exact requested iPad and verified by device lookup. Physical feedback on
+the combined charts has not yet been collected.
+
+iOS 0.4.19 added foreground
+ONVIF doorbell calls, native two-way audio with explicit microphone activation,
+and a static last-ring preview, and introduced Today PV1/PV2 power data from
+the existing chart endpoints. The final
+signed release build and all 125 simulator tests passed. Version 0.4.19/23 was
+installed over Wi-Fi on the exact requested iPad and verified by device lookup.
+The user initially deferred real ring/snapshot and two-way audio checks;
+0.4.22 later exposed the missed-ring failure above. Ring delivery and thumbnail
+appearance were confirmed on 0.4.23; controls and audio are tracked separately. See the
+[iOS doorbell handoff](IOS_DOORBELL_HANDOFF.md).
+
+iOS 0.4.18 rebuilt the energy
+details for portrait scrolling, with separate unit panels, interactive series
+legends, point inspection and cached chart loading. Its 81 simulator tests
+passed, and portrait/landscape layouts were checked in the simulator. The final
+signed build passed and 0.4.18/22 was installed over direct Wi-Fi on the exact
+requested iPad, with its installed version verified afterward. On 2026-11-16
+the user confirmed improved portrait readability, working point inspection and
+smooth vertical scrolling. See the
+[iOS charts handoff](IOS_CHARTS_HANDOFF.md) for release behavior and validation.
+
+iOS 0.4.17 added white daytime and red
+nighttime clocks, with separate day/night brightness settings for the dashboard
+and clock. Selected brightness applies directly, up to 100%; the old brightness
+bias and 85% dashboard limit are removed. Existing nighttime clock brightness
+is preserved. Tiny-grid motion detection, the darkness shortcut and reduced
+idle polling are unchanged. As of 2026-11-16, the signed 0.4.17/21 build and
+62 simulator tests passed, and the update was installed on the exact requested
+iPad over USB and then successfully reinstalled over Wi-Fi. The user confirmed
+the white daytime clock and sufficient dashboard brightness on wake. Earlier
+darkness/motion transitions were physically confirmed
+on 0.4.16/20 on 2026-11-14. The previous 0.4.13 tag remains the recovery baseline.
+See [iOS kiosk handoff](IOS_KIOSK_HANDOFF.md) for installation and validation.
+Android 0.7.25 preserves short ONVIF activity boundaries discovered
 during physical testing on dragon, and includes 0.7.24's playback/seek fixes.
 See [Android 0.7.25](ANDROID_0.7.25.md) for the evidence. The original Android
 baseline remains at `snapshots/android/0.7.23-build30`.
 The ESP32 binary reports 0.14.1; Nextion has no independently
 verified semantic version, so its exact HMI/TFT files are identified by hashes
-in the 0.14.1 hardware bundle. No new iOS or hardware release was issued.
-Verification passed: 65 Android unit tests and a debug APK build; 25 iOS tests
+in the 0.14.1 hardware bundle. No new hardware release was issued.
+Baseline verification passed: 65 Android unit tests and a debug APK build; 25 iOS tests
 on an iPad simulator; source-version and firmware-hash checks. These checks do
 not replace physical device testing of archive playback.
 
