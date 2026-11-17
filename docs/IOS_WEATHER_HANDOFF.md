@@ -1,8 +1,12 @@
-# iOS weather — 0.4.23, build 27
+# iOS weather — 0.4.24, build 28
 
-## Status — 2026-11-16
+## Status — 2026-11-17
 
-Current source and confirmed installation are **0.4.23/27**. The idle clock
+Current source and confirmed installation are **0.4.24/28**. Its signed build,
+159 native simulator tests and simulator control checks passed; exact-device
+Wi-Fi installation was version-verified. Its change is the
+[doorbell thumbnail control repair](IOS_DOORBELL_HANDOFF.md); weather is
+unchanged from **0.4.23/27**. The idle clock
 labels its six-hour outlook with
 the forecast's actual local hour, replacing **In 6h**. It uses the forecast
 city's time zone and the same hourly cache, with no additional requests or
@@ -11,7 +15,7 @@ Wi-Fi installation reached 100%, exited with code 0 and was version-verified.
 The portrait simulator displayed **Now** cloud/temperature →
 **23:00** moon-cloud/temperature, with no **In 6h** or city-name label.
 See [release evidence](IOS_DOORBELL_HANDOFF.md#release-checks-for-042327) for
-the current build, tests, signature and package.
+the installed 0.4.23 build, tests, signature and package.
 
 The preceding **0.4.22/26** passed its signed build and 154 tests, and its
 exact-device Wi-Fi installation was version-verified.
@@ -121,7 +125,8 @@ animation. Physical energy use has not been measured.
 
 The user subsequently confirmed that 0.4.21 works well on the physical iPad;
 this was an overall acceptance, not a report of separate checks for each view.
-Physical validation of the new 0.4.23 forecast-hour label is pending. The missed
-ring on 0.4.22 is under repair; two-way audio remains unverified. See
+Physical validation of the new 0.4.23 forecast-hour label is pending. The user
+confirmed ring delivery and thumbnail appearance on 0.4.23, but its thumbnail
+close button failed; 0.4.24 repairs those controls. Two-way audio remains unverified. See
 [kiosk recovery](IOS_KIOSK_HANDOFF.md) for the exact
 target iPad and signing/install path.

@@ -17,7 +17,7 @@ Version **0.4.22/26** replaces the idle clock's city label with compact
 without new requests or timers. Its signed build, 154 native simulator tests
 and simulator clock-layout check passed. Direct Wi-Fi installation completed
 and device lookup verified **0.4.22/26**. Physical confirmation of the new
-clock layout is pending. Current source **0.4.23/27** replaces **In 6h** with
+clock layout is pending. Version **0.4.23/27** replaces **In 6h** with
 the outlook's actual hour in the forecast city's time zone, using the same
 cache. Its signed build, 154 native simulator tests and portrait clock-label
 check passed. Direct Wi-Fi installation completed and device lookup verified
@@ -25,7 +25,7 @@ check passed. Direct Wi-Fi installation completed and device lookup verified
 See [weather handoff](IOS_WEATHER_HANDOFF.md)
 for the implementation and current validation status.
 
-## Doorbell — missed ring under repair
+## Doorbell — thumbnail controls under repair
 
 The user reported that a real ring did not open the doorbell while 0.4.22's idle
 clock was visible in the foreground. Recorder probes identified an unterminated
@@ -33,6 +33,13 @@ HTTP 401 response on a keep-alive connection; 0.4.23 aligns the event transport
 with the existing `Connection: close` discovery path. The signed build and all
 154 tests passed, and 0.4.23 is installed and version-verified. After the user
 opened it on 2026-11-17, a fresh exact-device probe confirmed **Listening for
-doorbell**. The user's real-ring and post-timeout thumbnail check is pending;
-two-way audio remains unverified. See
+doorbell**. The user then confirmed that a real ring opened the call and its
+thumbnail appeared after the call ended, but the close button did not respond.
+
+Current source **0.4.24/28** repairs the overlay hit region and close button,
+retains tapping the image to reopen live video and explicitly stops audio before
+reopening. Its signed build, 159 native simulator tests and simulator control
+checks passed. Direct Wi-Fi installation completed and device lookup verified
+**0.4.24/28**. Physical control checks are pending; two-way audio remains
+unverified. See
 [doorbell handoff](IOS_DOORBELL_HANDOFF.md).

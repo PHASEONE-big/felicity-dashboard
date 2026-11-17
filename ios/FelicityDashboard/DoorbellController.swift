@@ -115,6 +115,8 @@ final class DoorbellController: ObservableObject {
 
     func reopen() {
         guard active, let camera = thumbnailCamera else { return }
+        audio.stop()
+        microphoneTask?.cancel()
         policy.close()
         // A thumbnail tap is a manual preview, not a new ring or a new snapshot.
         policy.openPreview(at: now)

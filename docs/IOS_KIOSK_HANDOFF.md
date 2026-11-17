@@ -4,11 +4,12 @@ Requested device: iPad Pro, user-confirmed current LAN address `192.168.13.188`.
 Confirmed USB UDID: `86d36a369fdaeb458f5a65ba0136bec628ffd018`.
 USB detection now identifies this device as **iPad Pro (9.7-inch), J127AP**,
 running **iPadOS 16.7.16 (20H392)**.
-Source: iOS **0.4.23, build 27**; its signed build, 154 tests and simulator clock
-check passed, and Wi-Fi installation was version-verified. See
+Source: iOS **0.4.24, build 28**; its signed build, 159 tests and simulator
+thumbnail-control checks passed; Wi-Fi installation was version-verified. See
 [weather handoff](IOS_WEATHER_HANDOFF.md) for the actual-hour forecast label and
-[doorbell handoff](IOS_DOORBELL_HANDOFF.md) for the missed ring on 0.4.22's idle clock.
-Last confirmed installation: **0.4.23, build 27**, over direct Wi-Fi, with
+[doorbell handoff](IOS_DOORBELL_HANDOFF.md) for confirmed ring/thumbnail delivery
+on 0.4.23 and the current thumbnail-control repair.
+Last confirmed installation: **0.4.24, build 28**, over direct Wi-Fi, with
 the installed version verified by device lookup. The user confirmed 0.4.21
 works well on the physical iPad.
 Android and hardware versions are unchanged.

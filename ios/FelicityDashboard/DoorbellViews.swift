@@ -1,11 +1,6 @@
 import SwiftUI
 import UIKit
 
-private struct DoorbellCardBoundsKey: PreferenceKey {
-    static var defaultValue = CGRect.zero
-    static func reduce(value: inout CGRect, nextValue: () -> CGRect) { value = nextValue() }
-}
-
 /// A scene-local overlay also covers charts, settings and camera sheets. Outside
 /// the small caller card, the window passes touches through to the dashboard.
 struct DoorbellOverlayHost: UIViewRepresentable {
@@ -52,9 +47,7 @@ struct DoorbellOverlayHost: UIViewRepresentable {
             overlay.backgroundColor = .clear
             overlay.windowLevel = UIWindow.Level(rawValue: source.windowLevel.rawValue + 1)
             overlay.fullScreen = controller.isPresenting
-            let root = DoorbellOverlayView(controller: controller, repository: repository, preferences: preferences) { [weak overlay] rect in
-                overlay?.cardBounds = rect
-            }
+            let root = DoorbellOverlayView(controller: controller, repository: repository, preferences: preferences)
             let host = UIHostingController(rootView: root)
             host.view.backgroundColor = .clear
             overlay.rootViewController = host
@@ -66,13 +59,60 @@ struct DoorbellOverlayHost: UIViewRepresentable {
 }
 
 @MainActor
-private final class DoorbellOverlayWindow: UIWindow {
+final class DoorbellOverlayWindow: UIWindow {
     var fullScreen = false
-    var cardBounds = CGRect.zero
+    private weak var cardHitRegion: UIView?
     override var canBecomeKey: Bool { false }
+
+    func registerCardHitRegion(_ view: UIView) { cardHitRegion = view }
+    func unregisterCardHitRegion(_ view: UIView) {
+        if cardHitRegion === view { cardHitRegion = nil }
+    }
+
+    func acceptsTouch(at point: CGPoint) -> Bool {
+        if fullScreen { return true }
+        guard let cardHitRegion, cardHitRegion.window === self,
+              !cardHitRegion.isHidden, cardHitRegion.alpha > 0.01 else { return false }
+        // SwiftUI global frames do not define the coordinate system of a
+        // separate UIWindow. Convert against the real card view for every
+        // touch, including after a call timeout, rotation or safe-area change.
+        return cardHitRegion.bounds.contains(cardHitRegion.convert(point, from: self))
+    }
+
     override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
-        guard fullScreen || cardBounds.contains(point) else { return nil }
+        guard acceptsTouch(at: point) else { return nil }
         return super.hitTest(point, with: event)
+    }
+}
+
+private struct DoorbellCardHitRegion: UIViewRepresentable {
+    func makeUIView(context: Context) -> DoorbellCardHitRegionView {
+        let view = DoorbellCardHitRegionView()
+        view.isUserInteractionEnabled = false
+        return view
+    }
+    func updateUIView(_ uiView: DoorbellCardHitRegionView, context: Context) { uiView.register() }
+    static func dismantleUIView(_ uiView: DoorbellCardHitRegionView, coordinator: ()) { uiView.unregister() }
+}
+
+/// The card's real UIKit bounds define its touch region. This view never
+/// participates in recognition or consumes the SwiftUI buttons' touches.
+final class DoorbellCardHitRegionView: UIView {
+    private weak var registeredWindow: DoorbellOverlayWindow?
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        register()
+    }
+    func register() {
+        guard registeredWindow !== window else { return }
+        unregister()
+        guard let overlay = window as? DoorbellOverlayWindow else { return }
+        registeredWindow = overlay
+        overlay.registerCardHitRegion(self)
+    }
+    func unregister() {
+        registeredWindow?.unregisterCardHitRegion(self)
+        registeredWindow = nil
     }
 }
 
@@ -80,7 +120,6 @@ private struct DoorbellOverlayView: View {
     @ObservedObject var controller: DoorbellController
     let repository: CameraRepository
     let preferences: CameraPreferences
-    let cardBounds: (CGRect) -> Void
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
@@ -90,15 +129,11 @@ private struct DoorbellOverlayView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if let image = controller.thumbnail {
                 thumbnail(image)
-                    .background(GeometryReader { geometry in
-                        Color.clear.preference(key: DoorbellCardBoundsKey.self, value: geometry.frame(in: .global))
-                    })
+                    .background(DoorbellCardHitRegion().allowsHitTesting(false))
                     .padding(16)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
-        .coordinateSpace(name: "doorbell-overlay")
-        .onPreferenceChange(DoorbellCardBoundsKey.self, perform: cardBounds)
         .preferredColorScheme(.dark)
     }
 
@@ -106,7 +141,9 @@ private struct DoorbellOverlayView: View {
         VStack(spacing: 0) {
             Button { controller.reopen() } label: {
                 Image(uiImage: image).resizable().scaledToFill().frame(width: 208, height: 117).clipped()
+                    .contentShape(Rectangle())
             }
+            .buttonStyle(.plain)
             .accessibilityLabel("Last doorbell caller. Open live doorbell")
             HStack {
                 Image(systemName: "bell.fill").foregroundStyle(FelicityPalette.accent)
@@ -114,8 +151,11 @@ private struct DoorbellOverlayView: View {
                     Text(date, format: .dateTime.hour().minute()).font(.caption.weight(.semibold))
                 }
                 Spacer()
-                Button { controller.clearThumbnail() } label: { Image(systemName: "xmark").frame(width: 32, height: 32) }
-                    .accessibilityLabel("Dismiss caller snapshot")
+                Button { controller.clearThumbnail() } label: {
+                    Image(systemName: "xmark").frame(width: 44, height: 44).contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Dismiss caller snapshot")
             }
             .padding(.leading, 10).padding(.trailing, 2)
         }

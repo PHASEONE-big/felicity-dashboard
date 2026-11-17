@@ -55,6 +55,7 @@
 		110000000000000000000031 /* WeatherViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000031 /* WeatherViews.swift */; };
 		110000000000000000000032 /* WeatherModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000032 /* WeatherModelsTests.swift */; };
 		110000000000000000000033 /* WeatherViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000033 /* WeatherViewModelTests.swift */; };
+		110000000000000000000034 /* DoorbellOverlayHitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000034 /* DoorbellOverlayHitTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -119,6 +120,7 @@
 		120000000000000000000031 /* WeatherViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherViews.swift; sourceTree = "<group>"; };
 		120000000000000000000032 /* WeatherModelsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherModelsTests.swift; sourceTree = "<group>"; };
 		120000000000000000000033 /* WeatherViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherViewModelTests.swift; sourceTree = "<group>"; };
+		120000000000000000000034 /* DoorbellOverlayHitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoorbellOverlayHitTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -205,6 +207,7 @@
 			isa = PBXGroup;
 			children = (
 				120000000000000000000009 /* DashboardModelsTests.swift */,
+				120000000000000000000034 /* DoorbellOverlayHitTests.swift */,
 				120000000000000000000033 /* WeatherViewModelTests.swift */,
 				120000000000000000000032 /* WeatherModelsTests.swift */,
 				12000000000000000000002D /* DoorbellControllerTests.swift */,
@@ -362,6 +365,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				110000000000000000000008 /* DashboardModelsTests.swift in Sources */,
+				110000000000000000000034 /* DoorbellOverlayHitTests.swift in Sources */,
 				110000000000000000000033 /* WeatherViewModelTests.swift in Sources */,
 				110000000000000000000032 /* WeatherModelsTests.swift in Sources */,
 				11000000000000000000002D /* DoorbellControllerTests.swift in Sources */,
@@ -393,7 +397,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 27;
+				CURRENT_PROJECT_VERSION = 28;
 				DEVELOPMENT_TEAM = NH364DL3M9;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = FelicityDashboard/Info.plist;
@@ -402,7 +406,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.4.23;
+				MARKETING_VERSION = 0.4.24;
 				PRODUCT_BUNDLE_IDENTIFIER = io.github.homedashboard.ios;
 				PRODUCT_MODULE_NAME = FelicityDashboard;
 				PRODUCT_NAME = "Felicity Dashboard";
@@ -419,7 +423,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 27;
+				CURRENT_PROJECT_VERSION = 28;
 				DEVELOPMENT_TEAM = NH364DL3M9;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = FelicityDashboard/Info.plist;
@@ -428,7 +432,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.4.23;
+				MARKETING_VERSION = 0.4.24;
 				PRODUCT_BUNDLE_IDENTIFIER = io.github.homedashboard.ios;
 				PRODUCT_MODULE_NAME = FelicityDashboard;
 				PRODUCT_NAME = "Felicity Dashboard";

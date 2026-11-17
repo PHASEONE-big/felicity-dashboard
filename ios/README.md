@@ -20,7 +20,19 @@ the iPad must already be paired with Xcode, or first connected by USB and truste
 
 ## Latest status — 2026-11-17
 
-Current source and confirmed installation are **0.4.23, build 27**. The idle
+Current source and confirmed installation are **0.4.24, build 28**, repairing
+doorbell-thumbnail touch handling and ensuring reopening starts with audio off.
+Its signed build and all
+**159 native simulator tests passed**. Simulator coordinate clicks verified
+thumbnail reopening, returning to the thumbnail and dismissal, using a test
+image without an actual camera or microphone. Exact-device Wi-Fi installation
+reached 100% and exited with code 0; device lookup verified the installed version.
+The user confirmed on 2026-11-17 that 0.4.23 opened
+a real ring and showed its thumbnail afterward, but the close button did not
+respond. The new control repair is not yet physically verified; audio remains
+unverified.
+
+The preceding **0.4.23, build 27** remains the weather-label baseline. The idle
 clock's six-hour weather outlook
 now shows its actual forecast hour in the selected city's time zone. This
 release also addresses stalled doorbell event authentication after a missed
@@ -28,8 +40,8 @@ ring on 0.4.22. Its signed build and all **154 native simulator tests passed**;
 the portrait simulator showed the forecast's actual hour. Exact-device Wi-Fi
 installation reached 100% and exited with code 0; device lookup verified the
 installed version. After the user opened the app on 2026-11-17, a fresh
-exact-device probe confirmed **Listening for doorbell**. Real-ring and
-caller-thumbnail verification remain pending; audio is unverified.
+exact-device probe confirmed **Listening for doorbell**, followed by the user's
+ring and thumbnail confirmation above.
 
 The preceding **0.4.22, build 26** introduced compact current
 and six-hour weather icons/temperatures from the shared hourly cache and no
@@ -53,7 +65,8 @@ exact requested iPad succeeded, with its installed version verified afterward.
 Physical feedback on the combined charts has not yet been collected.
 The user initially deferred real ring/snapshot and two-way audio checks.
 A real ring on 0.4.22 then failed to open the call while the idle clock was
-visible. Successful call/snapshot behavior and two-way audio remain unverified.
+visible. Ring delivery and thumbnail appearance were subsequently confirmed on
+0.4.23; thumbnail controls and two-way audio are tracked separately.
 See the [doorbell handoff](../docs/IOS_DOORBELL_HANDOFF.md).
 
 Version 0.4.18 passed its signed build and 81 simulator tests, was installed and
@@ -97,8 +110,13 @@ the connection open. Version 0.4.23 sets `Connection: close` on event SOAP
 requests, matching the working discovery transport. Its signed build and 154
 tests passed, and the release is installed and version-verified. A fresh
 exact-device probe after the user opened the app on 2026-11-17 confirmed
-**Listening for doorbell**. Real-ring delivery, the caller thumbnail after
-timeout and two-way audio remain unverified. See the
+**Listening for doorbell**. The user then confirmed a real ring opened the call
+and its thumbnail appeared after the call ended, but the close button failed.
+Version 0.4.24 replaces cached overlay coordinates with a native hit region,
+adds a 44-point close target and keeps tap-to-reopen muted. Its signed build,
+159 tests and simulator control checks passed, and the release is installed
+and version-verified. Physical control checks are pending; two-way audio
+remains unverified. See the
 [doorbell handoff](../docs/IOS_DOORBELL_HANDOFF.md).
 
 While Felicity is in the foreground, the recorder's ONVIF PullPoint events can

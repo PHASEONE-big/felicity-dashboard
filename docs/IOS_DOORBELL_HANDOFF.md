@@ -1,12 +1,44 @@
-# iOS doorbell and Today PV details — 0.4.23, build 27
+# iOS doorbell and Today PV details — 0.4.24, build 28
 
-Current source and confirmed installation are **0.4.23/27**. Its signed build
-and all 154 native simulator tests passed. Exact-device trusted Wi-Fi
-installation reached 100%, exited with code 0 and was version-verified.
-On the preceding **0.4.22/26**, the user reported that a real doorbell ring did not open a call
-while the idle clock was visible and the app remained in the foreground.
-The new fix is not yet verified by a real ring. See
-[weather handoff](IOS_WEATHER_HANDOFF.md) for this release's actual-hour label.
+Current source and confirmed installation are **0.4.24/28**. Its signed build,
+all 159 native simulator tests and simulator control checks passed. Exact-device
+trusted Wi-Fi installation reached 100%, exited with code 0 and was version-verified.
+On 2026-11-17, using the preceding **0.4.23/27**, the user
+confirmed that a real ring opened the call and that the caller thumbnail
+appeared after the call ended. The thumbnail's close button did not respond.
+Version 0.4.24 repairs thumbnail touch handling and preserves the intended
+tap-to-reopen behavior; physical control checks remain pending. Two-way audio
+has not been verified.
+
+## Thumbnail control repair — 2026-11-17
+
+The overlay compared a cached SwiftUI global rectangle with UIKit window touch
+coordinates. Version 0.4.24 uses a native view probe and converts the touch
+position at input time, so the card's hit region follows its actual layout.
+The close button has a 44-point target and plain button styling. Tapping the
+image should reopen live video with audio off; reopening also explicitly stops
+any prior audio/pending microphone work. Build, tests and simulator control
+checks passed; physical verification of the controls is pending.
+
+## Release checks for 0.4.24/28
+
+- Signed device build passed: `ios/build/recovery-device-0.4.24.log`.
+- All 159 native simulator tests passed with no failures, including five UIKit
+  tests for coordinate conversion, detached views and full-call hit testing.
+  Evidence: `ios/build/recovery-tests-0.4.24.log` and
+  `ios/build/recovery-tests-0.4.24.xcresult`.
+- Simulator coordinate clicks verified that tapping the thumbnail opens the
+  full doorbell view with a 60-second timer and sound/microphone off; closing
+  the call returns the original thumbnail, and its X button dismisses it.
+  This used a synthetic image and a localhost test stream, without accessing
+  an actual camera or microphone. The fixture was cleared and the original
+  simulator state restored. Physical control acceptance is still pending.
+- Strict signature verification passed. The embedded profile includes the
+  exact requested iPad and expires on 2026-11-21 at 17:20:22 UTC, unchanged.
+- Verified package: `ios/build/ipad/Felicity-0.4.24-build28.ipa`.
+  Previous installed app: `ios/build/ipad/installed-0.4.23-build27.app`.
+  Successful exact-device Wi-Fi installation and version verification:
+  `ios/build/recovery-install-0.4.24-wifi.log`.
 
 ## Missed-ring diagnosis — 2026-11-16
 
@@ -21,9 +53,10 @@ The existing camera-discovery SOAP transport already requests connection close;
 the doorbell event transport did not. Version 0.4.23 adds that header to event
 SOAP requests. After the user opened 0.4.23 on 2026-11-17, a fresh exact-device
 probe confirmed **Listening for doorbell**, replacing the earlier connecting
-state. Real-ring delivery still needs verification. No diagnostic action
-triggered a ring or enabled the microphone. Two-way audio remains physically
-unverified.
+state. The user then confirmed real-ring delivery and a visible caller
+thumbnail. The remaining thumbnail-control failure is described above.
+No diagnostic action triggered a ring or enabled the microphone. Two-way audio
+remains physically unverified.
 
 ## Release checks for 0.4.23/27
 
@@ -49,9 +82,10 @@ status **Listening for doorbell**. Safe evidence:
 The immediate post-install check had found no running app and only a retained
 pre-update **Connecting** value; the new probe supersedes that status.
 
-The requested next check is a real doorbell press while the idle clock is visible
-and the caller thumbnail after the call timeout. That result is pending. Listening
-status does not confirm ring delivery, snapshot behavior or two-way audio.
+Later on 2026-11-17, the user confirmed that a real ring opened the call and the
+caller thumbnail was visible after it ended. This verifies delivery and image
+appearance, but the close button failed. Dismiss/reopen controls require the
+0.4.24 repair and physical retesting; two-way audio remains unverified.
 
 ## Historical release evidence
 
@@ -74,7 +108,8 @@ installation reached 100% and exited with code 0; a subsequent exact-device
 lookup confirmed version 0.4.19/build 23. The user answered “Проверю позже”
 (“I'll check later”) for both the real ring/snapshot and two-way audio checks.
 Those checks were initially deferred. The later 0.4.22 missed-ring failure is
-documented above; successful call/snapshot and audio behavior remain unverified.
+documented above. Ring delivery and thumbnail appearance were subsequently
+confirmed on 0.4.23; thumbnail controls and audio are covered separately above.
 
 ## Doorbell behavior and Android parity
 
@@ -147,10 +182,10 @@ audio work. Local evidence:
 The existing profile expires on 2026-11-21 at 17:20:22 UTC (18:20:22 Madrid);
 this release does not extend that expiry.
 
-After the 0.4.23 repair, physical acceptance still requires a real doorbell press,
-initially muted video over an open app route, explicit listening, microphone
-permission and two-way speech, the 30-second safety close, the 60-second video
-close, background privacy, and the static thumbnail after returning home.
+After the 0.4.24 repair, physically check thumbnail dismissal, tapping the image
+to reopen muted video and touch pass-through outside the card. Separate audio,
+microphone permission, safety-deadline and background-privacy checks remain
+unverified; the user's ring/image confirmation does not establish those results.
 Check Today PV1/PV2 against the corresponding Solar readings. Actual energy
 consumption and acoustic performance have not been measured.
 

@@ -1,9 +1,10 @@
 # iOS energy charts — 0.4.18, build 22
 
-Current source and confirmed installation are **0.4.23/27**. Its signed build,
-154 tests and simulator clock check passed, and exact-device Wi-Fi installation
-was version-verified. Version 0.4.23 adjusts the weather hour label and addresses a missed
-doorbell ring; chart behavior is unchanged.
+Current source and confirmed installation are **0.4.24/28**; its signed build,
+159 tests and simulator thumbnail-control checks passed, and Wi-Fi installation
+was version-verified. On 0.4.23, the user confirmed real-ring delivery
+and a visible thumbnail but reported a failed close button; 0.4.24 repairs
+thumbnail controls. Chart behavior is unchanged.
 See [weather handoff](IOS_WEATHER_HANDOFF.md) for evidence and the new clock
 layout. Chart behavior is unchanged from 0.4.20/24:
 Solar has Total/PV1/PV2 together in one chart and
@@ -12,7 +13,7 @@ legend toggles and point inspection remain. The 0.4.20 signed native build and a
 125 tests passed; Wi-Fi installation succeeded and a subsequent device lookup
 verified 0.4.20/build 24. Physical feedback on the combined charts has not yet
 been collected.
-The user later reported a missed ring on 0.4.22; see the
+The missed ring on 0.4.22 and subsequent 0.4.23 confirmation/control failure are in the
 [doorbell and Today handoff](IOS_DOORBELL_HANDOFF.md). The 0.4.18 evidence below
 records the latest user-confirmed physical chart validation.
 
