@@ -1,6 +1,10 @@
-# iOS doorbell and Today PV details — 0.4.26, build 30
+# iOS doorbell and Today PV details — 0.4.27, build 31
 
-Current source and confirmed installation are **0.4.26/30**, adding a sun icon
+Current source is **0.4.27/31**, correcting a missed darkness-threshold crossing
+found during PR review; see [kiosk handoff](IOS_KIOSK_HANDOFF.md). Its signed
+device build and all 160 native simulator tests passed; this revision has not been installed or physically
+checked. Doorbell behavior is unchanged. The last confirmed installation is
+**0.4.26/30**, adding a sun icon
 beside clock generation and
 a Spanish idle-clock date. Its final signed build, 159 tests and simulator
 icon/date checks passed. USB installation completed and a separate exact-device

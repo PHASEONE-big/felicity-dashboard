@@ -1,8 +1,19 @@
 # iOS follow-up work
 
+## Darkness threshold — 0.4.27/31
+
+Current source **0.4.27/31** fixes a PR-review finding: a second controller
+light-change filter could hide a threshold crossing and prevent the three-second
+idle-clock shortcut. Already-throttled camera readings now reach the policy,
+with a controller-to-policy regression check. Its signed device build and all
+160 native simulator tests passed; no installation or physical check of 0.4.27
+has been performed.
+The last confirmed installation is **0.4.26/30**. See
+[kiosk handoff](IOS_KIOSK_HANDOFF.md).
+
 ## Clock consumption / solar — 0.4.26/30
 
-Current source and confirmed installation are **0.4.26/30**, adding a sun icon
+The last confirmed installation **0.4.26/30** adds a sun icon
 beside solar generation and a
 Spanish weekday/month on the idle clock, retaining the same data, font and
 white/day versus red/night colors. Its final signed build, 159 native simulator

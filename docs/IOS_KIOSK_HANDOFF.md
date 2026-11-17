@@ -4,9 +4,12 @@ Requested device: iPad Pro, user-confirmed current LAN address `192.168.13.188`.
 Confirmed USB UDID: `86d36a369fdaeb458f5a65ba0136bec628ffd018`.
 USB detection now identifies this device as **iPad Pro (9.7-inch), J127AP**,
 running **iPadOS 16.7.16 (20H392)**.
-Source and confirmed installation: iOS **0.4.26, build 30**. Its final signed
-build, 159 tests and simulator icon/Spanish-date checks passed; USB installation
-completed and a separate exact-device USB lookup verified the installed version.
+Source: iOS **0.4.27, build 31**; its signed device build and all 160 native
+simulator tests passed. This
+PR-review fix has not been installed or physically checked.
+The installed **0.4.26/30** passed its signed build, 159 tests and simulator
+icon/Spanish-date checks; USB installation and a separate exact-device USB
+lookup verified that version.
 The preceding 0.4.25 passed its signed build, 159 tests and simulator
 readout check. USB installation completed and a separate exact-device lookup
 verified that version. See
@@ -20,6 +23,25 @@ Android and hardware versions are unchanged.
 The bundle identifier and configured signing team are preserved.
 
 ## Latest status — 2026-11-17
+
+PR review found that a second 0.03 light-change filter in the controller could
+retain a stale value of 0.19 after the camera worker published 0.17. At a
+darkness threshold of 0.18, the idle policy then never saw the transition and
+could miss its three-second shortcut. Version 0.4.27 records changed readings
+that the camera worker has already throttled. The new regression exercises the
+controller-to-policy path and the three-second hold without another camera
+sample. The signed generic-device build and all 160 native simulator tests
+passed, including the new small-light-change regression. Client-version and
+diff checks passed. No 0.4.27 device installation has been attempted; physical
+verification is pending.
+
+0.4.27 review-fix evidence:
+
+- Signed build: `ios/build/pr54-review-device-0.4.27.log`.
+- Tests/result: `ios/build/pr54-review-tests-0.4.27.log` and
+  `ios/build/pr54-review-tests-0.4.27.xcresult` (160 passed, no failures).
+- The installed iPad remains on **0.4.26/30**; these results do not claim
+  physical verification of the review fix.
 
 Version 0.4.26 adds a **sun icon beside solar generation** in the clock's
 consumption / generation line. The idle clock date uses Spanish weekday and

@@ -92,6 +92,35 @@ final class KioskIdlePolicyTests: XCTestCase {
         XCTAssertTrue(mode.isNight)
     }
 
+    @MainActor
+    func testSmallLightChangeCrossesDarkThresholdWithoutAnotherCameraSample() throws {
+        let suite = "Felicity.KioskLightSample.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let controller = KioskController(defaults: defaults)
+        var policy = KioskIdlePolicy(now: 0)
+
+        controller.receiveLightLevel(0.19)
+        policy.update(at: 0, idleTimeout: controller.idleTimeout, eligible: true,
+                      lightLevel: controller.lightLevel, darkThreshold: controller.darknessThreshold)
+        XCTAssertFalse(controller.isNight)
+        XCTAssertFalse(policy.isSleeping)
+
+        // The camera worker may publish this change once, then stay silent in
+        // stable lighting. It must reach both color selection and idle policy.
+        controller.receiveLightLevel(0.17)
+        XCTAssertEqual(controller.lightLevel, 0.17)
+        XCTAssertTrue(controller.isNight)
+        policy.update(at: 1, idleTimeout: controller.idleTimeout, eligible: true,
+                      lightLevel: controller.lightLevel, darkThreshold: controller.darknessThreshold)
+        policy.update(at: 3.9, idleTimeout: controller.idleTimeout, eligible: true,
+                      lightLevel: controller.lightLevel, darkThreshold: controller.darknessThreshold)
+        XCTAssertFalse(policy.isSleeping)
+        policy.update(at: 4, idleTimeout: controller.idleTimeout, eligible: true,
+                      lightLevel: controller.lightLevel, darkThreshold: controller.darknessThreshold)
+        XCTAssertTrue(policy.isSleeping)
+    }
+
     func testLightModeIgnoresMissingAndInvalidSamples() {
         var mode = KioskLightMode()
         let invalidLevels: [Double?] = [nil, .nan, .infinity, -0.1, 1.1]

@@ -51,11 +51,7 @@ final class KioskController: ObservableObject {
         camera.motionSensitivity = motionSensitivity
         camera.lightLevelChanged = { [weak self] level in
             guard let self, self.eligible else { return }
-            if self.lightLevel == nil || abs((self.lightLevel ?? level) - level) >= 0.03 {
-                self.lightLevel = level
-            }
-            let modeChanged = self.updateLightMode(level: level)
-            self.applyBrightness(force: modeChanged)
+            self.receiveLightLevel(level)
         }
         camera.statusChanged = { [weak self] status in
             self?.cameraStatus = status
@@ -77,6 +73,14 @@ final class KioskController: ObservableObject {
     private static func preference(_ defaults: UserDefaults, key: String, fallback: Double, minimum: Double) -> Double {
         let stored = defaults.object(forKey: key) as? Double ?? fallback
         return stored.isFinite ? min(1, max(minimum, stored)) : fallback
+    }
+
+    func receiveLightLevel(_ level: Double) {
+        // Capture already throttles light changes. Keep its newest sample so
+        // mode selection and the darkness timer use the same threshold input.
+        if lightLevel != level { lightLevel = level }
+        let modeChanged = updateLightMode(level: level)
+        applyBrightness(force: modeChanged)
     }
 
     @discardableResult

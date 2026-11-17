@@ -6,11 +6,18 @@ APK, iOS app, or display firmware.
 
 | Client | Current source version | Build | Source | Git snapshot |
 |---|---|---|---|---|
-| iOS / iPadOS | 0.4.26 | 30 | `ios/` | baseline: `snapshots/ios/0.4.13-build17` |
+| iOS / iPadOS | 0.4.27 | 31 | `ios/` | baseline: `snapshots/ios/0.4.13-build17` |
 | Android / dragon | 0.7.25 | 32 | `android/app/` | `snapshots/android/0.7.25-build32` |
 | ESP32 + Nextion | 0.14.1 | — | `esp32/`, `nextion/`, `firmware/` | `snapshots/esp32-nextion/0.14.1` |
 
-These tags preserve development baselines. Current iOS **0.4.26/30** adds a sun
+These tags preserve development baselines. Current iOS **0.4.27/31** fixes a
+darkness-transition bug found during PR review: the controller could discard a
+small light change across the configured threshold, preventing the three-second
+clock shortcut. The signed device build and all 160 native simulator tests
+passed, including the controller-to-policy regression check. This revision has not been installed or
+physically checked; the last confirmed installation remains **0.4.26/30**.
+
+iOS 0.4.26 adds a sun
 icon beside solar generation on the idle clock and displays its weekday/month
 in Spanish. Data, font and white/day versus red/night colors are unchanged.
 The final signed build, all 159 native simulator tests and portrait UI checks

@@ -1,8 +1,12 @@
-# iOS weather — 0.4.26, build 30
+# iOS weather — 0.4.27, build 31
 
 ## Status — 2026-11-17
 
-Current source and confirmed installation are **0.4.26/30**, adding a sun icon
+Current source is **0.4.27/31**, correcting a missed darkness-threshold crossing
+found during PR review; see [kiosk handoff](IOS_KIOSK_HANDOFF.md). Its signed
+device build and all 160 native simulator tests passed; this revision has not been installed or physically
+checked. Weather behavior is unchanged. The last confirmed installation is
+**0.4.26/30**, adding a sun icon
 beside the clock's solar
 generation and a Spanish idle-clock date. Its final signed build, 159 tests and
 portrait icon/date checks passed, with weather still below. USB installation

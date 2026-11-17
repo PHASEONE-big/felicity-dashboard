@@ -20,7 +20,14 @@ the iPad must already be paired with Xcode, or first connected by USB and truste
 
 ## Latest status — 2026-11-17
 
-Current source and confirmed installation are **0.4.26, build 30**, adding a
+Current source is **0.4.27, build 31**, fixing a darkness-threshold bug found
+during PR review. An extra controller filter could discard a small camera-light
+change across the threshold and prevent the three-second idle-clock shortcut.
+A controller-to-policy regression check was added. The signed device build and
+all **160 native simulator tests passed**. No 0.4.27 installation or physical
+check has been performed. See [review-fix evidence](../docs/IOS_KIOSK_HANDOFF.md).
+
+The last confirmed installation is **0.4.26, build 30**, adding a
 sun icon beside solar generation
 and a Spanish weekday/month on the idle clock, such as **martes, 17 de noviembre**.
 It retains the same data, font and white/day versus red/night colors. Its final
