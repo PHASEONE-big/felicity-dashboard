@@ -16,8 +16,9 @@ addresses a recorder HTTP authentication response that stalls doorbell event
 subscription. The user reported a missed ring on the idle clock in 0.4.22.
 The signed build and all 154 native simulator tests passed; the actual-hour
 clock label was checked in the simulator. Direct Wi-Fi installation completed
-and device lookup verified **0.4.23/27**. Subscription status and real-ring
-verification of the fix remain pending. See the
+and device lookup verified **0.4.23/27**. After the user opened the app on
+2026-11-17, a fresh exact-device probe confirmed **Listening for doorbell**.
+Real-ring and caller-thumbnail verification remain pending; audio is unverified. See the
 [doorbell handoff](IOS_DOORBELL_HANDOFF.md).
 
 iOS 0.4.22 replaces

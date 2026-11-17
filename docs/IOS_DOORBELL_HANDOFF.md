@@ -19,10 +19,11 @@ The same request with `Connection: close` reached EOF immediately.
 
 The existing camera-discovery SOAP transport already requests connection close;
 the doorbell event transport did not. Version 0.4.23 adds that header to event
-SOAP requests. This addresses the observed
-authentication stall; successful event subscription and an actual ring still
-need verification after installation. No diagnostic action triggered a ring or
-enabled the microphone. Two-way audio remains physically unverified.
+SOAP requests. After the user opened 0.4.23 on 2026-11-17, a fresh exact-device
+probe confirmed **Listening for doorbell**, replacing the earlier connecting
+state. Real-ring delivery still needs verification. No diagnostic action
+triggered a ring or enabled the microphone. Two-way audio remains physically
+unverified.
 
 ## Release checks for 0.4.23/27
 
@@ -41,12 +42,16 @@ enabled the microphone. Two-way audio remains physically unverified.
   moon-cloud/temperature, with neither **In 6h** nor a city name. This checks
   the separate weather-label change, not doorbell delivery.
 
-Open the installed Felicity and verify event-subscription status and a
-real doorbell press, including while the idle clock is visible. **Listening**
-status and successful real-ring delivery have not yet been confirmed.
-The post-install process check found the app was not running; the retained
-**Connecting** value came from before the update and is not a new subscription
-result. Manual opening and fresh status/ring verification remain pending.
+On 2026-11-17, the user confirmed opening the installed 0.4.23. A fresh read-only
+probe of the exact iPad found one running app process, doorbell enabled and
+status **Listening for doorbell**. Safe evidence:
+`ios/build/recovery-doorbell-status-0.4.23-2026-11-17.json`.
+The immediate post-install check had found no running app and only a retained
+pre-update **Connecting** value; the new probe supersedes that status.
+
+The requested next check is a real doorbell press while the idle clock is visible
+and the caller thumbnail after the call timeout. That result is pending. Listening
+status does not confirm ring delivery, snapshot behavior or two-way audio.
 
 ## Historical release evidence
 

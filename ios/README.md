@@ -18,7 +18,7 @@ after seven days. Rebuild and install with the same team and bundle identifier
 the existing app to renew its signature. A network address alone is not enough:
 the iPad must already be paired with Xcode, or first connected by USB and trusted.
 
-## Latest status — 2026-11-16
+## Latest status — 2026-11-17
 
 Current source and confirmed installation are **0.4.23, build 27**. The idle
 clock's six-hour weather outlook
@@ -27,7 +27,9 @@ release also addresses stalled doorbell event authentication after a missed
 ring on 0.4.22. Its signed build and all **154 native simulator tests passed**;
 the portrait simulator showed the forecast's actual hour. Exact-device Wi-Fi
 installation reached 100% and exited with code 0; device lookup verified the
-installed version. Subscription status and real-ring verification are pending.
+installed version. After the user opened the app on 2026-11-17, a fresh
+exact-device probe confirmed **Listening for doorbell**. Real-ring and
+caller-thumbnail verification remain pending; audio is unverified.
 
 The preceding **0.4.22, build 26** introduced compact current
 and six-hour weather icons/temperatures from the shared hourly cache and no
@@ -93,8 +95,10 @@ On 0.4.22, a real ring failed while the idle clock was visible. A recorder probe
 found that its HTTP 401 response lacked a body-length delimiter while keeping
 the connection open. Version 0.4.23 sets `Connection: close` on event SOAP
 requests, matching the working discovery transport. Its signed build and 154
-tests passed, and the release is installed and version-verified. Subscription
-status and real-ring verification remain pending. See the
+tests passed, and the release is installed and version-verified. A fresh
+exact-device probe after the user opened the app on 2026-11-17 confirmed
+**Listening for doorbell**. Real-ring delivery, the caller thumbnail after
+timeout and two-way audio remain unverified. See the
 [doorbell handoff](../docs/IOS_DOORBELL_HANDOFF.md).
 
 While Felicity is in the foreground, the recorder's ONVIF PullPoint events can

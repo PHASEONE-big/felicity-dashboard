@@ -31,6 +31,8 @@ The user reported that a real ring did not open the doorbell while 0.4.22's idle
 clock was visible in the foreground. Recorder probes identified an unterminated
 HTTP 401 response on a keep-alive connection; 0.4.23 aligns the event transport
 with the existing `Connection: close` discovery path. The signed build and all
-154 tests passed, and 0.4.23 is installed and version-verified. Subscription
-status and a new real-ring check are pending. Two-way audio remains unverified. See
+154 tests passed, and 0.4.23 is installed and version-verified. After the user
+opened it on 2026-11-17, a fresh exact-device probe confirmed **Listening for
+doorbell**. The user's real-ring and post-timeout thumbnail check is pending;
+two-way audio remains unverified. See
 [doorbell handoff](IOS_DOORBELL_HANDOFF.md).
